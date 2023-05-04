@@ -89,6 +89,7 @@ async function getCurrentJson() {
     const url = "https://dashboard.elering.ee/api/nps/price/FI/current"
     const res = await fetch(url, settings)
     const json = await res.json()
+    console.log(url)
     return json
 }
 

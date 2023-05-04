@@ -29,7 +29,6 @@ server.on('request', async (req, res) => {
             if (json.success == true) {
                 res.writeHead(200, {'Content-Type': 'application/json'});
                 console.log(JSON.stringify(json))
-                currentPrice.apiSuccess = json.success
                 currentPrice.price = getPrice(json.data[0].price)
                 currentPrice.time = getDate(json.data[0].timestamp)
                 res.end(JSON.stringify(currentPrice));
@@ -59,7 +58,6 @@ server.on('request', async (req, res) => {
     
             if (todayJson.success == true) {
                 const currentJson = await getCurrentJson()
-                prices.info.apiSuccess = todayJson.success
                 if (currentJson.success) {
                     prices.info.current = getPrice(currentJson.data[0].price)
                 }

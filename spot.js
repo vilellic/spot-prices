@@ -96,6 +96,7 @@ async function getCurrentJson() {
 function resetCacheFiles() {
     writeCachedResult(cachedNameCurrent, "{}")
     writeCachedResult(cachedNamePrices, "[]")
+    console.log("Cache files have been reset")
 }
 
 function writeCachedResult(name, content) {
@@ -165,6 +166,12 @@ function getPrice(inputPrice) {
 new cronJob("* * * * *", async function() {
     await updatePrices()
 }, null, true);
+
+// Run at every midnight
+new cronJob("0 0 * * *", async function() {
+    resetCacheFiles()
+}, null, true);
+
 
 resetCacheFiles()
 updatePrices()

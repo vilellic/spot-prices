@@ -1,2 +1,2 @@
 # spot-prices
-Serve finnish electricity spot prices to Home Assistant with Node.js server
+With this Node.js server finnish electricity spot prices can be served to Home Assistant using REST platform to read data from local server.

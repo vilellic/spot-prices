@@ -93,6 +93,11 @@ async function getCurrentJson() {
     return json
 }
 
+function resetCacheFiles() {
+    writeCachedResult(cachedNameCurrent, "{}")
+    writeCachedResult(cachedNamePrices, "[]")
+}
+
 function writeCachedResult(name, content) {
    try {
       writeFileSync('./' + name + '.json', content, 'utf8');
@@ -161,5 +166,6 @@ new cronJob("* * * * *", async function() {
     await updatePrices()
 }, null, true);
 
+resetCacheFiles()
 updatePrices()
 server.listen(8089);

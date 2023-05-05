@@ -16,7 +16,7 @@ const cachedNamePrices = 'prices'
 
 var cronJob = require("cron").CronJob;
 
-const updatePrices = async () => {
+const updateTodayAndTomorrowPrices = async () => {
 
     const cachedPrices = readCachedResult(cachedNamePrices)
 
@@ -32,8 +32,6 @@ const updatePrices = async () => {
     }
 
     updateCachedResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
-
-    await updateCurrentPrice()
 
 }
 
@@ -195,7 +193,12 @@ const getCurrentPriceFromTodayPrices = (todayPrices) => {
 
 // Run every minute
 new cronJob("* * * * *", async function() {
-    updatePrices()
+    updateTodayAndTomorrowPrices()
+}, null, true);
+
+// Run every hour
+new cronJob("0 * * * *", async function() {
+    updateCurrentPrice()
 }, null, true);
 
 // Run at every midnight
@@ -204,6 +207,7 @@ new cronJob("0 0 * * *", async function() {
 }, null, true);
 
 resetCacheFiles()
-updatePrices()
+updateTodayAndTomorrowPrices()
+updateCurrentPrice()
 
 server.listen(8089);

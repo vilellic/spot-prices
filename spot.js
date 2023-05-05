@@ -17,8 +17,11 @@ const cachedNamePrices = 'prices'
 var cronJob = require("cron").CronJob;
 
 const updatePrices = async () => {
-    updateCurrentPrice()
-    updateCurrentPrices()
+    await updateCurrentPrice()
+    const cachedPrices = readCachedResult(cachedNamePrices)
+    if (!cachedPrices.tomorrowAvailable) {
+        await updateTodayAndTomorrowPrices()
+    }
 }
 
 const updateCurrentPrice = async () => {
@@ -31,41 +34,27 @@ const updateCurrentPrice = async () => {
     }
 }
 
-const updateCurrentPrices = async () => {
+const updateTodayAndTomorrowPrices = async () => {
 
     let prices = {
-        "info" : {},
         "today" : [],
         "tomorrow" : []
     }
 
-    const start = getTodaySpanStart()
-    const end = getTodaySpanEnd()
-
-    const todayJson = await getPricesJson(start, end)
+    const todayJson = await getPricesJson(getTodaySpanStart(), getTodaySpanEnd())
 
     if (todayJson.success == true) {
-        const currentJson = await getCurrentJson()
-        if (currentJson.success) {
-            prices.info.current = getPrice(currentJson.data[0].price)
-        }
-
         for (var i = 0; i < todayJson.data.fi.length; i++) {
             let priceRow = {start: getDate(todayJson.data.fi[i].timestamp), price: getPrice(todayJson.data.fi[i].price)}
             prices.today.push(priceRow)
         }
-
-        let tomorrowAvailable = false
         const tomorrowJson = await getPricesJson(getTomorrowSpanStart(), getTomorrowSpanEnd())
         if (tomorrowJson.success == true) {
-            tomorrowAvailable = tomorrowJson.data.fi.length >= 23
             for (var i = 0; i < tomorrowJson.data.fi.length; i++) {
-                let priceRow = {start: getDate(tomorrowJson.data.fi[i].timestamp), price: getPrice(tomorrowJson.data.fi[i].price)}
+                const priceRow = {start: getDate(tomorrowJson.data.fi[i].timestamp), price: getPrice(tomorrowJson.data.fi[i].price)}
                 prices.tomorrow.push(priceRow)
             }
         }
-        prices.info.tomorrowAvailable = tomorrowAvailable
-
         updateCachedResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
     } 
 }
@@ -73,7 +62,27 @@ const updateCurrentPrices = async () => {
 
 server.on('request', async (req, res) => {
     res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify(readCachedResult(req.url === '/current' ? cachedNameCurrent : cachedNamePrices)))
+
+    if (req.url === '/current') {
+        // Current price
+        res.end(JSON.stringify(readCachedResult(cachedNameCurrent)))
+    } else {
+        // Today and tomorrow prices
+        const prices = {
+            "info" : {},
+            ...readCachedResult(cachedNamePrices)
+        }
+        let currentPrice = getCurrentPriceFromTodayPrices(prices.today)
+        if (currentPrice === undefined) {
+            const currentJson = await getCurrentJson()
+            currentPrice = getPrice(currentJson.data[0].price)
+        }
+        prices.info.current = currentPrice
+
+        prices.info.tomorrowAvailable = prices.tomorrow.length >= 23
+        res.end(JSON.stringify(prices))
+    }
+
 });
 
 async function getPricesJson(start, end) {
@@ -160,11 +169,22 @@ function getPrice(inputPrice) {
     return Number((Number(inputPrice) / 1000) * vat).toFixed(5)
 }
 
+const getCurrentPriceFromTodayPrices = (todayPrices) => {
+    const currentHour = new Date().getHours()
+    let currentPrice = undefined
+    for (h = 0; h < todayPrices.length; h++) {
+        if (new Date(todayPrices[h].start).getHours() === currentHour) {
+            currentPrice = todayPrices[h].price
+        }
+    }
+    return currentPrice
+}
+
 // Server startup
 
 // Run every minute
 new cronJob("* * * * *", async function() {
-    await updatePrices()
+    updatePrices()
 }, null, true);
 
 // Run at every midnight
@@ -172,7 +192,7 @@ new cronJob("0 0 * * *", async function() {
     resetCacheFiles()
 }, null, true);
 
-
 resetCacheFiles()
 updatePrices()
+
 server.listen(8089);

@@ -90,7 +90,7 @@ server.on('request', async (req, res) => {
 });
 
 const isPriceListComplete = (priceList) => {
-    return priceList?.length >= 23
+    return priceList !== undefined && priceList.length >= 23
 }
 
 async function getPricesJson(start, end) {

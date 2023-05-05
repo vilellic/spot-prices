@@ -17,15 +17,28 @@ const cachedNamePrices = 'prices'
 var cronJob = require("cron").CronJob;
 
 const updatePrices = async () => {
-    await updateCurrentPrice()
+
     const cachedPrices = readCachedResult(cachedNamePrices)
-    if (!cachedPrices.tomorrowAvailable) {
-        await updateTodayAndTomorrowPrices()
+
+    let prices = {
+        "today" : cachedPrices.today,
+        "tomorrow" : cachedPrices.tomorrow
     }
+    if (!isPriceListComplete(cachedPrices.today)) {
+        prices.today = await updateDayPrices(getTodaySpanStart(), getTodaySpanEnd())
+    }
+    if (!isPriceListComplete(cachedPrices.tomorrow)) {
+        prices.tomorrow = await updateDayPrices(getTomorrowSpanStart(), getTomorrowSpanEnd())
+    }
+
+    updateCachedResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
+
+    await updateCurrentPrice()
+
 }
 
 const updateCurrentPrice = async () => {
-    let currentPrice = {}
+    const currentPrice = {}
     const json = await getCurrentJson();
     if (json.success == true) {
         currentPrice.price = getPrice(json.data[0].price)
@@ -34,31 +47,21 @@ const updateCurrentPrice = async () => {
     }
 }
 
-const updateTodayAndTomorrowPrices = async () => {
+const updateDayPrices = async (start, end) => {
 
-    let prices = {
-        "today" : [],
-        "tomorrow" : []
+    const prices = []
+
+    const pricesJson = await getPricesJson(start, end)
+    if (pricesJson.success == true) {
+        for (var i = 0; i < pricesJson.data.fi.length; i++) {
+            let priceRow = {start: getDate(pricesJson.data.fi[i].timestamp), price: getPrice(pricesJson.data.fi[i].price)}
+            prices.push(priceRow)
+        }
     }
 
-    const todayJson = await getPricesJson(getTodaySpanStart(), getTodaySpanEnd())
+    return prices
 
-    if (todayJson.success == true) {
-        for (var i = 0; i < todayJson.data.fi.length; i++) {
-            let priceRow = {start: getDate(todayJson.data.fi[i].timestamp), price: getPrice(todayJson.data.fi[i].price)}
-            prices.today.push(priceRow)
-        }
-        const tomorrowJson = await getPricesJson(getTomorrowSpanStart(), getTomorrowSpanEnd())
-        if (tomorrowJson.success == true) {
-            for (var i = 0; i < tomorrowJson.data.fi.length; i++) {
-                const priceRow = {start: getDate(tomorrowJson.data.fi[i].timestamp), price: getPrice(tomorrowJson.data.fi[i].price)}
-                prices.tomorrow.push(priceRow)
-            }
-        }
-        updateCachedResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
-    } 
 }
-
 
 server.on('request', async (req, res) => {
     res.writeHead(200, {'Content-Type': 'application/json'});
@@ -74,16 +77,21 @@ server.on('request', async (req, res) => {
         }
         let currentPrice = getCurrentPriceFromTodayPrices(prices.today)
         if (currentPrice === undefined) {
+            // Current price was not found for some reason. Fallback to call API to fetch price
             const currentJson = await getCurrentJson()
             currentPrice = getPrice(currentJson.data[0].price)
         }
         prices.info.current = currentPrice
 
-        prices.info.tomorrowAvailable = prices.tomorrow.length >= 23
+        prices.info.tomorrowAvailable = isPriceListComplete(prices.tomorrow)
         res.end(JSON.stringify(prices))
     }
 
 });
+
+const isPriceListComplete = (priceList) => {
+    return priceList?.length >= 23
+}
 
 async function getPricesJson(start, end) {
     const url = "https://dashboard.elering.ee/api/nps/price?start=" + start + "&end=" + end;
@@ -170,6 +178,9 @@ function getPrice(inputPrice) {
 }
 
 const getCurrentPriceFromTodayPrices = (todayPrices) => {
+    if (todayPrices === undefined) {
+        return undefined
+    }
     const currentHour = new Date().getHours()
     let currentPrice = undefined
     for (h = 0; h < todayPrices.length; h++) {

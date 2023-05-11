@@ -35,8 +35,7 @@ const updateTodayAndTomorrowPrices = async () => {
         prices.tomorrow = await updateDayPrices(getTomorrowSpanStart(), getTomorrowSpanEnd())
     }
 
-    spotCache.set(cachedNamePrices, prices)
-    updateStoredResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
+    savePrices(cachedNamePrices, prices)
 
 }
 
@@ -46,9 +45,13 @@ const updateCurrentPrice = async () => {
     if (json.success == true) {
         currentPrice.price = getPrice(json.data[0].price)
         currentPrice.time = getDate(json.data[0].timestamp)
-        spotCache.set(cachedNameCurrent, currentPrice)
-        updateStoredResultWhenChanged(cachedNameCurrent, JSON.stringify(currentPrice))
+        savePrices(cachedNameCurrent, currentPrice)
     }
+}
+
+function savePrices(name, json) {
+    spotCache.set(name, json)
+    updateStoredResultWhenChanged(name, JSON.stringify(json))
 }
 
 const updateDayPrices = async (start, end) => {
@@ -224,7 +227,9 @@ new cronJob("0 * * * *", async function() {
 
 // Run at every midnight
 new cronJob("0 0 * * *", async function() {
+    console.log(spotCache.getStats())
     spotCache.flushAll()
+    console.log("Cache has been flushed")
 }, null, true);
 
 initializeStoredFiles()

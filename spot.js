@@ -1,5 +1,6 @@
 const http = require('http');
 const moment = require('moment');
+const NodeCache = require( "node-cache" );
 
 const server = http.createServer();
 
@@ -10,15 +11,18 @@ const settings = { method: "Get" };
 
 const { readFileSync } = require('fs');
 const { writeFileSync } = require('fs');
+const { existsSync } = require('fs');
 
 const cachedNameCurrent = 'current'
 const cachedNamePrices = 'prices'
 
 var cronJob = require("cron").CronJob;
 
+const spotCache = new NodeCache();
+
 const updateTodayAndTomorrowPrices = async () => {
 
-    const cachedPrices = readCachedResult(cachedNamePrices)
+    const cachedPrices = spotCache.get(cachedNamePrices)
 
     let prices = {
         "today" : cachedPrices.today,
@@ -31,7 +35,8 @@ const updateTodayAndTomorrowPrices = async () => {
         prices.tomorrow = await updateDayPrices(getTomorrowSpanStart(), getTomorrowSpanEnd())
     }
 
-    updateCachedResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
+    spotCache.set(cachedNamePrices, prices)
+    updateStoredResultWhenChanged(cachedNamePrices, JSON.stringify(prices))
 
 }
 
@@ -41,7 +46,8 @@ const updateCurrentPrice = async () => {
     if (json.success == true) {
         currentPrice.price = getPrice(json.data[0].price)
         currentPrice.time = getDate(json.data[0].timestamp)
-        updateCachedResultWhenChanged(cachedNameCurrent, JSON.stringify(currentPrice))
+        spotCache.set(cachedNameCurrent, currentPrice)
+        updateStoredResultWhenChanged(cachedNameCurrent, JSON.stringify(currentPrice))
     }
 }
 
@@ -66,12 +72,12 @@ server.on('request', async (req, res) => {
 
     if (req.url === '/current') {
         // Current price
-        res.end(JSON.stringify(readCachedResult(cachedNameCurrent)))
+        res.end(JSON.stringify(spotCache.get(cachedNameCurrent)))
     } else {
         // Today and tomorrow prices
         const prices = {
             "info" : {},
-            ...readCachedResult(cachedNamePrices)
+            ...spotCache.get(cachedNamePrices)
         }
         let currentPrice = getCurrentPriceFromTodayPrices(prices.today)
         if (currentPrice === undefined) {
@@ -108,31 +114,25 @@ async function getCurrentJson() {
     return json
 }
 
-function resetCacheFiles() {
-    writeCachedResult(cachedNameCurrent, "{}")
-    writeCachedResult(cachedNamePrices, "[]")
-    console.log("Cache files have been reset")
-}
-
-function writeCachedResult(name, content) {
+function writeToDisk(name, content) {
    try {
-      writeFileSync('./' + name + '.json', content, 'utf8');
-      console.log('Updated cached result to disk');
+      writeFileSync(getStoredResultFileName(name), content, 'utf8');
+      console.log('Updated result to disk = ' + name);
    } catch (error) {
       console.log('An error has occurred ', error);
    }
 }
 
-function readCachedResult(name) {
-   const data = readFileSync('./' + name + '.json');
+function readStoredResult(name) {
+   const data = readFileSync(getStoredResultFileName(name));
    return JSON.parse(data);
 }
 
-function updateCachedResultWhenChanged(name, updatedResult) {
-   const cachedResult = JSON.stringify(readCachedResult(name))
+function updateStoredResultWhenChanged(name, updatedResult) {
+   const storedResult = JSON.stringify(readStoredResult(name))
 
-   if (updatedResult !== cachedResult) {
-      writeCachedResult(name, updatedResult)
+   if (updatedResult !== storedResult) {
+      writeToDisk(name, updatedResult)
    }
 
 }
@@ -189,6 +189,27 @@ const getCurrentPriceFromTodayPrices = (todayPrices) => {
     return currentPrice
 }
 
+function getStoredResultFileName(name) {
+    return './' + name + '.json'
+}
+
+function initializeStoredFiles() {
+    if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices))) {
+        writeToDisk(cachedNameCurrent, "{}")
+        writeToDisk(cachedNamePrices, "[]")
+        console.log("Stored files have been initialized")    
+    }
+}
+
+function initializeCacheFromDisk() {
+    if (!spotCache.has(cachedNameCurrent)) {
+        spotCache.set(cachedNameCurrent, readStoredResult(cachedNameCurrent))
+    }
+    if (!spotCache.has(cachedNamePrices)) {
+        spotCache.set(cachedNamePrices, readStoredResult(cachedNamePrices))
+    }
+}
+
 // Server startup
 
 // Run every minute
@@ -203,10 +224,11 @@ new cronJob("0 * * * *", async function() {
 
 // Run at every midnight
 new cronJob("0 0 * * *", async function() {
-    resetCacheFiles()
+    spotCache.flushAll()
 }, null, true);
 
-resetCacheFiles()
+initializeStoredFiles()
+initializeCacheFromDisk()
 updateTodayAndTomorrowPrices()
 updateCurrentPrice()
 

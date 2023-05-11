@@ -35,7 +35,7 @@ const updateTodayAndTomorrowPrices = async () => {
         prices.tomorrow = await updateDayPrices(getTomorrowSpanStart(), getTomorrowSpanEnd())
     }
 
-    savePrices(cachedNamePrices, prices)
+    spotCache.set(cachedNamePrices, prices)
 
 }
 
@@ -45,14 +45,13 @@ const updateCurrentPrice = async () => {
     if (json.success == true) {
         currentPrice.price = getPrice(json.data[0].price)
         currentPrice.time = getDate(json.data[0].timestamp)
-        savePrices(cachedNameCurrent, currentPrice)
+        spotCache.set(cachedNameCurrent, currentPrice)
     }
 }
 
-function savePrices(name, json) {
-    spotCache.set(name, json)
-    updateStoredResultWhenChanged(name, JSON.stringify(json))
-}
+spotCache.on( "set", function( key, value ){
+    updateStoredResultWhenChanged(key, JSON.stringify(value))
+});
 
 const updateDayPrices = async (start, end) => {
 
@@ -89,8 +88,13 @@ server.on('request', async (req, res) => {
             currentPrice = getPrice(currentJson.data[0].price)
         }
         prices.info.current = currentPrice
-
         prices.info.tomorrowAvailable = isPriceListComplete(prices.tomorrow)
+
+        prices.info.averageToday = getAveragePrice(prices.today)
+        if (prices.info.tomorrowAvailable) {
+            prices.info.averageTomorrow = getAveragePrice(prices.tomorrow)
+        }
+        
         res.end(JSON.stringify(prices))
     }
 
@@ -190,6 +194,13 @@ const getCurrentPriceFromTodayPrices = (todayPrices) => {
         }
     }
     return currentPrice
+}
+
+const getAveragePrice = (pricesList) => {
+    const prices = pricesList.map(row => Number(row.price))
+    const sum = prices.reduce((acc, price) => acc + price, 0)
+    const avg = sum / prices.length
+    return Number((avg).toFixed(5)).toString()
 }
 
 function getStoredResultFileName(name) {

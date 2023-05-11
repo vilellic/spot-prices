@@ -1,0 +1,11 @@
+https://stackoverflow.com/questions/23830002/how-do-you-implement-periodically-executing-job
+
+* pitäiskö vaihtaa niin että
+  - cronjob päivittää hinnat tiedostoihin, vaikka 5 minuutin välein
+  - ja kun päivitetty niin ei tartte croni jobittaa enää
+* serveri palauttaa valmiiksi pureskellut hinnat
+* tiedostoissa voisi olla vaan today + tomorrow tallennettuina
+* home assistant voisi päivittää vain tunnin välein tilanteen
+   * tai miksei 30 sek. välein kun cachetettu
+
+* tän hetkisen hinnan voisi tsekata today-taulukosta, että olisi aina ajantasalla

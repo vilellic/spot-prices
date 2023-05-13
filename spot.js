@@ -24,8 +24,8 @@ const updateTodayAndTomorrowPrices = async () => {
   const cachedPrices = spotCache.get(cachedNamePrices)
 
   const prices = {
-    today: cachedPrices.today,
-    tomorrow: cachedPrices.tomorrow
+    today: cachedPrices.today || [],
+    tomorrow: cachedPrices.tomorrow || []
   }
   if (!isPriceListComplete(cachedPrices.today)) {
     prices.today = await updateDayPrices(getTodaySpanStart(), getTodaySpanEnd())

@@ -22,12 +22,17 @@ const spotCache = new NodeCache()
 
 const updateTodayAndTomorrowPrices = async () => {
   const cachedPrices = spotCache.get(cachedNamePrices)
-  // handle miss
+
+  if (cachedPrices === undefined) {
+    cachedPrices.today = []
+    cachedPrices.tomorrow = []
+  }
 
   const prices = {
-    today: cachedPrices.today || [],
-    tomorrow: cachedPrices.tomorrow || []
+    today: cachedPrices.today,
+    tomorrow: cachedPrices.tomorrow
   }
+
   if (!isPriceListComplete(cachedPrices.today)) {
     prices.today = await updateDayPrices(getTodaySpanStart(), getTodaySpanEnd())
   }
@@ -71,12 +76,23 @@ server.on('request', async (req, res) => {
 
   if (req.url === '/current') {
     // Current price
-    res.end(JSON.stringify(spotCache.get(cachedNameCurrent)))
-  } else {
+    let currentPrice = spotCache.get(cachedNameCurrent)
+    if (currentPrice === undefined || Object.keys(currentPrice).length === 0) {
+      await updateCurrentPrice()
+      currentPrice = spotCache.get(cachedNameCurrent)
+    }
+    res.end(JSON.stringify(currentPrice))
+  } else if (req.url === '/') {
     // Today and tomorrow prices
+    let cachedPrices = spotCache.get(cachedNamePrices)
+    if (cachedPrices === undefined || cachedPrices.length === 0) {
+      await updateTodayAndTomorrowPrices()
+      cachedPrices = spotCache.get(cachedNamePrices)
+    }
+
     const prices = {
       info: {},
-      ...spotCache.get(cachedNamePrices)
+      ...cachedPrices
     }
     let currentPrice = getCurrentPriceFromTodayPrices(prices.today)
     if (currentPrice === undefined) {

@@ -22,6 +22,7 @@ const spotCache = new NodeCache()
 
 const updateTodayAndTomorrowPrices = async () => {
   const cachedPrices = spotCache.get(cachedNamePrices)
+  // handle miss
 
   const prices = {
     today: cachedPrices.today || [],
@@ -202,10 +203,14 @@ function getStoredResultFileName (name) {
 
 function initializeStoredFiles () {
   if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices))) {
-    writeToDisk(cachedNameCurrent, '{}')
-    writeToDisk(cachedNamePrices, '[]')
+    resetStoredFiles()
     console.log('Stored files have been initialized')
   }
+}
+
+function resetStoredFiles () {
+  writeToDisk(cachedNameCurrent, '{}')
+  writeToDisk(cachedNamePrices, '[]')
 }
 
 function initializeCacheFromDisk () {
@@ -247,6 +252,7 @@ new CronJob(
 new CronJob(
   '0 0 * * *',
   function () {
+    resetStoredFiles()
     console.log(spotCache.getStats())
     spotCache.flushAll()
     console.log('Cache has been flushed')

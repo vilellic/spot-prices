@@ -81,9 +81,6 @@ server.on('request', async (req, res) => {
       currentPrice = spotCache.get(cachedNameCurrent)
     }
     res.end(JSON.stringify(currentPrice))
-  } else if (req.url === '/reset') {
-    resetPrices()
-    res.end('OK')
   } else if (req.url === '/') {
     // Today and tomorrow prices
     let cachedPrices = spotCache.get(cachedNamePrices)
@@ -251,6 +248,7 @@ function resetPrices () {
 
 const timeZone = 'Europe/Helsinki'
 
+// every minute
 // eslint-disable-next-line no-new
 new CronJob(
   '* * * * *',
@@ -262,6 +260,7 @@ new CronJob(
   timeZone
 )
 
+// every hour
 // eslint-disable-next-line no-new
 new CronJob(
   '0 * * * *',
@@ -273,11 +272,14 @@ new CronJob(
   timeZone
 )
 
+// at midnight
 // eslint-disable-next-line no-new
 new CronJob(
   '0 0 * * *',
   function () {
     resetPrices()
+    updateTodayAndTomorrowPrices()
+    updateCurrentPrice()
   },
   null,
   true,

@@ -21,11 +21,10 @@ const CronJob = require('cron').CronJob
 const spotCache = new NodeCache()
 
 const updateTodayAndTomorrowPrices = async () => {
-  const cachedPrices = spotCache.get(cachedNamePrices)
+  let cachedPrices = spotCache.get(cachedNamePrices)
 
   if (cachedPrices === undefined) {
-    cachedPrices.today = []
-    cachedPrices.tomorrow = []
+    cachedPrices = { today: [], tomorrow: [] }
   }
 
   const prices = {

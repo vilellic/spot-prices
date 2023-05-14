@@ -81,6 +81,9 @@ server.on('request', async (req, res) => {
       currentPrice = spotCache.get(cachedNameCurrent)
     }
     res.end(JSON.stringify(currentPrice))
+  } else if (req.url === '/reset') {
+    resetPrices()
+    res.end('OK')
   } else if (req.url === '/') {
     // Today and tomorrow prices
     let cachedPrices = spotCache.get(cachedNamePrices)
@@ -237,6 +240,13 @@ function initializeCacheFromDisk () {
   }
 }
 
+function resetPrices () {
+  resetStoredFiles()
+  console.log(spotCache.getStats())
+  spotCache.flushAll()
+  console.log('Cache has been flushed')
+}
+
 // Server startup
 
 const timeZone = 'Europe/Helsinki'
@@ -267,10 +277,7 @@ new CronJob(
 new CronJob(
   '0 0 * * *',
   function () {
-    resetStoredFiles()
-    console.log(spotCache.getStats())
-    spotCache.flushAll()
-    console.log('Cache has been flushed')
+    resetPrices()
   },
   null,
   true,

@@ -21,12 +21,17 @@ const CronJob = require('cron').CronJob
 const spotCache = new NodeCache()
 
 const updateTodayAndTomorrowPrices = async () => {
-  const cachedPrices = spotCache.get(cachedNamePrices)
+  let cachedPrices = spotCache.get(cachedNamePrices)
+
+  if (cachedPrices === undefined) {
+    cachedPrices = { today: [], tomorrow: [] }
+  }
 
   const prices = {
     today: cachedPrices.today,
     tomorrow: cachedPrices.tomorrow
   }
+
   if (!isPriceListComplete(cachedPrices.today)) {
     prices.today = await updateDayPrices(getTodaySpanStart(), getTodaySpanEnd())
   }
@@ -70,12 +75,23 @@ server.on('request', async (req, res) => {
 
   if (req.url === '/current') {
     // Current price
-    res.end(JSON.stringify(spotCache.get(cachedNameCurrent)))
-  } else {
+    let currentPrice = spotCache.get(cachedNameCurrent)
+    if (currentPrice === undefined || Object.keys(currentPrice).length === 0) {
+      await updateCurrentPrice()
+      currentPrice = spotCache.get(cachedNameCurrent)
+    }
+    res.end(JSON.stringify(currentPrice))
+  } else if (req.url === '/') {
     // Today and tomorrow prices
+    let cachedPrices = spotCache.get(cachedNamePrices)
+    if (cachedPrices === undefined || cachedPrices.length === 0) {
+      await updateTodayAndTomorrowPrices()
+      cachedPrices = spotCache.get(cachedNamePrices)
+    }
+
     const prices = {
       info: {},
-      ...spotCache.get(cachedNamePrices)
+      ...cachedPrices
     }
     let currentPrice = getCurrentPriceFromTodayPrices(prices.today)
     if (currentPrice === undefined) {
@@ -202,10 +218,14 @@ function getStoredResultFileName (name) {
 
 function initializeStoredFiles () {
   if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices))) {
-    writeToDisk(cachedNameCurrent, '{}')
-    writeToDisk(cachedNamePrices, '[]')
+    resetStoredFiles()
     console.log('Stored files have been initialized')
   }
+}
+
+function resetStoredFiles () {
+  writeToDisk(cachedNameCurrent, '{}')
+  writeToDisk(cachedNamePrices, '[]')
 }
 
 function initializeCacheFromDisk () {
@@ -217,10 +237,18 @@ function initializeCacheFromDisk () {
   }
 }
 
+function resetPrices () {
+  resetStoredFiles()
+  console.log(spotCache.getStats())
+  spotCache.flushAll()
+  console.log('Cache has been flushed')
+}
+
 // Server startup
 
 const timeZone = 'Europe/Helsinki'
 
+// every minute
 // eslint-disable-next-line no-new
 new CronJob(
   '* * * * *',
@@ -232,6 +260,7 @@ new CronJob(
   timeZone
 )
 
+// every hour
 // eslint-disable-next-line no-new
 new CronJob(
   '0 * * * *',
@@ -243,13 +272,14 @@ new CronJob(
   timeZone
 )
 
+// at midnight
 // eslint-disable-next-line no-new
 new CronJob(
   '0 0 * * *',
   function () {
-    console.log(spotCache.getStats())
-    spotCache.flushAll()
-    console.log('Cache has been flushed')
+    resetPrices()
+    updateTodayAndTomorrowPrices()
+    updateCurrentPrice()
   },
   null,
   true,

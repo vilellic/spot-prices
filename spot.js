@@ -142,11 +142,9 @@ const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTra
   ]
 
   if (offPeakTransferPrice && peakTransferPrice) {
-    console.log('offPeakTransferPrice = ' + offPeakTransferPrice)
-    console.log('peakTransferPrice = ' + peakTransferPrice)
-    for (let f = 0; f < pricesFlat; f++) {
+    for (let f = 0; f < pricesFlat.length; f++) {
       const hour = new Date(pricesFlat[f].start).getHours()
-      pricesFlat(f).price = pricesFlat(f).price + ((hour >= 22 && hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
+      pricesFlat[f].price = Number(pricesFlat[f].price) + ((hour >= 22 || hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
     }
   }
 

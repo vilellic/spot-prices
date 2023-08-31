@@ -73,6 +73,8 @@ const updateDayPrices = async (start, end) => {
 server.on('request', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
 
+  console.log("request url = " + req.url)
+
   if (req.url === '/current') {
     // Current price
     let currentPrice = spotCache.get(cachedNameCurrent)
@@ -108,8 +110,70 @@ server.on('request', async (req, res) => {
     }
 
     res.end(JSON.stringify(prices))
+  } else if (req.url.startsWith('/query')) {
+
+    const parsed = new URL(req.url, `http://${req.headers.host}`);
+
+    const numberOfHours = Number(parsed.searchParams.get('hours'))
+    const startHour = Number(parsed.searchParams.get('startHour'))
+    const endHour = Number(parsed.searchParams.get('endHour'))
+    const highPrices = Number(parsed.searchParams.get('highPrices'))
+    const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
+    const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
+
+    if (numberOfHours) {
+      
+      const queriedHours = getHoursQuery(numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice)
+
+      res.end(JSON.stringify({ queriedHours}))
+
+    } else {
+
+      res.end(JSON.stringify({ lowestPrice: -1}))
+
+    }
+
+  } else {
+    res.end("No handler for this path")
   }
 })
+
+const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice) => {
+  const cachedPrices = spotCache.get(cachedNamePrices)
+  const pricesFlat = [
+    ...cachedPrices.today,
+    ...cachedPrices.tomorrow,
+  ]
+
+  if (offPeakTransferPrice && peakTransferPrice) {
+    for (let f = 0; f < pricesFlat; f++) {
+      const hour = new Date(pricesFlat[f].start).getHours()
+      pricesFlat(f).price = pricesFlat(f).price + ((hour >= 22 && hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
+    }
+  }
+
+  pricesFlat.sort((a, b) => {
+    if (a.price > b.price) return 1
+    else if (a.price < b.price) return -1
+    else return 0
+  })
+
+  if (highPrices) {
+    pricesFlat.reverse()
+  }
+
+  const slicedHours = pricesFlat.slice(0, numberOfHours)
+
+  slicedHours.sort((a, b) => {
+    if (a.start > b.start) return 1
+    else if (a.start < b.start) return -1
+    else return 0
+  })
+
+  const hours = slicedHours.map((entry) => moment(entry.start).format('ddd') + ' ' + new Date(entry.start).getHours())
+  return hours
+
+}
 
 const isPriceListComplete = (priceList) => {
   return priceList !== undefined && priceList.length >= 23

@@ -12,9 +12,11 @@ const settings = { method: 'Get' }
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
+const { time } = require('console')
 
 const cachedNameCurrent = 'current'
 const cachedNamePrices = 'prices'
+const cachedNameYesterday = 'yesterday'
 
 const CronJob = require('cron').CronJob
 
@@ -114,14 +116,14 @@ server.on('request', async (req, res) => {
     const parsed = new URL(req.url, `http://${req.headers.host}`)
 
     const numberOfHours = Number(parsed.searchParams.get('hours'))
-    const startHour = Number(parsed.searchParams.get('startHour'))
-    const endHour = Number(parsed.searchParams.get('endHour'))
+    const startTime = Number(parsed.searchParams.get('startTime'))
+    const endTime = Number(parsed.searchParams.get('endTime'))
     const highPrices = parsed.searchParams.get('highPrices')
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = getHoursQuery(numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice)
+      const hours = getHoursQuery(numberOfHours, startTime, endTime, highPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
       res.end(JSON.stringify({ lowestPrice: -1 }))
@@ -132,39 +134,48 @@ server.on('request', async (req, res) => {
   }
 })
 
-// http://localhost:8089/query?hours=6&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445
-
-const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice) => {
+const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTransferPrice, peakTransferPrice) => {
   const cachedPrices = spotCache.get(cachedNamePrices)
+  const cachedPricesYesterday = spotCache.get(cachedNameYesterday)
   const pricesFlat = [
+    ...cachedPricesYesterday,
     ...cachedPrices.today,
     ...cachedPrices.tomorrow
   ]
 
+  for (let p = 0; p < pricesFlat.length; p++) {
+    console.log(JSON.stringify(pricesFlat[p]))
+  }
+
+  const startTimeDate = getDate(startTime)
+  const endTimeDate = getDate(endTime)
+
+  const timeFilteredPrices = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
+
   if (offPeakTransferPrice && peakTransferPrice) {
-    for (let f = 0; f < pricesFlat.length; f++) {
-      const hour = new Date(pricesFlat[f].start).getHours()
-      pricesFlat[f].price = Number(pricesFlat[f].price) + ((hour >= 22 || hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
+    for (let f = 0; f < timeFilteredPrices.length; f++) {
+      const hour = new Date(timeFilteredPrices[f].start).getHours()
+      timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
     }
   }
 
-  pricesFlat.sort((a, b) => {
-    if (a.price > b.price) return 1
-    else if (a.price < b.price) return -1
+  timeFilteredPrices.sort((a, b) => {
+    if (a.priceWithTransfer > b.priceWithTransfer) return 1
+    else if (a.priceWithTransfer < b.priceWithTransfer) return -1
     else return 0
   })
 
   if (highPrices) {
-    pricesFlat.reverse()
+    timeFilteredPrices.reverse()
   }
 
-  const slicedHours = pricesFlat.slice(0, numberOfHours)
+  const slicedHours = timeFilteredPrices.slice(0, numberOfHours)
 
-  slicedHours.sort((a, b) => {
-    if (a.start > b.start) return 1
-    else if (a.start < b.start) return -1
-    else return 0
-  })
+  sortByDate(slicedHours)
+
+  const onlyPrices = slicedHours.map((entry) => entry.price)
+  const lowestPrice = Math.min(...onlyPrices)
+  const highestPrice = Math.max(...onlyPrices)
 
   const hours = slicedHours.map((entry) => getWeekdayAndHourStr(entry.start))
 
@@ -173,8 +184,21 @@ const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTra
 
   return {
     hours,
-    info: { now: currentHourIsInList }
+    info: {
+      now: currentHourIsInList,
+      min: lowestPrice,
+      max: highestPrice,
+      avg: Number(getAveragePrice(slicedHours))
+    }
   }
+}
+
+const sortByDate = (array) => {
+  array.sort((a, b) => {
+    if (a.start > b.start) return 1
+    else if (a.start < b.start) return -1
+    else return 0
+  })
 }
 
 const isPriceListComplete = (priceList) => {
@@ -287,7 +311,7 @@ function getStoredResultFileName (name) {
 }
 
 function initializeStoredFiles () {
-  if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices))) {
+  if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices)) || !existsSync(getStoredResultFileName(cachedNameYesterday))) {
     resetStoredFiles()
     console.log('Stored files have been initialized')
   }
@@ -296,6 +320,7 @@ function initializeStoredFiles () {
 function resetStoredFiles () {
   writeToDisk(cachedNameCurrent, '{}')
   writeToDisk(cachedNamePrices, '[]')
+  writeToDisk(cachedNameYesterday, '[]')
 }
 
 function initializeCacheFromDisk () {
@@ -305,13 +330,18 @@ function initializeCacheFromDisk () {
   if (!spotCache.has(cachedNamePrices)) {
     spotCache.set(cachedNamePrices, readStoredResult(cachedNamePrices))
   }
+  if (!spotCache.has(cachedNameYesterday)) {
+    spotCache.set(cachedNameYesterday, readStoredResult(cachedNameYesterday))
+  }
 }
 
 function resetPrices () {
+  const copyOfTodaysPrices = [...spotCache.get(cachedNamePrices).today]
   resetStoredFiles()
   console.log(spotCache.getStats())
   spotCache.flushAll()
-  console.log('Cache has been flushed')
+  spotCache.set(cachedNameYesterday, copyOfTodaysPrices)
+  console.log('Cache has been flushed and yesterdays values are updated')
 }
 
 // Server startup

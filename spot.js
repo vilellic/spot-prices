@@ -73,7 +73,7 @@ const updateDayPrices = async (start, end) => {
 server.on('request', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
 
-  console.log("request url = " + req.url)
+  console.log('request url = ' + req.url)
 
   if (req.url === '/current') {
     // Current price
@@ -111,41 +111,39 @@ server.on('request', async (req, res) => {
 
     res.end(JSON.stringify(prices))
   } else if (req.url.startsWith('/query')) {
-
-    const parsed = new URL(req.url, `http://${req.headers.host}`);
+    const parsed = new URL(req.url, `http://${req.headers.host}`)
 
     const numberOfHours = Number(parsed.searchParams.get('hours'))
     const startHour = Number(parsed.searchParams.get('startHour'))
     const endHour = Number(parsed.searchParams.get('endHour'))
-    const highPrices = Number(parsed.searchParams.get('highPrices'))
+    const highPrices = parsed.searchParams.get('highPrices')
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      
-      const queriedHours = getHoursQuery(numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice)
-
-      res.end(JSON.stringify({ queriedHours}))
-
+      const hours = getHoursQuery(numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice)
+      res.end(JSON.stringify(hours))
     } else {
-
-      res.end(JSON.stringify({ lowestPrice: -1}))
-
+      res.end(JSON.stringify({ lowestPrice: -1 }))
     }
-
   } else {
-    res.end("No handler for this path")
+    res.statusCode = 404
+    res.end('Not found')
   }
 })
+
+// http://localhost:8089/query?hours=6&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445
 
 const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTransferPrice, peakTransferPrice) => {
   const cachedPrices = spotCache.get(cachedNamePrices)
   const pricesFlat = [
     ...cachedPrices.today,
-    ...cachedPrices.tomorrow,
+    ...cachedPrices.tomorrow
   ]
 
   if (offPeakTransferPrice && peakTransferPrice) {
+    console.log('offPeakTransferPrice = ' + offPeakTransferPrice)
+    console.log('peakTransferPrice = ' + peakTransferPrice)
     for (let f = 0; f < pricesFlat; f++) {
       const hour = new Date(pricesFlat[f].start).getHours()
       pricesFlat(f).price = pricesFlat(f).price + ((hour >= 22 && hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
@@ -170,9 +168,15 @@ const getHoursQuery = (numberOfHours, startHour, endHour, highPrices, offPeakTra
     else return 0
   })
 
-  const hours = slicedHours.map((entry) => moment(entry.start).format('ddd') + ' ' + new Date(entry.start).getHours())
-  return hours
+  const hours = slicedHours.map((entry) => getWeekdayAndHourStr(entry.start))
 
+  const currentHourDateStr = getWeekdayAndHourStr(new Date())
+  const currentHourIsInList = hours.includes(currentHourDateStr)
+
+  return {
+    hours,
+    info: { now: currentHourIsInList }
+  }
 }
 
 const isPriceListComplete = (priceList) => {
@@ -249,6 +253,10 @@ function getDate (timestamp) {
   const timestampNumber = Number(timestamp * 1000)
   const momentDate = moment(new Date(timestampNumber))
   return momentDate.format('YYYY-MM-DDTHH:mm:ssZZ')
+}
+
+const getWeekdayAndHourStr = (date) => {
+  return moment(date).format('ddd') + ' ' + new Date(date).getHours()
 }
 
 function getPrice (inputPrice) {

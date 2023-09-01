@@ -12,7 +12,7 @@ const settings = { method: 'Get' }
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
-const { time } = require('console')
+require('console')
 
 const cachedNameCurrent = 'current'
 const cachedNamePrices = 'prices'
@@ -162,11 +162,11 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
     if (useTransferPrices) {
       if (a.priceWithTransfer > b.priceWithTransfer) return 1
       else if (a.priceWithTransfer < b.priceWithTransfer) return -1
-      else return 0  
+      else return 0
     } else {
       if (a.price > b.price) return 1
       else if (a.price < b.price) return -1
-      else return 0  
+      else return 0
     }
   })
 
@@ -283,7 +283,7 @@ function getDate (timestamp) {
 }
 
 const getWeekdayAndHourStr = (date) => {
-  return moment(date).format('ddd') + ' ' + new Date(date).getHours()
+  return new Date(date).getHours() + ' ' + moment(date).format('ddd')
 }
 
 function getPrice (inputPrice) {

@@ -154,7 +154,7 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
     useTransferPrices = true
     for (let f = 0; f < timeFilteredPrices.length; f++) {
       const hour = new Date(timeFilteredPrices[f].start).getHours()
-      timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
+      timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ? offPeakTransferPrice : peakTransferPrice)
     }
   }
 

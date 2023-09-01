@@ -148,7 +148,10 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
 
   const timeFilteredPrices = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
 
+  let useTransferPrices = false
+
   if (offPeakTransferPrice && peakTransferPrice) {
+    useTransferPrices = true
     for (let f = 0; f < timeFilteredPrices.length; f++) {
       const hour = new Date(timeFilteredPrices[f].start).getHours()
       timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour <= 7) ? offPeakTransferPrice : peakTransferPrice)
@@ -156,9 +159,15 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
   }
 
   timeFilteredPrices.sort((a, b) => {
-    if (a.priceWithTransfer > b.priceWithTransfer) return 1
-    else if (a.priceWithTransfer < b.priceWithTransfer) return -1
-    else return 0
+    if (useTransferPrices) {
+      if (a.priceWithTransfer > b.priceWithTransfer) return 1
+      else if (a.priceWithTransfer < b.priceWithTransfer) return -1
+      else return 0  
+    } else {
+      if (a.price > b.price) return 1
+      else if (a.price < b.price) return -1
+      else return 0  
+    }
   })
 
   if (highPrices) {

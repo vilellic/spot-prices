@@ -143,10 +143,6 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
     ...cachedPrices.tomorrow
   ]
 
-  for (let p = 0; p < pricesFlat.length; p++) {
-    console.log(JSON.stringify(pricesFlat[p]))
-  }
-
   const startTimeDate = getDate(startTime)
   const endTimeDate = getDate(endTime)
 

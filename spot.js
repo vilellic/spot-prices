@@ -12,6 +12,11 @@ const settings = { method: 'Get' }
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
+
+require('log-timestamp')(function () {
+  return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s'
+})
+
 require('console')
 
 const cachedNameCurrent = 'current'
@@ -74,8 +79,7 @@ const updateDayPrices = async (start, end) => {
 
 server.on('request', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
-
-  console.log('request url = ' + req.url)
+  console.log('Request url = ' + `http://${req.headers.host}` + req.url)
 
   if (req.url === '/current') {
     // Current price

@@ -163,15 +163,9 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
   }
 
   timeFilteredPrices.sort((a, b) => {
-    if (useTransferPrices) {
-      if (a.priceWithTransfer > b.priceWithTransfer) return 1
-      else if (a.priceWithTransfer < b.priceWithTransfer) return -1
-      else return 0
-    } else {
-      if (a.price > b.price) return 1
-      else if (a.price < b.price) return -1
-      else return 0
-    }
+    return useTransferPrices
+      ? (a.priceWithTransfer - b.priceWithTransfer)
+      : (a.price - b.price)
   })
 
   if (highPrices) {

@@ -130,7 +130,7 @@ server.on('request', async (req, res) => {
       const hours = getHoursQuery(numberOfHours, startTime, endTime, highPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
-      res.end(JSON.stringify({ lowestPrice: -1 }))
+      res.end(JSON.stringify({ hours: 'unavailable' }))
     }
   } else {
     res.statusCode = 404

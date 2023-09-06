@@ -170,17 +170,13 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, weightedPr
     const weightArray = []
     const weightDivider = 10 / numberOfHours
     let index = 0
-    console.log('weighDivider = ' + weightDivider)
     for (let i = 10; i > weightDivider; i = i - weightDivider) {
       weightArray[index] = i
       index++
-      console.log('i = ' + i)
     }
     if (weightArray.length === numberOfHours - 1) {
       weightArray.push(weightDivider)
     }
-    console.log(JSON.stringify(weightArray))
-    console.log('hours = ' + numberOfHours + ', items = ' + weightArray.length)
 
     const lastTestIndex = timeFilteredPrices.length - numberOfHours
     const weightedResults = []
@@ -188,12 +184,23 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, weightedPr
       if (t > lastTestIndex) {
         break
       } else {
-        weightedResults[t] = calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t)
+        weightedResults[t] = {
+          start: timeFilteredPrices[t].start,
+          weightedResult: calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t)
+        }
       }
     }
-    console.log('weightedResults = ' + JSON.stringify(weightedResults))
+    
+    const minWeightedResult = weightedResults.reduce((min, w) => w.weightedResult < min.weightedResult ? w : min, weightedResults[0])
+    
+    if (minWeightedResult !== undefined) {
+      const indexOfWeightedResultFirstHour = findIndexWithDate(timeFilteredPrices, minWeightedResult.start)
+      let runningIndex = indexOfWeightedResultFirstHour
+      for (let a = 0; a < numberOfHours; a++) {
+        hoursArray.push(timeFilteredPrices[runningIndex++])
+      }  
+    }
 
-    console.log('timeFilteredPrices = ' + JSON.stringify(timeFilteredPrices))
   } else {
     timeFilteredPrices.sort((a, b) => {
       return useTransferPrices
@@ -230,10 +237,19 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, weightedPr
   }
 }
 
+const findIndexWithDate = (datePriceArray, date) => {
+  for (let i = 0; i < datePriceArray.length; i++) {
+    if (datePriceArray[i].start === date) {
+      return i
+    }
+  }
+  return undefined
+}
+
 const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index) => {
   let result = 0
-  for (let i = index, w = 0; i < numberOfHours; i++) {
-    result += weightArray[w] * timeFilteredPrices[i].price
+  for (let i = 0; i < numberOfHours; i++) {
+    result += timeFilteredPrices[index + i].priceWithTransfer * weightArray[i]
   }
   return result
 }

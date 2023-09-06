@@ -59,7 +59,3 @@ module.exports = {
     }
 
   };
-  
-  // private methods
-  var zemba = function () {
-  }

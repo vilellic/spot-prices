@@ -20,16 +20,17 @@ require('log-timestamp')(function () {
 
 require('console')
 
-const cachedNameCurrent = 'current'
-const cachedNamePrices = 'prices'
-const cachedNameYesterday = 'yesterday'
+var constants = require("./constants");
+var utils = require("./utils");
+var dateUtils = require("./dateUtils");
+var queryProcessor = require('./queryProcessor')
 
 const CronJob = require('cron').CronJob
 
 const spotCache = new NodeCache()
 
 const updateTodayAndTomorrowPrices = async () => {
-  let cachedPrices = spotCache.get(cachedNamePrices)
+  let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
 
   if (cachedPrices === undefined) {
     cachedPrices = { today: [], tomorrow: [] }
@@ -41,13 +42,13 @@ const updateTodayAndTomorrowPrices = async () => {
   }
 
   if (!isPriceListComplete(cachedPrices.today)) {
-    prices.today = await updateDayPrices(getTodaySpanStart(), getTodaySpanEnd())
+    prices.today = await updateDayPrices(dateUtils.getTodaySpanStart(), dateUtils.getTodaySpanEnd())
   }
   if (!isPriceListComplete(cachedPrices.tomorrow)) {
-    prices.tomorrow = await updateDayPrices(getTomorrowSpanStart(), getTomorrowSpanEnd())
+    prices.tomorrow = await updateDayPrices(dateUtils.getTomorrowSpanStart(), dateUtils.getTomorrowSpanEnd())
   }
 
-  spotCache.set(cachedNamePrices, prices)
+  spotCache.set(constants.CACHED_NAME_PRICES, prices)
 }
 
 const updateCurrentPrice = async () => {
@@ -55,8 +56,8 @@ const updateCurrentPrice = async () => {
   const json = await getCurrentJson()
   if (json.success === true) {
     currentPrice.price = getPrice(json.data[0].price)
-    currentPrice.time = getDate(json.data[0].timestamp)
-    spotCache.set(cachedNameCurrent, currentPrice)
+    currentPrice.time = dateUtils.getDate(json.data[0].timestamp)
+    spotCache.set(constants.CACHED_NAME_CURRENT, currentPrice)
   }
 }
 
@@ -70,7 +71,7 @@ const updateDayPrices = async (start, end) => {
   const pricesJson = await getPricesJson(start, end)
   if (pricesJson.success === true) {
     for (let i = 0; i < pricesJson.data.fi.length; i++) {
-      const priceRow = { start: getDate(pricesJson.data.fi[i].timestamp), price: getPrice(pricesJson.data.fi[i].price) }
+      const priceRow = { start: dateUtils.getDate(pricesJson.data.fi[i].timestamp), price: getPrice(pricesJson.data.fi[i].price) }
       prices.push(priceRow)
     }
   }
@@ -84,18 +85,18 @@ server.on('request', async (req, res) => {
 
   if (req.url === '/current') {
     // Current price
-    let currentPrice = spotCache.get(cachedNameCurrent)
+    let currentPrice = spotCache.get(constants.CACHED_NAME_CURRENT)
     if (currentPrice === undefined || Object.keys(currentPrice).length === 0) {
       await updateCurrentPrice()
-      currentPrice = spotCache.get(cachedNameCurrent)
+      currentPrice = spotCache.get(constants.CACHED_NAME_CURRENT)
     }
     res.end(JSON.stringify(currentPrice))
   } else if (req.url === '/') {
     // Today and tomorrow prices
-    let cachedPrices = spotCache.get(cachedNamePrices)
+    let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
     if (cachedPrices === undefined || cachedPrices.length === 0) {
       await updateTodayAndTomorrowPrices()
-      cachedPrices = spotCache.get(cachedNamePrices)
+      cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
     }
 
     const prices = {
@@ -111,9 +112,9 @@ server.on('request', async (req, res) => {
     prices.info.current = currentPrice
     prices.info.tomorrowAvailable = isPriceListComplete(prices.tomorrow)
 
-    prices.info.averageToday = getAveragePrice(prices.today)
+    prices.info.averageToday = utils.getAveragePrice(prices.today)
     if (prices.info.tomorrowAvailable) {
-      prices.info.averageTomorrow = getAveragePrice(prices.tomorrow)
+      prices.info.averageTomorrow = utils.getAveragePrice(prices.tomorrow)
     }
 
     res.end(JSON.stringify(prices))
@@ -129,7 +130,7 @@ server.on('request', async (req, res) => {
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = getHoursQuery(numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
+      const hours = queryProcessor.getHours(spotCache, numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
       res.end(JSON.stringify({ hours: 'unavailable' }))
@@ -139,128 +140,6 @@ server.on('request', async (req, res) => {
     res.end('Not found')
   }
 })
-
-const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice) => {
-  const cachedPrices = spotCache.get(cachedNamePrices)
-  const cachedPricesYesterday = spotCache.get(cachedNameYesterday)
-  const pricesFlat = [
-    ...cachedPricesYesterday,
-    ...cachedPrices.today,
-    ...cachedPrices.tomorrow
-  ]
-
-  const startTimeDate = getDate(startTime)
-  const endTimeDate = getDate(endTime)
-
-  const timeFilteredPrices = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
-
-  let useTransferPrices = false
-
-  if (offPeakTransferPrice && peakTransferPrice) {
-    useTransferPrices = true
-    for (let f = 0; f < timeFilteredPrices.length; f++) {
-      const hour = new Date(timeFilteredPrices[f].start).getHours()
-      timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ? offPeakTransferPrice : peakTransferPrice)
-    }
-  }
-
-  let hoursArray = []
-
-  if (weightedPrices) {
-    const weightArray = []
-    const weightDivider = 10 / numberOfHours
-    let index = 0
-    for (let i = 10; i > weightDivider; i = i - weightDivider) {
-      weightArray[index] = i
-      index++
-    }
-    if (weightArray.length === numberOfHours - 1) {
-      weightArray.push(weightDivider)
-    }
-
-    const lastTestIndex = timeFilteredPrices.length - numberOfHours
-    const weightedResults = []
-    for (let t = 0; t < timeFilteredPrices.length; t++) {
-      if (t > lastTestIndex) {
-        break
-      } else {
-        weightedResults[t] = {
-          start: timeFilteredPrices[t].start,
-          weightedResult: calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t)
-        }
-      }
-    }
-    
-    const minWeightedResult = weightedResults.reduce((min, w) => w.weightedResult < min.weightedResult ? w : min, weightedResults[0])
-    
-    if (minWeightedResult !== undefined) {
-      const indexOfWeightedResultFirstHour = findIndexWithDate(timeFilteredPrices, minWeightedResult.start)
-      let runningIndex = indexOfWeightedResultFirstHour
-      for (let a = 0; a < numberOfHours; a++) {
-        hoursArray.push(timeFilteredPrices[runningIndex++])
-      }  
-    }
-
-  } else {
-    timeFilteredPrices.sort((a, b) => {
-      return useTransferPrices
-        ? (a.priceWithTransfer - b.priceWithTransfer)
-        : (a.price - b.price)
-    })
-
-    if (highPrices) {
-      timeFilteredPrices.reverse()
-    }
-
-    hoursArray = timeFilteredPrices.slice(0, numberOfHours)
-
-    sortByDate(hoursArray)
-  }
-
-  const onlyPrices = hoursArray.map((entry) => entry.price)
-  const lowestPrice = Math.min(...onlyPrices)
-  const highestPrice = Math.max(...onlyPrices)
-
-  const hours = hoursArray.map((entry) => getWeekdayAndHourStr(entry.start))
-
-  const currentHourDateStr = getWeekdayAndHourStr(new Date())
-  const currentHourIsInList = hours.includes(currentHourDateStr)
-
-  return {
-    hours,
-    info: {
-      now: currentHourIsInList,
-      min: lowestPrice,
-      max: highestPrice,
-      avg: Number(getAveragePrice(hoursArray))
-    }
-  }
-}
-
-const findIndexWithDate = (datePriceArray, date) => {
-  for (let i = 0; i < datePriceArray.length; i++) {
-    if (datePriceArray[i].start === date) {
-      return i
-    }
-  }
-  return undefined
-}
-
-const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index) => {
-  let result = 0
-  for (let i = 0; i < numberOfHours; i++) {
-    result += timeFilteredPrices[index + i].priceWithTransfer * weightArray[i]
-  }
-  return result
-}
-
-const sortByDate = (array) => {
-  array.sort((a, b) => {
-    if (a.start > b.start) return 1
-    else if (a.start < b.start) return -1
-    else return 0
-  })
-}
 
 const isPriceListComplete = (priceList) => {
   return priceList !== undefined && priceList.length >= 23
@@ -304,44 +183,6 @@ function updateStoredResultWhenChanged (name, updatedResult) {
   }
 }
 
-const getTodaySpanStart = () => {
-  const date = new Date()
-  date.setHours(0, 0, 0, 0)
-  return date.toISOString()
-}
-
-const getTodaySpanEnd = () => {
-  const date = new Date()
-  date.setHours(24, 0, 0, 0)
-  date.setMilliseconds(date.getMilliseconds() - 1)
-  return date.toISOString()
-}
-
-const getTomorrowSpanStart = () => {
-  const date = new Date()
-  date.setDate(date.getDate() + 1)
-  date.setHours(0, 0, 0, 0)
-  return date.toISOString()
-}
-
-const getTomorrowSpanEnd = () => {
-  const date = new Date()
-  date.setDate(date.getDate() + 1)
-  date.setHours(24, 0, 0, 0)
-  date.setMilliseconds(date.getMilliseconds() - 1)
-  return date.toISOString()
-}
-
-function getDate (timestamp) {
-  const timestampNumber = Number(timestamp * 1000)
-  const momentDate = moment(new Date(timestampNumber))
-  return momentDate.format('YYYY-MM-DDTHH:mm:ssZZ')
-}
-
-const getWeekdayAndHourStr = (date) => {
-  return new Date(date).getHours() + ' ' + moment(date).format('ddd')
-}
-
 function getPrice (inputPrice) {
   return Number((Number(inputPrice) / 1000) * vat).toFixed(5)
 }
@@ -360,48 +201,41 @@ const getCurrentPriceFromTodayPrices = (todayPrices) => {
   return currentPrice
 }
 
-const getAveragePrice = (pricesList) => {
-  const prices = pricesList.map(row => Number(row.price))
-  const sum = prices.reduce((acc, price) => acc + price, 0)
-  const avg = sum / prices.length
-  return Number((avg).toFixed(5)).toString()
-}
-
 function getStoredResultFileName (name) {
   return './' + name + '.json'
 }
 
 function initializeStoredFiles () {
-  if (!existsSync(getStoredResultFileName(cachedNameCurrent)) || !existsSync(getStoredResultFileName(cachedNamePrices)) || !existsSync(getStoredResultFileName(cachedNameYesterday))) {
+  if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_CURRENT)) || !existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES)) || !existsSync(getStoredResultFileName(constants.CACHED_NAME_YESTERDAY))) {
     resetStoredFiles()
     console.log('Stored files have been initialized')
   }
 }
 
 function resetStoredFiles () {
-  writeToDisk(cachedNameCurrent, '{}')
-  writeToDisk(cachedNamePrices, '[]')
-  writeToDisk(cachedNameYesterday, '[]')
+  writeToDisk(constants.CACHED_NAME_CURRENT, '{}')
+  writeToDisk(constants.CACHED_NAME_PRICES, '[]')
+  writeToDisk(constants.CACHED_NAME_YESTERDAY, '[]')
 }
 
 function initializeCacheFromDisk () {
-  if (!spotCache.has(cachedNameCurrent)) {
-    spotCache.set(cachedNameCurrent, readStoredResult(cachedNameCurrent))
+  if (!spotCache.has(constants.CACHED_NAME_CURRENT)) {
+    spotCache.set(constants.CACHED_NAME_CURRENT, readStoredResult(constants.CACHED_NAME_CURRENT))
   }
-  if (!spotCache.has(cachedNamePrices)) {
-    spotCache.set(cachedNamePrices, readStoredResult(cachedNamePrices))
+  if (!spotCache.has(constants.CACHED_NAME_PRICES)) {
+    spotCache.set(constants.CACHED_NAME_PRICES, readStoredResult(constants.CACHED_NAME_PRICES))
   }
-  if (!spotCache.has(cachedNameYesterday)) {
-    spotCache.set(cachedNameYesterday, readStoredResult(cachedNameYesterday))
+  if (!spotCache.has(constants.CACHED_NAME_YESTERDAY)) {
+    spotCache.set(constants.CACHED_NAME_YESTERDAY, readStoredResult(constants.CACHED_NAME_YESTERDAY))
   }
 }
 
 function resetPrices () {
-  const copyOfTodaysPrices = [...spotCache.get(cachedNamePrices).today]
+  const copyOfTodaysPrices = [...spotCache.get(constants.CACHED_NAME_PRICES).today]
   resetStoredFiles()
   console.log(spotCache.getStats())
   spotCache.flushAll()
-  spotCache.set(cachedNameYesterday, copyOfTodaysPrices)
+  spotCache.set(constants.CACHED_NAME_YESTERDAY, copyOfTodaysPrices)
   console.log('Cache has been flushed and yesterdays values are updated')
 }
 

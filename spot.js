@@ -12,6 +12,7 @@ const settings = { method: 'Get' }
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
+const { time } = require('console')
 
 require('log-timestamp')(function () {
   return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s'
@@ -123,11 +124,12 @@ server.on('request', async (req, res) => {
     const startTime = Number(parsed.searchParams.get('startTime'))
     const endTime = Number(parsed.searchParams.get('endTime'))
     const highPrices = parsed.searchParams.get('highPrices')
+    const weightedPrices = parsed.searchParams.get('weightedPrices')
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = getHoursQuery(numberOfHours, startTime, endTime, highPrices, offPeakTransferPrice, peakTransferPrice)
+      const hours = getHoursQuery(numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
       res.end(JSON.stringify({ hours: 'unavailable' }))
@@ -138,7 +140,7 @@ server.on('request', async (req, res) => {
   }
 })
 
-const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTransferPrice, peakTransferPrice) => {
+const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice) => {
   const cachedPrices = spotCache.get(cachedNamePrices)
   const cachedPricesYesterday = spotCache.get(cachedNameYesterday)
   const pricesFlat = [
@@ -162,25 +164,64 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
     }
   }
 
-  timeFilteredPrices.sort((a, b) => {
-    return useTransferPrices
-      ? (a.priceWithTransfer - b.priceWithTransfer)
-      : (a.price - b.price)
-  })
+  let hoursArray = []
 
-  if (highPrices) {
-    timeFilteredPrices.reverse()
+  if (weightedPrices) {
+    const weightArray = []
+    const weightDivider = 10 / numberOfHours
+    let index = 0
+    for (let i = 10; i > weightDivider; i = i - weightDivider) {
+      weightArray[index] = i
+      index++
+    }
+    if (weightArray.length === numberOfHours - 1) {
+      weightArray.push(weightDivider)
+    }
+
+    const lastTestIndex = timeFilteredPrices.length - numberOfHours
+    const weightedResults = []
+    for (let t = 0; t < timeFilteredPrices.length; t++) {
+      if (t > lastTestIndex) {
+        break
+      } else {
+        weightedResults[t] = {
+          start: timeFilteredPrices[t].start,
+          weightedResult: calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t)
+        }
+      }
+    }
+    
+    const minWeightedResult = weightedResults.reduce((min, w) => w.weightedResult < min.weightedResult ? w : min, weightedResults[0])
+    
+    if (minWeightedResult !== undefined) {
+      const indexOfWeightedResultFirstHour = findIndexWithDate(timeFilteredPrices, minWeightedResult.start)
+      let runningIndex = indexOfWeightedResultFirstHour
+      for (let a = 0; a < numberOfHours; a++) {
+        hoursArray.push(timeFilteredPrices[runningIndex++])
+      }  
+    }
+
+  } else {
+    timeFilteredPrices.sort((a, b) => {
+      return useTransferPrices
+        ? (a.priceWithTransfer - b.priceWithTransfer)
+        : (a.price - b.price)
+    })
+
+    if (highPrices) {
+      timeFilteredPrices.reverse()
+    }
+
+    hoursArray = timeFilteredPrices.slice(0, numberOfHours)
+
+    sortByDate(hoursArray)
   }
 
-  const slicedHours = timeFilteredPrices.slice(0, numberOfHours)
-
-  sortByDate(slicedHours)
-
-  const onlyPrices = slicedHours.map((entry) => entry.price)
+  const onlyPrices = hoursArray.map((entry) => entry.price)
   const lowestPrice = Math.min(...onlyPrices)
   const highestPrice = Math.max(...onlyPrices)
 
-  const hours = slicedHours.map((entry) => getWeekdayAndHourStr(entry.start))
+  const hours = hoursArray.map((entry) => getWeekdayAndHourStr(entry.start))
 
   const currentHourDateStr = getWeekdayAndHourStr(new Date())
   const currentHourIsInList = hours.includes(currentHourDateStr)
@@ -191,9 +232,26 @@ const getHoursQuery = (numberOfHours, startTime, endTime, highPrices, offPeakTra
       now: currentHourIsInList,
       min: lowestPrice,
       max: highestPrice,
-      avg: Number(getAveragePrice(slicedHours))
+      avg: Number(getAveragePrice(hoursArray))
     }
   }
+}
+
+const findIndexWithDate = (datePriceArray, date) => {
+  for (let i = 0; i < datePriceArray.length; i++) {
+    if (datePriceArray[i].start === date) {
+      return i
+    }
+  }
+  return undefined
+}
+
+const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index) => {
+  let result = 0
+  for (let i = 0; i < numberOfHours; i++) {
+    result += timeFilteredPrices[index + i].priceWithTransfer * weightArray[i]
+  }
+  return result
 }
 
 const sortByDate = (array) => {

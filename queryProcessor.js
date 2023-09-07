@@ -8,9 +8,8 @@ module.exports = {
     getHours: function (spotCache, numberOfHours, startTime, endTime, highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice) {
 
         const cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
-        const cachedPricesYesterday = spotCache.get(constants.CACHED_NAME_YESTERDAY)
         const pricesFlat = [
-            ...cachedPricesYesterday,
+            ...cachedPrices.yesterday,
             ...cachedPrices.today,
             ...cachedPrices.tomorrow
         ]

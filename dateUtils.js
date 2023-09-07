@@ -36,18 +36,19 @@ module.exports = {
     },
       
     getTomorrowSpanStart: function() {
-        const date = new Date()
-        date.setDate(date.getDate() + 1)
-        date.setHours(0, 0, 0, 0)
-        return date.toISOString()
+        return getDateSpanStartWithOffset(1)
     },
       
     getTomorrowSpanEnd: function() {
-        const date = new Date()
-        date.setDate(date.getDate() + 1)
-        date.setHours(24, 0, 0, 0)
-        date.setMilliseconds(date.getMilliseconds() - 1)
-        return date.toISOString()
+        return getDateSpanEndWithOffset(1)
+    },
+
+    getYesterdaySpanStart: function() {
+        return getDateSpanStartWithOffset(-1)
+    },
+      
+    getYesterdaySpanEnd: function() {
+        return getDateSpanEndWithOffset(-1)
     },
 
     sortByDate: function(array) {
@@ -59,3 +60,18 @@ module.exports = {
     }
 
   };
+
+const getDateSpanStartWithOffset = (offset) => {
+    const date = new Date()
+    date.setDate(date.getDate() + offset)
+    date.setHours(0, 0, 0, 0)
+    return date.toISOString()
+}
+
+const getDateSpanEndWithOffset = (offset) => {
+    const date = new Date()
+    date.setDate(date.getDate() + offset)
+    date.setHours(24, 0, 0, 0)
+    date.setMilliseconds(date.getMilliseconds() - 1)
+    return date.toISOString()
+}

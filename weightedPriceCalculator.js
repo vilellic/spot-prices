@@ -3,7 +3,7 @@ var dateUtils = require("./dateUtils");
 // public methods
 module.exports = {
 
-    getWeightedPrices: function(numberOfHours, timeFilteredPrices) {
+    getWeightedPrices: function(numberOfHours, timeFilteredPrices, useTransferPrices) {
 
         const hoursArray = []
 
@@ -26,7 +26,7 @@ module.exports = {
           } else {
             weightedResults[t] = {
               start: timeFilteredPrices[t].start,
-              weightedResult: calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t)
+              weightedResult: calculateWeightedResult(weightArray, numberOfHours, timeFilteredPrices, t, useTransferPrices)
             }
           }
         }
@@ -47,10 +47,11 @@ module.exports = {
 
 };
 
-const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index) => {
+const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index, useTransferPrices) => {
     let result = 0
     for (let i = 0; i < numberOfHours; i++) {
-      result += timeFilteredPrices[index + i].priceWithTransfer * weightArray[i]
+      const price = useTransferPrices ? timeFilteredPrices[index + i].priceWithTransfer : timeFilteredPrices[index + i].price
+      result += price * weightArray[i]
     }
     return result
 }

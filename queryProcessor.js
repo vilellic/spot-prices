@@ -33,7 +33,7 @@ module.exports = {
 
         if (weightedPrices) {
 
-            hoursArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices)
+            hoursArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices, useTransferPrices)
 
         } else {
             timeFilteredPrices.sort((a, b) => {

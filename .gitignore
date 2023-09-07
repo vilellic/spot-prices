@@ -132,3 +132,5 @@ dist
 # Custom
 prices.json
 current.json
+
+.vscode/*

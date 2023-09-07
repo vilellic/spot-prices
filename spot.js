@@ -30,10 +30,11 @@ const updatePrices = async () => {
   let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
 
   if (cachedPrices === undefined) {
-    cachedPrices = { 
+    cachedPrices = {
       yesterday: [],
-      today: [], 
-      tomorrow: [] }
+      today: [],
+      tomorrow: []
+    }
   }
 
   const prices = {
@@ -75,9 +76,9 @@ const updateDayPrices = async (start, end) => {
   const pricesJson = await getPricesJson(start, end)
   if (pricesJson.success === true) {
     for (let i = 0; i < pricesJson.data.fi.length; i++) {
-      const priceRow = { 
-        start: dateUtils.getDate(pricesJson.data.fi[i].timestamp), 
-        price: utils.getPrice(pricesJson.data.fi[i].price) 
+      const priceRow = {
+        start: dateUtils.getDate(pricesJson.data.fi[i].timestamp),
+        price: utils.getPrice(pricesJson.data.fi[i].price)
       }
       prices.push(priceRow)
     }
@@ -138,7 +139,7 @@ server.on('request', async (req, res) => {
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = queryProcessor.getHours(spotCache, numberOfHours, startTime, endTime, 
+      const hours = queryProcessor.getHours(spotCache, numberOfHours, startTime, endTime,
         highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
@@ -154,7 +155,7 @@ const isPriceListComplete = (priceList) => {
   return priceList !== undefined && priceList.length >= 23
 }
 
-async function getPricesJson (start, end) {
+async function getPricesJson(start, end) {
   const url = 'https://dashboard.elering.ee/api/nps/price?start=' + start + '&end=' + end
   const res = await fetch(url, settings)
   const json = await res.json()
@@ -162,7 +163,7 @@ async function getPricesJson (start, end) {
   return json
 }
 
-async function getCurrentJson () {
+async function getCurrentJson() {
   const url = 'https://dashboard.elering.ee/api/nps/price/FI/current'
   const res = await fetch(url, settings)
   const json = await res.json()
@@ -170,7 +171,7 @@ async function getCurrentJson () {
   return json
 }
 
-function writeToDisk (name, content) {
+function writeToDisk(name, content) {
   try {
     writeFileSync(getStoredResultFileName(name), content, 'utf8')
     console.log('Updated result to disk = ' + name)
@@ -179,12 +180,12 @@ function writeToDisk (name, content) {
   }
 }
 
-function readStoredResult (name) {
+function readStoredResult(name) {
   const data = readFileSync(getStoredResultFileName(name))
   return JSON.parse(data)
 }
 
-function updateStoredResultWhenChanged (name, updatedResult) {
+function updateStoredResultWhenChanged(name, updatedResult) {
   const storedResult = JSON.stringify(readStoredResult(name))
 
   if (updatedResult !== storedResult) {
@@ -192,24 +193,24 @@ function updateStoredResultWhenChanged (name, updatedResult) {
   }
 }
 
-function getStoredResultFileName (name) {
+function getStoredResultFileName(name) {
   return './' + name + '.json'
 }
 
-function initializeStoredFiles () {
-  if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_CURRENT)) || 
-      !existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
+function initializeStoredFiles() {
+  if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_CURRENT)) ||
+    !existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
     resetStoredFiles()
     console.log('Stored files have been initialized')
   }
 }
 
-function resetStoredFiles () {
+function resetStoredFiles() {
   writeToDisk(constants.CACHED_NAME_CURRENT, '{}')
   writeToDisk(constants.CACHED_NAME_PRICES, '[]')
 }
 
-function initializeCacheFromDisk () {
+function initializeCacheFromDisk() {
   if (!spotCache.has(constants.CACHED_NAME_CURRENT)) {
     spotCache.set(constants.CACHED_NAME_CURRENT, readStoredResult(constants.CACHED_NAME_CURRENT))
   }
@@ -218,7 +219,7 @@ function initializeCacheFromDisk () {
   }
 }
 
-function resetPrices () {
+function resetPrices() {
   resetStoredFiles()
   console.log(spotCache.getStats())
   spotCache.flushAll()

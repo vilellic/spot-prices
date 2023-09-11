@@ -4,7 +4,7 @@ const NodeCache = require('node-cache')
 
 const server = http.createServer()
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch';
 const settings = { method: 'Get' }
 
 const { readFileSync } = require('fs')
@@ -57,7 +57,10 @@ const updatePrices = async () => {
 }
 
 const updateCurrentPrice = async () => {
-  const currentPrice = {}
+  const currentPrice = {
+    price: Number,
+    time: Date,
+  }
   const json = await getCurrentJson()
   if (json.success === true) {
     currentPrice.price = utils.getPrice(json.data[0].price)
@@ -87,9 +90,23 @@ const updateDayPrices = async (start, end) => {
   return prices
 }
 
+interface PriceRow {
+  start: Date,
+  price: Number,
+}
+
+interface PricesContainer {
+  info: {
+    current: Number,
+    tomorrowAvailable2: boolean,
+  }
+  today: PriceRow[]
+  tomorrow: PriceRow[]
+}
+
 server.on('request', async (req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
-  console.log('Request url = ' + `http://${req.headers.host}` + req.url)
+  console.log('Request url, nauris = ' + `http://${req.headers.host}` + req.url)
 
   if (req.url === '/current') {
     // Current price
@@ -107,23 +124,27 @@ server.on('request', async (req, res) => {
       cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
     }
 
-    const prices = {
-      info: {},
-      today: cachedPrices.today,
-      tomorrow: cachedPrices.tomorrow,
-    }
-    let currentPrice = utils.getCurrentPriceFromTodayPrices(prices.today)
+    let currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today)
     if (currentPrice === undefined) {
       // Current price was not found for some reason. Fallback to call API to fetch price
       const currentJson = await getCurrentJson()
       currentPrice = utils.getPrice(currentJson.data[0].price)
     }
-    prices.info.current = currentPrice
-    prices.info.tomorrowAvailable = isPriceListComplete(prices.tomorrow)
 
+    /*
     prices.info.averageToday = utils.getAveragePrice(prices.today)
     if (prices.info.tomorrowAvailable) {
       prices.info.averageTomorrow = utils.getAveragePrice(prices.tomorrow)
+    }
+    */
+
+    const prices: PricesContainer = {
+      info: {
+        current: currentPrice,
+        tomorrowAvailable2: isPriceListComplete(cachedPrices.tomorrow),
+      },
+      today: cachedPrices.today,
+      tomorrow: cachedPrices.tomorrow
     }
 
     res.end(JSON.stringify(prices))

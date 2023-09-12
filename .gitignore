@@ -134,3 +134,4 @@ prices.json
 current.json
 
 .vscode/*
+build/

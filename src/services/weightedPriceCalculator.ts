@@ -1,12 +1,15 @@
-var dateUtils = require("./dateUtils");
+import { PriceRow, PriceRowWithTransfer } from "../types/types";
+
+var dateUtils = require("../utils/dateUtils");
 
 module.exports = {
 
-  getWeightedPrices: function (numberOfHours, timeFilteredPrices, useTransferPrices) {
+  getWeightedPrices: function (numberOfHours: number, 
+    timeFilteredPrices: PriceRowWithTransfer[], useTransferPrices: boolean) {
 
-    const hoursArray = []
+    const hoursArray = [] as PriceRowWithTransfer[]
 
-    const weightArray = []
+    const weightArray = [] as number[]
     const weightDivider = 10 / numberOfHours
     let index = 0
     for (let i = 10; i > weightDivider; i = i - weightDivider) {
@@ -46,7 +49,8 @@ module.exports = {
 
 };
 
-const calculateWeightedResult = (weightArray, numberOfHours, timeFilteredPrices, index, useTransferPrices) => {
+const calculateWeightedResult = (weightArray: number[], numberOfHours: number, 
+  timeFilteredPrices: PriceRowWithTransfer[], index: number, useTransferPrices: boolean) => {
   let result = 0
   for (let i = 0; i < numberOfHours; i++) {
     const price = useTransferPrices ? timeFilteredPrices[index + i].priceWithTransfer : timeFilteredPrices[index + i].price

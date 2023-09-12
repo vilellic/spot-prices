@@ -1,10 +1,12 @@
 const http = require('http')
+import { IncomingMessage, ServerResponse } from 'http';
 const moment = require('moment')
 const NodeCache = require('node-cache')
 
 const server = http.createServer()
 
-const fetch = require('node-fetch')
+import fetch from 'node-fetch';
+import { PriceRow, PricesContainer, SpotPrices } from './types/types';
 const settings = { method: 'Get' }
 
 const { readFileSync } = require('fs')
@@ -17,30 +19,31 @@ require('log-timestamp')(function () {
 
 require('console')
 
-var constants = require("./constants");
-var utils = require("./utils");
-var dateUtils = require("./dateUtils");
-var queryProcessor = require('./queryProcessor')
+var constants = require("./types/constants");
+var utils = require("./utils/utils");
+var dateUtils = require("./utils/dateUtils");
+var queryProcessor = require('./services/queryProcessor')
 
 const CronJob = require('cron').CronJob
 
 const spotCache = new NodeCache()
 
 const updatePrices = async () => {
-  let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
+  let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
 
+  let prices = {} as SpotPrices
   if (cachedPrices === undefined) {
     cachedPrices = {
       yesterday: [],
       today: [],
       tomorrow: []
+    } as SpotPrices
+  } else {
+    prices = {
+      today: cachedPrices.today,
+      tomorrow: cachedPrices.tomorrow,
+      yesterday: cachedPrices.yesterday
     }
-  }
-
-  const prices = {
-    today: cachedPrices.today,
-    tomorrow: cachedPrices.tomorrow,
-    yesterday: cachedPrices.yesterday
   }
 
   if (!isPriceListComplete(cachedPrices.today)) {
@@ -57,7 +60,10 @@ const updatePrices = async () => {
 }
 
 const updateCurrentPrice = async () => {
-  const currentPrice = {}
+  const currentPrice = {
+    price: Number,
+    time: Date,
+  }
   const json = await getCurrentJson()
   if (json.success === true) {
     currentPrice.price = utils.getPrice(json.data[0].price)
@@ -66,11 +72,11 @@ const updateCurrentPrice = async () => {
   }
 }
 
-spotCache.on('set', function (key, value) {
+spotCache.on('set', function (key: string, value: Object) {
   updateStoredResultWhenChanged(key, JSON.stringify(value))
 })
 
-const updateDayPrices = async (start, end) => {
+const updateDayPrices = async (start: string, end: string) => {
   const prices = []
 
   const pricesJson = await getPricesJson(start, end)
@@ -87,7 +93,7 @@ const updateDayPrices = async (start, end) => {
   return prices
 }
 
-server.on('request', async (req, res) => {
+server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
   console.log('Request url = ' + `http://${req.headers.host}` + req.url)
 
@@ -101,33 +107,35 @@ server.on('request', async (req, res) => {
     res.end(JSON.stringify(currentPrice))
   } else if (req.url === '/') {
     // Today and tomorrow prices
-    let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
-    if (cachedPrices === undefined || cachedPrices.length === 0) {
+    let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+    if (cachedPrices === undefined || cachedPrices.today.length === 0) {
       await updatePrices()
       cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
     }
 
-    const prices = {
-      info: {},
-      today: cachedPrices.today,
-      tomorrow: cachedPrices.tomorrow,
-    }
-    let currentPrice = utils.getCurrentPriceFromTodayPrices(prices.today)
+    let currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today)
     if (currentPrice === undefined) {
       // Current price was not found for some reason. Fallback to call API to fetch price
       const currentJson = await getCurrentJson()
       currentPrice = utils.getPrice(currentJson.data[0].price)
     }
-    prices.info.current = currentPrice
-    prices.info.tomorrowAvailable = isPriceListComplete(prices.tomorrow)
 
-    prices.info.averageToday = utils.getAveragePrice(prices.today)
-    if (prices.info.tomorrowAvailable) {
-      prices.info.averageTomorrow = utils.getAveragePrice(prices.tomorrow)
+    const tomorrowAvailable = isPriceListComplete(cachedPrices.tomorrow)
+    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(cachedPrices.tomorrow) } : []
+
+    const prices: PricesContainer = {
+      info: {
+        current: currentPrice,
+        averageToday: utils.getAveragePrice(cachedPrices.today),
+        ...avgTomorrowArray,
+        tomorrowAvailable: tomorrowAvailable,
+      },
+      today: cachedPrices.today,
+      tomorrow: cachedPrices.tomorrow
     }
 
     res.end(JSON.stringify(prices))
-  } else if (req.url.startsWith('/query')) {
+  } else if (req.url?.startsWith('/query')) {
     const parsed = new URL(req.url, `http://${req.headers.host}`)
 
     const numberOfHours = Number(parsed.searchParams.get('hours'))
@@ -139,7 +147,8 @@ server.on('request', async (req, res) => {
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = queryProcessor.getHours(spotCache, numberOfHours, startTime, endTime,
+      const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+      const hours = queryProcessor.getHours(spotPrices, numberOfHours, startTime, endTime,
         highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {
@@ -151,11 +160,11 @@ server.on('request', async (req, res) => {
   }
 })
 
-const isPriceListComplete = (priceList) => {
+const isPriceListComplete = (priceList: PriceRow[]) => {
   return priceList !== undefined && priceList.length >= 23
 }
 
-async function getPricesJson(start, end) {
+async function getPricesJson(start: string, end: string) {
   const url = 'https://dashboard.elering.ee/api/nps/price?start=' + start + '&end=' + end
   const res = await fetch(url, settings)
   const json = await res.json()
@@ -171,7 +180,7 @@ async function getCurrentJson() {
   return json
 }
 
-function writeToDisk(name, content) {
+function writeToDisk(name: string, content: string) {
   try {
     writeFileSync(getStoredResultFileName(name), content, 'utf8')
     console.log('Updated result to disk = ' + name)
@@ -180,12 +189,12 @@ function writeToDisk(name, content) {
   }
 }
 
-function readStoredResult(name) {
+function readStoredResult(name: string) {
   const data = readFileSync(getStoredResultFileName(name))
   return JSON.parse(data)
 }
 
-function updateStoredResultWhenChanged(name, updatedResult) {
+function updateStoredResultWhenChanged(name: string, updatedResult: string) {
   const storedResult = JSON.stringify(readStoredResult(name))
 
   if (updatedResult !== storedResult) {
@@ -193,7 +202,7 @@ function updateStoredResultWhenChanged(name, updatedResult) {
   }
 }
 
-function getStoredResultFileName(name) {
+function getStoredResultFileName(name: string) {
   return './' + name + '.json'
 }
 

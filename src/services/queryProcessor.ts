@@ -8,10 +8,9 @@ var dateUtils = require("../utils/dateUtils");
 
 module.exports = {
 
-  getHours: function (spotCache: NodeCache, numberOfHours: number, startTime: string, endTime: string, 
+  getHours: function (cachedPrices: SpotPrices, numberOfHours: number, startTime: string, endTime: string, 
     highPrices: boolean, weightedPrices: boolean, offPeakTransferPrice: number, peakTransferPrice: number) {
 
-    const cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
     const pricesFlat = [
       ...cachedPrices.yesterday,
       ...cachedPrices.today,

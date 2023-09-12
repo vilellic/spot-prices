@@ -147,7 +147,8 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
-      const hours = queryProcessor.getHours(spotCache, numberOfHours, startTime, endTime,
+      const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+      const hours = queryProcessor.getHours(spotPrices, numberOfHours, startTime, endTime,
         highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
       res.end(JSON.stringify(hours))
     } else {

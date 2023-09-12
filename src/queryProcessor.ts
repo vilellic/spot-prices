@@ -1,3 +1,6 @@
+import NodeCache from "node-cache";
+import { PriceRow, PriceRowWithTransfer, SpotPrices } from "./constants";
+
 var weightedPriceCalculator = require('./weightedPriceCalculator')
 var constants = require("./constants");
 var utils = require("./utils");
@@ -5,15 +8,15 @@ var dateUtils = require("./dateUtils");
 
 module.exports = {
 
-  getHours: function (spotCache, numberOfHours, startTime, endTime, 
-    highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice) {
+  getHours: function (spotCache: NodeCache, numberOfHours: number, startTime: string, endTime: string, 
+    highPrices: boolean, weightedPrices: boolean, offPeakTransferPrice: number, peakTransferPrice: number) {
 
-    const cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES)
+    const cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
     const pricesFlat = [
       ...cachedPrices.yesterday,
       ...cachedPrices.today,
       ...cachedPrices.tomorrow
-    ]
+    ] as PriceRowWithTransfer[]
 
     const startTimeDate = dateUtils.getDate(startTime)
     const endTimeDate = dateUtils.getDate(endTime)
@@ -52,11 +55,11 @@ module.exports = {
       dateUtils.sortByDate(hoursArray)
     }
 
-    const onlyPrices = hoursArray.map((entry) => entry.price)
+    const onlyPrices = hoursArray.map((entry: PriceRow) => entry.price)
     const lowestPrice = Math.min(...onlyPrices)
     const highestPrice = Math.max(...onlyPrices)
 
-    const hours = hoursArray.map((entry) => dateUtils.getWeekdayAndHourStr(entry.start))
+    const hours = hoursArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start))
 
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date())
     const currentHourIsInList = hours.includes(currentHourDateStr)

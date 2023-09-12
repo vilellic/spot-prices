@@ -1,18 +1,21 @@
+import { PriceRow } from "./constants";
+
+var constants = require("./constants");
 const moment = require('moment')
 
 module.exports = {
 
-  getDate: function (timestamp) {
+  getDate: function (timestamp: number) {
     const timestampNumber = Number(timestamp * 1000)
     const momentDate = moment(new Date(timestampNumber))
     return momentDate.format('YYYY-MM-DDTHH:mm:ssZZ')
   },
 
-  getWeekdayAndHourStr: function (date) {
+  getWeekdayAndHourStr: function (date: Date) {
     return new Date(date).getHours() + ' ' + moment(date).format('ddd')
   },
 
-  findIndexWithDate: function (datePriceArray, date) {
+  findIndexWithDate: function (datePriceArray: PriceRow[], date: Date) {
     for (let i = 0; i < datePriceArray.length; i++) {
       if (datePriceArray[i].start === date) {
         return i
@@ -50,7 +53,7 @@ module.exports = {
     return getDateSpanEndWithOffset(-1)
   },
 
-  sortByDate: function (array) {
+  sortByDate: function (array: PriceRow[]) {
     array.sort((a, b) => {
       if (a.start > b.start) return 1
       else if (a.start < b.start) return -1
@@ -60,14 +63,14 @@ module.exports = {
 
 };
 
-const getDateSpanStartWithOffset = (offset) => {
+const getDateSpanStartWithOffset = (offset: number) => {
   const date = new Date()
   date.setDate(date.getDate() + offset)
   date.setHours(0, 0, 0, 0)
   return date.toISOString()
 }
 
-const getDateSpanEndWithOffset = (offset) => {
+const getDateSpanEndWithOffset = (offset: number) => {
   const date = new Date()
   date.setDate(date.getDate() + offset)
   date.setHours(24, 0, 0, 0)

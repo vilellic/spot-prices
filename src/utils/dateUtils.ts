@@ -24,16 +24,11 @@ module.exports = {
   },
 
   getTodaySpanStart: function () {
-    const date = new Date()
-    date.setHours(0, 0, 0, 0)
-    return date.toISOString()
+    return getDateSpanStartWithOffset(0)
   },
 
   getTodaySpanEnd: function () {
-    const date = new Date()
-    date.setHours(24, 0, 0, 0)
-    date.setMilliseconds(date.getMilliseconds() - 1)
-    return date.toISOString()
+    return getDateSpanEndWithOffset(0)
   },
 
   getTomorrowSpanStart: function () {

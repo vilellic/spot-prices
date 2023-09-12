@@ -6,7 +6,7 @@ const NodeCache = require('node-cache')
 const server = http.createServer()
 
 import fetch from 'node-fetch';
-import { PriceRow, PricesContainer, SpotPrices } from './constants';
+import { PriceRow, PricesContainer, SpotPrices } from './types/types';
 const settings = { method: 'Get' }
 
 const { readFileSync } = require('fs')
@@ -19,10 +19,10 @@ require('log-timestamp')(function () {
 
 require('console')
 
-var constants = require("./constants");
-var utils = require("./utils");
-var dateUtils = require("./dateUtils");
-var queryProcessor = require('./queryProcessor')
+var constants = require("./types/constants");
+var utils = require("./utils/utils");
+var dateUtils = require("./utils/dateUtils");
+var queryProcessor = require('./services/queryProcessor')
 
 const CronJob = require('cron').CronJob
 

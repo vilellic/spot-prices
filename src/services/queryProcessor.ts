@@ -1,10 +1,10 @@
 import NodeCache from "node-cache";
-import { PriceRow, PriceRowWithTransfer, SpotPrices } from "./constants";
+import { PriceRow, PriceRowWithTransfer, SpotPrices } from "../types/types";
 
 var weightedPriceCalculator = require('./weightedPriceCalculator')
-var constants = require("./constants");
-var utils = require("./utils");
-var dateUtils = require("./dateUtils");
+var constants = require("../types/constants");
+var utils = require("../utils/utils");
+var dateUtils = require("../utils/dateUtils");
 
 module.exports = {
 

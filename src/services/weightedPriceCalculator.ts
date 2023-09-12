@@ -1,6 +1,6 @@
-import { PriceRow, PriceRowWithTransfer } from "./constants";
+import { PriceRow, PriceRowWithTransfer } from "../types/types";
 
-var dateUtils = require("./dateUtils");
+var dateUtils = require("../utils/dateUtils");
 
 module.exports = {
 

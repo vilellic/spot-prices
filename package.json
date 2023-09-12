@@ -4,7 +4,6 @@
   "description": "With this Node.js server finnish electricity spot prices can be served to Home Assistant using REST platform to read data from local server.",
   "main": "spot.js",
   "dependencies": {
-    "@types/jest": "^29.5.4",
     "clone": "^2.1.2",
     "cron": "^2.3.0",
     "log-timestamp": "^0.3.0",
@@ -17,6 +16,8 @@
     "whatwg-url": "^5.0.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.4",
     "@types/node": "^10.17.60",
     "@types/node-fetch": "^2.6.4",
     "eslint": "^8.40.0",
@@ -25,6 +26,7 @@
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.6.4",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   },
   "scripts": {

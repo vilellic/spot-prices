@@ -1,6 +1,5 @@
-import { PriceRow } from "./constants";
-
-var constants = require("./constants");
+import { PriceRow } from "../types/types";
+var constants = require("../types/constants");
 const moment = require('moment')
 
 module.exports = {

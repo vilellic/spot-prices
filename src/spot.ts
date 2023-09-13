@@ -22,7 +22,7 @@ require('console')
 var constants = require("./types/constants");
 var utils = require("./utils/utils");
 var dateUtils = require("./utils/dateUtils");
-var queryProcessor = require('./services/queryProcessor')
+var query = require('./services/query')
 
 const CronJob = require('cron').CronJob
 
@@ -152,7 +152,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
         peakTransfer: peakTransferPrice
       } : undefined
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-      const hours = queryProcessor.getHours(spotPrices, numberOfHours, startTime, endTime,
+      const hours = query.getHours(spotPrices, numberOfHours, startTime, endTime,
         highPrices, weightedPrices, transferPrices)
       res.end(JSON.stringify(hours))
     } else {

@@ -1,18 +1,33 @@
 import { HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from "../types/types";
 
-var weightedPriceCalculator = require('./weightedPriceCalculator')
+var weighted = require('./weighted')
 var utils = require("../utils/utils");
 var dateUtils = require("../utils/dateUtils");
 
+export interface GetHoursParameters {
+  spotPrices: SpotPrices,
+  numberOfHours: number,
+  startTime: Date,
+  endTime: Date,
+  queryMode: QueryMode,
+  transferPrices?: TransferPrices
+}
+
+const enum QueryMode {
+  LowestPrices = 1,
+  HighestPrices = 2,
+  WeightedPrices = 3,
+}
+
 module.exports = {
 
-  getHours: function (cachedPrices: SpotPrices, numberOfHours: number, startTime: string, endTime: string, 
-    highPrices: boolean, weightedPrices: boolean, transferPrices?: TransferPrices) : HoursContainer {
+  getHours: function({spotPrices, numberOfHours, startTime, endTime, 
+    queryMode, transferPrices}: GetHoursParameters) : HoursContainer {
 
     const pricesFlat = [
-      ...cachedPrices.yesterday,
-      ...cachedPrices.today,
-      ...cachedPrices.tomorrow
+      ...spotPrices.yesterday,
+      ...spotPrices.today,
+      ...spotPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
     const startTimeDate: Date = dateUtils.getDate(startTime)
@@ -30,9 +45,9 @@ module.exports = {
 
     let resultArray: PriceRowWithTransfer[] = []
 
-    if (weightedPrices) {
+    if (queryMode === QueryMode.WeightedPrices) {
 
-      resultArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices, transferPrices !== undefined)
+      resultArray = weighted.getWeightedPrices(numberOfHours, timeFilteredPrices, transferPrices !== undefined)
 
     } else {
       timeFilteredPrices.sort((a, b) => {
@@ -41,7 +56,7 @@ module.exports = {
           : (a.price - b.price)
       })
 
-      if (highPrices) {
+      if (queryMode === QueryMode.HighestPrices) {
         timeFilteredPrices.reverse()
       }
 

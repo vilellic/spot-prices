@@ -7,7 +7,7 @@ var dateUtils = require("../utils/dateUtils");
 module.exports = {
 
   getHours: function (cachedPrices: SpotPrices, numberOfHours: number, startTime: string, endTime: string, 
-    highPrices: boolean, weightedPrices: boolean, transferPrices: TransferPrices) : HoursContainer {
+    highPrices: boolean, weightedPrices: boolean, transferPrices?: TransferPrices) : HoursContainer {
 
     const pricesFlat = [
       ...cachedPrices.yesterday,

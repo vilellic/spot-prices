@@ -6,7 +6,7 @@ const NodeCache = require('node-cache')
 const server = http.createServer()
 
 import fetch from 'node-fetch';
-import { PriceRow, PricesContainer, SpotPrices } from './types/types';
+import { PriceRow, PricesContainer, SpotPrices, TransferPrices } from './types/types';
 const settings = { method: 'Get' }
 
 const { readFileSync } = require('fs')
@@ -147,9 +147,13 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
     if (numberOfHours) {
+      const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
+        offPeakTransfer: offPeakTransferPrice,
+        peakTransfer: peakTransferPrice
+      } : undefined
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
       const hours = queryProcessor.getHours(spotPrices, numberOfHours, startTime, endTime,
-        highPrices, weightedPrices, offPeakTransferPrice, peakTransferPrice)
+        highPrices, weightedPrices, transferPrices)
       res.end(JSON.stringify(hours))
     } else {
       res.end(JSON.stringify({ hours: 'unavailable' }))

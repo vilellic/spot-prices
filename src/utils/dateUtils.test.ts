@@ -1,6 +1,6 @@
 import {describe, expect, test} from '@jest/globals';
 
-var dateUtils = require("../utils/dateUtils");
+var dateUtils = require("./dateUtils");
 
 const fixedFakeDate = new Date('2023-08-22')
 

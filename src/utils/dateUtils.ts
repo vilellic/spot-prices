@@ -1,5 +1,4 @@
 import { PriceRow } from "../types/types";
-var constants = require("../types/constants");
 const moment = require('moment')
 
 module.exports = {
@@ -24,27 +23,33 @@ module.exports = {
   },
 
   getTodaySpanStart: function () {
-    return getDateSpanStartWithOffset(0)
+    return getDateSpanStartWithOffset(new Date(), 0).toISOString()
   },
 
   getTodaySpanEnd: function () {
-    return getDateSpanEndWithOffset(0)
+    return getDateSpanEndWithOffset(new Date(), 0).toISOString()
   },
 
   getTomorrowSpanStart: function () {
-    return getDateSpanStartWithOffset(1)
+    return getDateSpanStartWithOffset(new Date(), 1).toISOString()
   },
 
   getTomorrowSpanEnd: function () {
-    return getDateSpanEndWithOffset(1)
+    return getDateSpanEndWithOffset(new Date(), 1).toISOString()
   },
 
   getYesterdaySpanStart: function () {
-    return getDateSpanStartWithOffset(-1)
+    return getDateSpanStartWithOffset(new Date(), -1).toISOString()
   },
 
   getYesterdaySpanEnd: function () {
-    return getDateSpanEndWithOffset(-1)
+    return getDateSpanEndWithOffset(new Date(), -1).toISOString()
+  },
+
+  getTimestampFromHourStarting: function(date: Date, offset: number, hour: number): number {
+    date.setDate(date.getDate() + offset)
+    date.setHours(hour, 0, 0, 0)
+    return date.getTime() / 1000
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -53,21 +58,19 @@ module.exports = {
       else if (a.start < b.start) return -1
       else return 0
     })
-  }
+  },
 
 };
 
-const getDateSpanStartWithOffset = (offset: number) => {
-  const date = new Date()
+const getDateSpanStartWithOffset = (date: Date, offset: number) => {
   date.setDate(date.getDate() + offset)
   date.setHours(0, 0, 0, 0)
-  return date.toISOString()
+  return date
 }
 
-const getDateSpanEndWithOffset = (offset: number) => {
-  const date = new Date()
+const getDateSpanEndWithOffset = (date: Date, offset: number) => {
   date.setDate(date.getDate() + offset)
   date.setHours(24, 0, 0, 0)
   date.setMilliseconds(date.getMilliseconds() - 1)
-  return date.toISOString()
+  return date
 }

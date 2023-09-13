@@ -15,6 +15,16 @@ export interface SpotPrices {
     tomorrow: PriceRow[]
   }
   
+  export interface HoursContainer {
+    hours: string[]
+    info: {
+      now: boolean,
+      min: number,
+      max: number,
+      avg: number
+    }
+  }
+
   export interface PriceRow {
     start: Date,
     price: number,
@@ -22,4 +32,9 @@ export interface SpotPrices {
   
   export interface PriceRowWithTransfer extends PriceRow {
     priceWithTransfer: number,
+  }
+
+  export interface TransferPrices {
+    peakTransfer: number,
+    offPeakTransfer: number
   }

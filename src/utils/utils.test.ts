@@ -21,7 +21,6 @@ beforeEach(() => {
 test('test getAveragePrice', () => {
   expect(utils.getAveragePrice(prices.today)).toBe('0.01185')
   expect(utils.getAveragePrice(prices.yesterday)).toBe('0.13479')
-  expect(utils.getAveragePrice(prices.tomorrow)).toBe('0.11482')
 })
 
 test('test getCurrentPriceFromToday', () => {

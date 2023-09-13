@@ -1,15 +1,13 @@
-import NodeCache from "node-cache";
-import { PriceRow, PriceRowWithTransfer, SpotPrices } from "../types/types";
+import { HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from "../types/types";
 
 var weightedPriceCalculator = require('./weightedPriceCalculator')
-var constants = require("../types/constants");
 var utils = require("../utils/utils");
 var dateUtils = require("../utils/dateUtils");
 
 module.exports = {
 
   getHours: function (cachedPrices: SpotPrices, numberOfHours: number, startTime: string, endTime: string, 
-    highPrices: boolean, weightedPrices: boolean, offPeakTransferPrice: number, peakTransferPrice: number) {
+    highPrices: boolean, weightedPrices: boolean, transferPrices: TransferPrices) : HoursContainer {
 
     const pricesFlat = [
       ...cachedPrices.yesterday,
@@ -17,30 +15,28 @@ module.exports = {
       ...cachedPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
-    const startTimeDate = dateUtils.getDate(startTime)
-    const endTimeDate = dateUtils.getDate(endTime)
+    const startTimeDate: Date = dateUtils.getDate(startTime)
+    const endTimeDate: Date = dateUtils.getDate(endTime)
 
-    const timeFilteredPrices = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
+    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
 
-    let useTransferPrices = false
-
-    if (offPeakTransferPrice && peakTransferPrice) {
-      useTransferPrices = true
+    if (transferPrices !== undefined) {
       for (let f = 0; f < timeFilteredPrices.length; f++) {
         const hour = new Date(timeFilteredPrices[f].start).getHours()
-        timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ? offPeakTransferPrice : peakTransferPrice)
+        timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ? 
+          transferPrices.offPeakTransfer : transferPrices.peakTransfer)
       }
     }
 
-    let hoursArray = []
+    let resultArray: PriceRowWithTransfer[] = []
 
     if (weightedPrices) {
 
-      hoursArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices, useTransferPrices)
+      resultArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices, transferPrices !== undefined)
 
     } else {
       timeFilteredPrices.sort((a, b) => {
-        return useTransferPrices
+        return transferPrices !== undefined
           ? (a.priceWithTransfer - b.priceWithTransfer)
           : (a.price - b.price)
       })
@@ -49,16 +45,16 @@ module.exports = {
         timeFilteredPrices.reverse()
       }
 
-      hoursArray = timeFilteredPrices.slice(0, numberOfHours)
+      resultArray = timeFilteredPrices.slice(0, numberOfHours)
 
-      dateUtils.sortByDate(hoursArray)
+      dateUtils.sortByDate(resultArray)
     }
 
-    const onlyPrices = hoursArray.map((entry: PriceRow) => entry.price)
+    const onlyPrices = resultArray.map((entry: PriceRow) => entry.price)
     const lowestPrice = Math.min(...onlyPrices)
     const highestPrice = Math.max(...onlyPrices)
 
-    const hours = hoursArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start))
+    const hours = resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start))
 
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date())
     const currentHourIsInList = hours.includes(currentHourDateStr)
@@ -69,7 +65,7 @@ module.exports = {
         now: currentHourIsInList,
         min: lowestPrice,
         max: highestPrice,
-        avg: Number(utils.getAveragePrice(hoursArray))
+        avg: Number(utils.getAveragePrice(resultArray))
       }
     }
   }

@@ -141,8 +141,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     const numberOfHours = Number(parsed.searchParams.get('hours'))
     const startTime = Number(parsed.searchParams.get('startTime'))
     const endTime = Number(parsed.searchParams.get('endTime'))
-    const highPrices = parsed.searchParams.get('highPrices')
-    const weightedPrices = parsed.searchParams.get('weightedPrices')
+    const queryMode: string = parsed.searchParams.get('queryMode') || 'LowestPrices'
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
 
@@ -152,17 +151,25 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
         peakTransfer: peakTransferPrice
       } : undefined
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-      const hours = query.getHours(spotPrices, numberOfHours, startTime, endTime,
-        highPrices, weightedPrices, transferPrices)
-      res.end(JSON.stringify(hours))
+      const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
+        startTime: startTime, endTime: endTime, queryMode: queryMode, transferPrices})
+      if (hours) {
+        res.end(JSON.stringify(hours))
+      } else {
+        res.end(getUnavailableResponse())
+      }
     } else {
-      res.end(JSON.stringify({ hours: 'unavailable' }))
+      res.end(getUnavailableResponse())
     }
   } else {
     res.statusCode = 404
     res.end('Not found')
   }
 })
+
+const getUnavailableResponse = () => {
+  return JSON.stringify({ hours: 'unavailable' })
+}
 
 const isPriceListComplete = (priceList: PriceRow[]) => {
   return priceList !== undefined && priceList.length >= 23

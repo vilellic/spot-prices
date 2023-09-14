@@ -4,7 +4,7 @@ var weighted = require('./weighted')
 var utils = require("../utils/utils");
 var dateUtils = require("../utils/dateUtils");
 
-export interface GetHoursParameters {
+interface GetHoursParameters {
   spotPrices: SpotPrices,
   numberOfHours: number,
   startTime: Date,
@@ -13,16 +13,21 @@ export interface GetHoursParameters {
   transferPrices?: TransferPrices
 }
 
-const enum QueryMode {
-  LowestPrices = 1,
-  HighestPrices = 2,
-  WeightedPrices = 3,
+enum QueryMode {
+  LowestPrices = "LowestPrices",
+  HighestPrices = "HighestPrices",
+  WeightedPrices = "WeightedPrices",
 }
 
 module.exports = {
 
   getHours: function({spotPrices, numberOfHours, startTime, endTime, 
-    queryMode, transferPrices}: GetHoursParameters) : HoursContainer {
+    queryMode, transferPrices}: GetHoursParameters) : HoursContainer | undefined {
+
+    // Validate queryMode parameter
+    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.WeightedPrices].includes(queryMode)) {
+      return undefined
+    }
 
     const pricesFlat = [
       ...spotPrices.yesterday,
@@ -47,7 +52,8 @@ module.exports = {
 
     if (queryMode === QueryMode.WeightedPrices) {
 
-      resultArray = weighted.getWeightedPrices(numberOfHours, timeFilteredPrices, transferPrices !== undefined)
+      resultArray = weighted.getWeightedPrices({numberOfHours: numberOfHours, 
+        priceList: timeFilteredPrices, useTransferPrices: transferPrices !== undefined})
 
     } else {
       timeFilteredPrices.sort((a, b) => {

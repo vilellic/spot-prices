@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { SpotPrices } from '../types/types';
+import { SpotPrices, TransferPrices } from '../types/types';
 
 var dateUtils = require("../utils/dateUtils");
 
@@ -56,6 +56,47 @@ test('test getHours, 3 lowest', () => {
         "max": 0.01178,
         "avg": 0.0113,
         "now": false,
+      }
+    }
+  )
+
+})
+
+test('test getHours with transfer', () => {
+
+  const transferPrices: TransferPrices = {
+    peakTransfer: 0.0445,
+    offPeakTransfer: 0.0274
+  }
+
+  const withTransfer = query.getHours({spotPrices: prices, numberOfHours: 14, 
+    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: 'LowestPrices', transferPrices: transferPrices})
+    
+  //console.log(JSON.stringify(withTransfer, null, 2))
+
+  expect(withTransfer).toStrictEqual(
+    {
+      "hours": [
+        "21 Tue",
+        "22 Tue",
+        "23 Tue",
+        "0 Wed",
+        "1 Wed",
+        "2 Wed",
+        "3 Wed",
+        "4 Wed",
+        "5 Wed",
+        "6 Wed",
+        "7 Wed",
+        "14 Wed",
+        "15 Wed",
+        "16 Wed"
+      ],
+      "info": {
+        "now": false,
+        "min": 0.01104,
+        "max": 0.14879,
+        "avg": 0.0419
       }
     }
   )
@@ -150,7 +191,6 @@ test('test getHours, 6 highest', () => {
 test('test weighted getHours, 3 lowest', () => {
   const result = query.getHours({spotPrices: prices, numberOfHours: 3, 
     startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "WeightedPrices"})
-  console.log(JSON.stringify(result, null, 2))
   expect(result).toStrictEqual(
     {
       "hours": [

@@ -1,18 +1,38 @@
 import { HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from "../types/types";
 
-var weightedPriceCalculator = require('./weightedPriceCalculator')
+var weighted = require('./weighted')
 var utils = require("../utils/utils");
 var dateUtils = require("../utils/dateUtils");
 
+interface GetHoursParameters {
+  spotPrices: SpotPrices,
+  numberOfHours: number,
+  startTime: Date,
+  endTime: Date,
+  queryMode: QueryMode,
+  transferPrices?: TransferPrices
+}
+
+enum QueryMode {
+  LowestPrices = "LowestPrices",
+  HighestPrices = "HighestPrices",
+  WeightedPrices = "WeightedPrices",
+}
+
 module.exports = {
 
-  getHours: function (cachedPrices: SpotPrices, numberOfHours: number, startTime: string, endTime: string, 
-    highPrices: boolean, weightedPrices: boolean, transferPrices?: TransferPrices) : HoursContainer {
+  getHours: function({spotPrices, numberOfHours, startTime, endTime, 
+    queryMode, transferPrices}: GetHoursParameters) : HoursContainer | undefined {
+
+    // Validate queryMode parameter
+    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.WeightedPrices].includes(queryMode)) {
+      return undefined
+    }
 
     const pricesFlat = [
-      ...cachedPrices.yesterday,
-      ...cachedPrices.today,
-      ...cachedPrices.tomorrow
+      ...spotPrices.yesterday,
+      ...spotPrices.today,
+      ...spotPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
     const startTimeDate: Date = dateUtils.getDate(startTime)
@@ -30,9 +50,10 @@ module.exports = {
 
     let resultArray: PriceRowWithTransfer[] = []
 
-    if (weightedPrices) {
+    if (queryMode === QueryMode.WeightedPrices) {
 
-      resultArray = weightedPriceCalculator.getWeightedPrices(numberOfHours, timeFilteredPrices, transferPrices !== undefined)
+      resultArray = weighted.getWeightedPrices({numberOfHours: numberOfHours, 
+        priceList: timeFilteredPrices, useTransferPrices: transferPrices !== undefined})
 
     } else {
       timeFilteredPrices.sort((a, b) => {
@@ -41,7 +62,7 @@ module.exports = {
           : (a.price - b.price)
       })
 
-      if (highPrices) {
+      if (queryMode === QueryMode.HighestPrices) {
         timeFilteredPrices.reverse()
       }
 

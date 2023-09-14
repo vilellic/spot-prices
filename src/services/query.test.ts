@@ -1,5 +1,5 @@
-import { describe, expect, test } from '@jest/globals';
-import { PriceRow, PricesContainer, SpotPrices } from '../types/types';
+import { expect, test } from '@jest/globals';
+import { SpotPrices } from '../types/types';
 
 var dateUtils = require("../utils/dateUtils");
 
@@ -9,7 +9,7 @@ const fixedFakeDate = new Date('2023-09-12')
 jest.useFakeTimers()
   .setSystemTime(fixedFakeDate);
 
-var queryProcessor = require("./queryProcessor");
+var query = require("./query");
 let prices = {} as SpotPrices
 
 const yesterday21Ts = dateUtils.getTimestampFromHourStarting(new Date(), -1, 21)
@@ -22,7 +22,9 @@ beforeEach(() => {
 
 test('test getHours, 3 lowest', () => {
 
-  const today = queryProcessor.getHours(prices, 3, yesterday21Ts, today21Ts, false, false)
+  const today = query.getHours({spotPrices: prices, numberOfHours: 3, 
+    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
+    
   expect(today).toStrictEqual(
     {
       "hours": [
@@ -39,7 +41,8 @@ test('test getHours, 3 lowest', () => {
       }
     })
 
-  const tomorrow = queryProcessor.getHours(prices, 3, today21Ts, tomorrow21Ts, false, false)
+  const tomorrow = query.getHours({spotPrices: prices, numberOfHours: 3, 
+    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: 'LowestPrices'})
   expect(tomorrow).toStrictEqual(
     {
       "hours": [
@@ -59,7 +62,8 @@ test('test getHours, 3 lowest', () => {
 })
 
 test('test getHours, 1 lowest', () => {
-  const result = queryProcessor.getHours(prices, 1, yesterday21Ts, today21Ts, false, false)
+  const result = query.getHours({spotPrices: prices, numberOfHours: 1, 
+    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
   expect(result).toStrictEqual(
     {
       "hours": [
@@ -76,7 +80,8 @@ test('test getHours, 1 lowest', () => {
 })
 
 test('test getHours, 8 lowest', () => {
-  const result = queryProcessor.getHours(prices, 8, yesterday21Ts, today21Ts, false, false)
+  const result = query.getHours({spotPrices: prices, numberOfHours: 8, 
+    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
   expect(result).toStrictEqual(
     {
       "hours": [
@@ -99,7 +104,8 @@ test('test getHours, 8 lowest', () => {
 })
 
 test('test getHours, 6 highest', () => {
-  const today = queryProcessor.getHours(prices, 6, yesterday21Ts, today21Ts, true, false)
+  const today = query.getHours({spotPrices: prices, numberOfHours: 6, 
+    startTime: yesterday21Ts, endTime: today21Ts, queryMode: "HighestPrices"})
   expect(today).toStrictEqual(
     {
       "hours": [
@@ -119,7 +125,8 @@ test('test getHours, 6 highest', () => {
     }
   )
 
-  const tomorrow = queryProcessor.getHours(prices, 6, today21Ts, tomorrow21Ts, true, false)
+  const tomorrow = query.getHours({spotPrices: prices, numberOfHours: 6, 
+    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "HighestPrices"})
   expect(tomorrow).toStrictEqual(
     {
       "hours": [
@@ -141,7 +148,8 @@ test('test getHours, 6 highest', () => {
 })
 
 test('test weighted getHours, 3 lowest', () => {
-  const result = queryProcessor.getHours(prices, 3, today21Ts, tomorrow21Ts, false, true)
+  const result = query.getHours({spotPrices: prices, numberOfHours: 3, 
+    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "WeightedPrices"})
   console.log(JSON.stringify(result, null, 2))
   expect(result).toStrictEqual(
     {
@@ -158,4 +166,10 @@ test('test weighted getHours, 3 lowest', () => {
       }
     }
   )
+})
+
+test('test invalid query mode', () => {
+  const result = query.getHours({spotPrices: prices, numberOfHours: 3, 
+    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "WwfeightedsfPrices"})
+  expect(result).toBe(undefined)
 })

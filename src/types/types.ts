@@ -26,12 +26,17 @@ export interface SpotPrices {
   }
 
   export interface PriceRow {
-    start: Date,
+    start: string,
     price: number,
   }
   
   export interface PriceRowWithTransfer extends PriceRow {
     priceWithTransfer: number,
+  }
+
+  export interface DateRange {
+    start: Date,
+    end: Date
   }
 
   export interface TransferPrices {

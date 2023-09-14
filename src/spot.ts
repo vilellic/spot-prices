@@ -6,7 +6,7 @@ const NodeCache = require('node-cache')
 const server = http.createServer()
 
 import fetch from 'node-fetch';
-import { PriceRow, PricesContainer, SpotPrices, TransferPrices } from './types/types';
+import { DateRange, PriceRow, PricesContainer, SpotPrices, TransferPrices } from './types/types';
 const settings = { method: 'Get' }
 
 const { readFileSync } = require('fs')
@@ -82,8 +82,8 @@ const updateDayPrices = async (start: string, end: string) => {
   const pricesJson = await getPricesJson(start, end)
   if (pricesJson.success === true) {
     for (let i = 0; i < pricesJson.data.fi.length; i++) {
-      const priceRow = {
-        start: dateUtils.getDate(pricesJson.data.fi[i].timestamp),
+      const priceRow : PriceRow = {
+        start: dateUtils.getDateStr(pricesJson.data.fi[i].timestamp),
         price: utils.getPrice(pricesJson.data.fi[i].price)
       }
       prices.push(priceRow)
@@ -150,9 +150,15 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
         offPeakTransfer: offPeakTransferPrice,
         peakTransfer: peakTransferPrice
       } : undefined
+
+      const dateRange : DateRange = {
+        start: dateUtils.getDate(startTime),
+        end: dateUtils.getDate(endTime),
+      }
+
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
       const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
-        startTime: startTime, endTime: endTime, queryMode: queryMode, transferPrices})
+        dateRange: dateRange, queryMode: queryMode, transferPrices})
       if (hours) {
         res.end(JSON.stringify(hours))
       } else {

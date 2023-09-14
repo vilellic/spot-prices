@@ -3,17 +3,25 @@ const moment = require('moment')
 
 module.exports = {
 
-  getDate: function (timestamp: number) {
+  getDateStr: function(timestamp: number) {
+    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ')
+  },
+
+  getDate: function(timestamp: number) {
     const timestampNumber = Number(timestamp * 1000)
     const momentDate = moment(new Date(timestampNumber))
-    return momentDate.format('YYYY-MM-DDTHH:mm:ssZZ')
+    return momentDate
+  },
+
+  parseISODate: function(isoDateStr: string) {
+    return moment(new Date(isoDateStr))
   },
 
   getWeekdayAndHourStr: function (date: Date) {
     return new Date(date).getHours() + ' ' + moment(date).format('ddd')
   },
 
-  findIndexWithDate: function (datePriceArray: PriceRow[], date: Date) {
+  findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
     for (let i = 0; i < datePriceArray.length; i++) {
       if (datePriceArray[i].start === date) {
         return i
@@ -46,20 +54,17 @@ module.exports = {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString()
   },
 
-  getTimestampFromHourStarting: function(date: Date, offset: number, hour: number): number {
+  getDateFromHourStarting: function(date: Date, offset: number, hour: number): Date {
     date.setDate(date.getDate() + offset)
     date.setHours(hour, 0, 0, 0)
-    return date.getTime() / 1000
+    return date
   },
 
   sortByDate: function (array: PriceRow[]) {
     array.sort((a, b) => {
-      if (a.start > b.start) return 1
-      else if (a.start < b.start) return -1
-      else return 0
+      return this.parseISODate(a.start) - this.parseISODate(b.start)
     })
   },
-
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {

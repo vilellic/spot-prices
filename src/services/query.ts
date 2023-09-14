@@ -1,4 +1,4 @@
-import { HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from "../types/types";
+import { DateRange, HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from "../types/types";
 
 var weighted = require('./weighted')
 var utils = require("../utils/utils");
@@ -7,8 +7,7 @@ var dateUtils = require("../utils/dateUtils");
 interface GetHoursParameters {
   spotPrices: SpotPrices,
   numberOfHours: number,
-  startTime: Date,
-  endTime: Date,
+  dateRange: DateRange,
   queryMode: QueryMode,
   transferPrices?: TransferPrices
 }
@@ -21,7 +20,7 @@ enum QueryMode {
 
 module.exports = {
 
-  getHours: function({spotPrices, numberOfHours, startTime, endTime, 
+  getHours: function({spotPrices, numberOfHours, dateRange, 
     queryMode, transferPrices}: GetHoursParameters) : HoursContainer | undefined {
 
     // Validate queryMode parameter
@@ -35,10 +34,8 @@ module.exports = {
       ...spotPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
-    const startTimeDate: Date = dateUtils.getDate(startTime)
-    const endTimeDate: Date = dateUtils.getDate(endTime)
-
-    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) => entry.start >= startTimeDate && entry.start < endTimeDate)
+    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) => 
+      dateUtils.parseISODate(entry.start) >= dateRange.start && dateUtils.parseISODate(entry.start) < dateRange.end)
 
     if (transferPrices !== undefined) {
       for (let f = 0; f < timeFilteredPrices.length; f++) {
@@ -67,7 +64,6 @@ module.exports = {
       }
 
       resultArray = timeFilteredPrices.slice(0, numberOfHours)
-
       dateUtils.sortByDate(resultArray)
     }
 

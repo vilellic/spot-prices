@@ -1,5 +1,5 @@
-import {describe, expect, test} from '@jest/globals';
-import { PriceRow, PricesContainer, SpotPrices } from '../types/types';
+import { expect, test} from '@jest/globals';
+import { SpotPrices } from '../types/types';
 
 const fixedFakeDate = new Date('2023-09-12')
 

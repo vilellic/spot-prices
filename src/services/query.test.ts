@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { SpotPrices, TransferPrices } from '../types/types';
+import { DateRange, SpotPrices, TransferPrices } from '../types/types';
 
 var dateUtils = require("../utils/dateUtils");
 
@@ -12,9 +12,19 @@ jest.useFakeTimers()
 var query = require("./query");
 let prices = {} as SpotPrices
 
-const yesterday21Ts = dateUtils.getTimestampFromHourStarting(new Date(), -1, 21)
-const today21Ts = dateUtils.getTimestampFromHourStarting(new Date(), 0, 21)
-const tomorrow21Ts = dateUtils.getTimestampFromHourStarting(new Date(), 1, 21)
+const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21)
+const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21)
+const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21)
+
+const fromYesterdayDateRange : DateRange = {
+  start: yesterday21,
+  end: today21
+}
+
+const fromTodayDateRange : DateRange = {
+  start: today21,
+  end: tomorrow21
+}
 
 beforeEach(() => {
   prices = require('../utils/testPrices.json');
@@ -23,7 +33,7 @@ beforeEach(() => {
 test('test getHours, 3 lowest', () => {
 
   const today = query.getHours({spotPrices: prices, numberOfHours: 3, 
-    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
+    dateRange: fromYesterdayDateRange, queryMode: 'LowestPrices'})
     
   expect(today).toStrictEqual(
     {
@@ -42,7 +52,7 @@ test('test getHours, 3 lowest', () => {
     })
 
   const tomorrow = query.getHours({spotPrices: prices, numberOfHours: 3, 
-    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: 'LowestPrices'})
+    dateRange: fromTodayDateRange, queryMode: 'LowestPrices'})
   expect(tomorrow).toStrictEqual(
     {
       "hours": [
@@ -70,7 +80,7 @@ test('test getHours with transfer', () => {
   }
 
   const withTransfer = query.getHours({spotPrices: prices, numberOfHours: 14, 
-    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: 'LowestPrices', transferPrices: transferPrices})
+    dateRange: fromTodayDateRange, queryMode: 'LowestPrices', transferPrices: transferPrices})
     
   //console.log(JSON.stringify(withTransfer, null, 2))
 
@@ -104,7 +114,7 @@ test('test getHours with transfer', () => {
 
 test('test getHours, 1 lowest', () => {
   const result = query.getHours({spotPrices: prices, numberOfHours: 1, 
-    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
+    dateRange: fromYesterdayDateRange, queryMode: 'LowestPrices'})
   expect(result).toStrictEqual(
     {
       "hours": [
@@ -122,7 +132,7 @@ test('test getHours, 1 lowest', () => {
 
 test('test getHours, 8 lowest', () => {
   const result = query.getHours({spotPrices: prices, numberOfHours: 8, 
-    startTime: yesterday21Ts, endTime: today21Ts, queryMode: 'LowestPrices'})
+    dateRange: fromYesterdayDateRange, queryMode: 'LowestPrices'})
   expect(result).toStrictEqual(
     {
       "hours": [
@@ -146,7 +156,7 @@ test('test getHours, 8 lowest', () => {
 
 test('test getHours, 6 highest', () => {
   const today = query.getHours({spotPrices: prices, numberOfHours: 6, 
-    startTime: yesterday21Ts, endTime: today21Ts, queryMode: "HighestPrices"})
+    dateRange: fromYesterdayDateRange, queryMode: "HighestPrices"})
   expect(today).toStrictEqual(
     {
       "hours": [
@@ -167,7 +177,7 @@ test('test getHours, 6 highest', () => {
   )
 
   const tomorrow = query.getHours({spotPrices: prices, numberOfHours: 6, 
-    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "HighestPrices"})
+    dateRange: fromTodayDateRange, queryMode: "HighestPrices"})
   expect(tomorrow).toStrictEqual(
     {
       "hours": [
@@ -190,7 +200,7 @@ test('test getHours, 6 highest', () => {
 
 test('test weighted getHours, 3 lowest', () => {
   const result = query.getHours({spotPrices: prices, numberOfHours: 3, 
-    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "WeightedPrices"})
+    dateRange: fromTodayDateRange, queryMode: "WeightedPrices"})
   expect(result).toStrictEqual(
     {
       "hours": [
@@ -210,6 +220,6 @@ test('test weighted getHours, 3 lowest', () => {
 
 test('test invalid query mode', () => {
   const result = query.getHours({spotPrices: prices, numberOfHours: 3, 
-    startTime: today21Ts, endTime: tomorrow21Ts, queryMode: "WwfeightedsfPrices"})
+    fromTodayDateRange, queryMode: "WwfeightedsfPrices"})
   expect(result).toBe(undefined)
 })

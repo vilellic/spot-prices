@@ -4,10 +4,12 @@ set -ex
 
 baseUrl=http://localhost:8089
 
-hours=6
+hours=4
 
-startTime=$(gdate -d "yesterday 21:00" +%s)
-endTime=$(gdate -d "today 21:00" +%s)
+#startTime=$(gdate -d "yesterday 21:00" +%s)
+startTime=$(gdate -d "today 21:00" +%s)
+#endTime=$(gdate -d "today 21:00" +%s)
+endTime=$(gdate -d "tomorrow 21:00" +%s)
 
 peakTransfer=0.0445
 offPeakTransfer=0.0274

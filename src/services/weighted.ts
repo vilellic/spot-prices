@@ -10,9 +10,8 @@ interface WeightedPricesParameters {
 
 module.exports = {
 
-  getWeightedPrices: function ({numberOfHours, priceList, useTransferPrices} : WeightedPricesParameters) : PriceRowWithTransfer[] {
-
-    const hoursArray = [] as PriceRowWithTransfer[]
+  getWeightedPrices: function ({numberOfHours, priceList, 
+    useTransferPrices} : WeightedPricesParameters) : PriceRowWithTransfer[] {
 
     const weightArray = [] as number[]
     const weightDivider = 10 / numberOfHours
@@ -39,6 +38,7 @@ module.exports = {
     }
 
     const minWeightedResult = weightedResults.reduce((min, w) => w.weightedResult < min.weightedResult ? w : min, weightedResults[0])
+    const hoursArray = [] as PriceRowWithTransfer[]
 
     if (minWeightedResult !== undefined) {
       const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(priceList, minWeightedResult.start)

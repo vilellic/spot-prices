@@ -71,7 +71,8 @@ module.exports = {
     const lowestPrice = Math.min(...onlyPrices)
     const highestPrice = Math.max(...onlyPrices)
 
-    const hours = resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start))
+    const hoursSet = new Set(resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start)))
+    const hours = [...hoursSet]
 
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date())
     const currentHourIsInList = hours.includes(currentHourDateStr)

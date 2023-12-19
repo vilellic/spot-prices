@@ -12,19 +12,26 @@ interface GetHoursParameters {
   transferPrices?: TransferPrices
 }
 
-enum QueryMode {
+export enum QueryMode {
   LowestPrices = "LowestPrices",
   HighestPrices = "HighestPrices",
+  OverAveragePrices = "OverAveragePrices",
   WeightedPrices = "WeightedPrices",
+  SequentialPrices = "SequentialPrices"
 }
 
 module.exports = {
 
-  getHours: function({spotPrices, numberOfHours, dateRange, 
-    queryMode, transferPrices}: GetHoursParameters) : HoursContainer | undefined {
+  getHours: function ({ spotPrices, numberOfHours, dateRange,
+    queryMode, transferPrices }: GetHoursParameters): HoursContainer | undefined {
 
     // Validate queryMode parameter
-    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.WeightedPrices].includes(queryMode)) {
+    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.OverAveragePrices,
+    QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
+      return undefined
+    }
+
+    if (queryMode !== QueryMode.OverAveragePrices && numberOfHours === undefined) {
       return undefined
     }
 
@@ -34,37 +41,50 @@ module.exports = {
       ...spotPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
-    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) => 
+    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) =>
       dateUtils.parseISODate(entry.start) >= dateRange.start && dateUtils.parseISODate(entry.start) < dateRange.end)
 
     if (transferPrices !== undefined) {
       for (let f = 0; f < timeFilteredPrices.length; f++) {
         const hour = new Date(timeFilteredPrices[f].start).getHours()
-        timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ? 
+        timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ?
           transferPrices.offPeakTransfer : transferPrices.peakTransfer)
       }
     }
 
     let resultArray: PriceRowWithTransfer[] = []
 
-    if (queryMode === QueryMode.WeightedPrices) {
+    if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
 
-      resultArray = weighted.getWeightedPrices({numberOfHours: numberOfHours, 
-        priceList: timeFilteredPrices, useTransferPrices: transferPrices !== undefined})
-
-    } else {
-      timeFilteredPrices.sort((a, b) => {
-        return transferPrices !== undefined
-          ? (a.priceWithTransfer - b.priceWithTransfer)
-          : (a.price - b.price)
+      resultArray = weighted.getWeightedPrices({
+        numberOfHours: numberOfHours,
+        priceList: timeFilteredPrices, useTransferPrices: transferPrices !== undefined, queryMode: queryMode
       })
 
-      if (queryMode === QueryMode.HighestPrices) {
-        timeFilteredPrices.reverse()
-      }
+    } else {
 
-      resultArray = timeFilteredPrices.slice(0, numberOfHours)
-      dateUtils.sortByDate(resultArray)
+      if (queryMode === QueryMode.OverAveragePrices) {
+
+        const avgPriceAll = Number(utils.getAveragePrice(timeFilteredPrices))
+        resultArray = timeFilteredPrices.filter((row: PriceRowWithTransfer) => {
+          return row.price > avgPriceAll
+        })
+
+      } else {
+        // LowestPrices / HighestPrices
+        timeFilteredPrices.sort((a, b) => {
+          return transferPrices !== undefined
+            ? (a.priceWithTransfer - b.priceWithTransfer)
+            : (a.price - b.price)
+        })
+
+        if (queryMode === QueryMode.HighestPrices) {
+          timeFilteredPrices.reverse()
+        }
+
+        resultArray = timeFilteredPrices.slice(0, numberOfHours)
+        dateUtils.sortByDate(resultArray)
+      }
     }
 
     const onlyPrices = resultArray.map((entry: PriceRow) => entry.price)

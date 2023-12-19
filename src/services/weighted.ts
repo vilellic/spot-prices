@@ -1,4 +1,5 @@
 import { PriceRowWithTransfer } from "../types/types";
+import { QueryMode } from "./query";
 
 var dateUtils = require("../utils/dateUtils");
 
@@ -6,22 +7,30 @@ interface WeightedPricesParameters {
   numberOfHours: number,
   priceList: PriceRowWithTransfer[],
   useTransferPrices: boolean,
+  queryMode: QueryMode,
 }
 
 module.exports = {
 
   getWeightedPrices: function ({numberOfHours, priceList, 
-    useTransferPrices} : WeightedPricesParameters) : PriceRowWithTransfer[] {
+    useTransferPrices, queryMode} : WeightedPricesParameters) : PriceRowWithTransfer[] {
 
     const weightArray = [] as number[]
-    const weightDivider = 10 / numberOfHours
-    let index = 0
-    for (let i = 10; i > weightDivider; i = i - weightDivider) {
-      weightArray[index] = i
-      index++
-    }
-    if (weightArray.length === numberOfHours - 1) {
-      weightArray.push(weightDivider)
+    if (queryMode === QueryMode.WeightedPrices) {
+      const weightDivider = 10 / numberOfHours
+      let index = 0
+      for (let i = 10; i > weightDivider; i = i - weightDivider) {
+        weightArray[index] = i
+        index++
+      }
+      if (weightArray.length === numberOfHours - 1) {
+        weightArray.push(weightDivider)
+      }
+    } else if (queryMode === QueryMode.SequentialPrices) {
+      for (let w = 0; w < numberOfHours - 1; w++) {
+        weightArray.push(2)
+      }
+      weightArray.push(1)
     }
 
     const lastTestIndex = priceList.length - numberOfHours

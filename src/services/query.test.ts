@@ -234,6 +234,64 @@ test('test weighted getHours, 3 lowest', () => {
   )
 })
 
+test('test sequential getHours, 5 lowest', () => {
+  const result = query.getHours({
+    spotPrices: prices, numberOfHours: 5,
+    dateRange: fromTodayDateRange, queryMode: "SequentialPrices"
+  })
+
+  expect(result).toStrictEqual(
+    {
+      "hours": [
+        "2 Wed",
+        "3 Wed",
+        "4 Wed",
+        "5 Wed",
+        "6 Wed"
+      ],
+      "info": {
+        "now": false,
+        "min": 0.01104,
+        "max": 0.01273,
+        "avg": 0.01174
+      }
+    }
+  )
+})
+
+test('test over avg. prices', () => {
+  const result = query.getHours({
+    spotPrices: prices, dateRange: fromTodayDateRange, 
+    queryMode: "OverAveragePrices"
+  })
+
+  expect(result).toStrictEqual(
+    {
+      "hours": [
+        "8 Wed",
+        "9 Wed",
+        "10 Wed",
+        "11 Wed",
+        "12 Wed",
+        "13 Wed",
+        "14 Wed",
+        "15 Wed",
+        "16 Wed",
+        "17 Wed",
+        "18 Wed",
+        "19 Wed",
+        "20 Wed"
+      ],
+      "info": {
+        "now": false,
+        "min": 0.11437,
+        "max": 0.24807,
+        "avg": 0.1924
+      }
+    }
+  )
+})
+
 test('test invalid query mode', () => {
   const result = query.getHours({
     spotPrices: prices, numberOfHours: 3,

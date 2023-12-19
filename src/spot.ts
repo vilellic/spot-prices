@@ -138,24 +138,25 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   } else if (req.url?.startsWith('/query')) {
     const parsed = new URL(req.url, `http://${req.headers.host}`)
 
+    const numberOfHours = Number(parsed.searchParams.get('hours'))
     const startTime = Number(parsed.searchParams.get('startTime'))
     const endTime = Number(parsed.searchParams.get('endTime'))
     const queryMode: string = parsed.searchParams.get('queryMode') || 'LowestPrices'
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
-    const numberOfHours = queryMode === 'OverAveragePrices' ? 0 : Number(parsed.searchParams.get('hours'))
+    const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
+      offPeakTransfer: offPeakTransferPrice,
+      peakTransfer: peakTransferPrice
+    } : undefined
 
-    if (numberOfHours) {
-      const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
-        offPeakTransfer: offPeakTransferPrice,
-        peakTransfer: peakTransferPrice
-      } : undefined
+    const dateRange : DateRange = {
+      start: dateUtils.getDate(startTime),
+      end: dateUtils.getDate(endTime),
+    }
 
-      const dateRange : DateRange = {
-        start: dateUtils.getDate(startTime),
-        end: dateUtils.getDate(endTime),
-      }
-
+    if (queryMode !== 'OverAveragePrices' && !numberOfHours) {
+      res.end(getUnavailableResponse())
+    } else {
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
       const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
         dateRange: dateRange, queryMode: queryMode, transferPrices})
@@ -163,10 +164,9 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
         res.end(JSON.stringify(hours))
       } else {
         res.end(getUnavailableResponse())
-      }
-    } else {
-      res.end(getUnavailableResponse())
+      }  
     }
+
   } else {
     res.statusCode = 404
     res.end('Not found')

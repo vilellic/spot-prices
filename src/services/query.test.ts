@@ -243,17 +243,17 @@ test('test sequential getHours, 5 lowest', () => {
   expect(result).toStrictEqual(
     {
       "hours": [
+        "1 Wed",
         "2 Wed",
         "3 Wed",
         "4 Wed",
-        "5 Wed",
-        "6 Wed"
+        "5 Wed"
       ],
       "info": {
         "now": false,
         "min": 0.01104,
-        "max": 0.01273,
-        "avg": 0.01174
+        "max": 0.01244,
+        "avg": 0.01168
       }
     }
   )

@@ -30,7 +30,7 @@ module.exports = {
       for (let w = 0; w < numberOfHours - 1; w++) {
         weightArray.push(2)
       }
-      weightArray.push(1)
+      weightArray.push(1.75)
     }
 
     const lastTestIndex = priceList.length - numberOfHours

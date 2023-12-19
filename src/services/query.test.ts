@@ -26,6 +26,11 @@ const fromTodayDateRange: DateRange = {
   end: tomorrow21
 }
 
+const transferPrices: TransferPrices = {
+  peakTransfer: 0.0445,
+  offPeakTransfer: 0.0274
+}
+
 beforeEach(() => {
   prices = require('../utils/testPrices.json');
 })
@@ -77,11 +82,6 @@ test('test getHours, 3 lowest', () => {
 })
 
 test('test getHours with transfer', () => {
-
-  const transferPrices: TransferPrices = {
-    peakTransfer: 0.0445,
-    offPeakTransfer: 0.0274
-  }
 
   const withTransfer = query.getHours({
     spotPrices: prices, numberOfHours: 14,
@@ -263,6 +263,39 @@ test('test over avg. prices', () => {
   const result = query.getHours({
     spotPrices: prices, dateRange: fromTodayDateRange, 
     queryMode: "OverAveragePrices"
+  })
+
+  expect(result).toStrictEqual(
+    {
+      "hours": [
+        "8 Wed",
+        "9 Wed",
+        "10 Wed",
+        "11 Wed",
+        "12 Wed",
+        "13 Wed",
+        "14 Wed",
+        "15 Wed",
+        "16 Wed",
+        "17 Wed",
+        "18 Wed",
+        "19 Wed",
+        "20 Wed"
+      ],
+      "info": {
+        "now": false,
+        "min": 0.11437,
+        "max": 0.24807,
+        "avg": 0.1924
+      }
+    }
+  )
+})
+
+test('test over avg. prices with transfer', () => {
+  const result = query.getHours({
+    spotPrices: prices, dateRange: fromTodayDateRange, 
+    queryMode: "OverAveragePrices", transferPrices: transferPrices
   })
 
   expect(result).toStrictEqual(

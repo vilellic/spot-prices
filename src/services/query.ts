@@ -65,9 +65,10 @@ module.exports = {
 
       if (queryMode === QueryMode.OverAveragePrices) {
 
-        const avgPriceAll = Number(utils.getAveragePrice(timeFilteredPrices))
+        const avgPriceAll = transferPrices === undefined ? 
+          Number(utils.getAveragePrice(timeFilteredPrices)) : Number(utils.getAveragePriceWithTransfer(timeFilteredPrices))
         resultArray = timeFilteredPrices.filter((row: PriceRowWithTransfer) => {
-          return row.price > avgPriceAll
+          return transferPrices === undefined ? (row.price > avgPriceAll) : (row.priceWithTransfer > avgPriceAll)
         })
 
       } else {

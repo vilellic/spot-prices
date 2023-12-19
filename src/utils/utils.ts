@@ -1,10 +1,17 @@
-import { PriceRow } from "../types/types";
+import { PriceRow, PriceRowWithTransfer } from "../types/types";
 var constants = require("../types/constants");
 
 module.exports = {
 
   getAveragePrice: function (pricesList: PriceRow[]) {
     const prices = pricesList.map(row => Number(row.price))
+    const sum = prices.reduce((acc, price) => acc + price, 0)
+    const avg = sum / prices.length
+    return Number((avg).toFixed(5)).toString()
+  },
+
+  getAveragePriceWithTransfer: function (pricesList: PriceRowWithTransfer[]) {
+    const prices = pricesList.map(row => Number(row.priceWithTransfer))
     const sum = prices.reduce((acc, price) => acc + price, 0)
     const avg = sum / prices.length
     return Number((avg).toFixed(5)).toString()

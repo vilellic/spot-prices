@@ -138,12 +138,12 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   } else if (req.url?.startsWith('/query')) {
     const parsed = new URL(req.url, `http://${req.headers.host}`)
 
-    const numberOfHours = Number(parsed.searchParams.get('hours'))
     const startTime = Number(parsed.searchParams.get('startTime'))
     const endTime = Number(parsed.searchParams.get('endTime'))
     const queryMode: string = parsed.searchParams.get('queryMode') || 'LowestPrices'
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
+    const numberOfHours = queryMode === 'OverAveragePrices' ? 0 : Number(parsed.searchParams.get('hours'))
 
     if (numberOfHours) {
       const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {

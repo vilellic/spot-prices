@@ -112,7 +112,12 @@ test('test getHours with transfer', () => {
         "now": false,
         "min": 0.01104,
         "max": 0.14879,
-        "avg": 0.0419
+        "avg": 0.0419,
+        "withTransferPrices": {
+          "avg": 0.0754,
+          "min": 0.03844,
+          "max": 0.19329000000000002
+        }
       }
     }
   )
@@ -319,7 +324,12 @@ test('test over avg. prices with transfer', () => {
         "now": false,
         "min": 0.11437,
         "max": 0.24807,
-        "avg": 0.1924
+        "avg": 0.1924,
+        "withTransferPrices": {
+          "avg": 0.2369,
+          "max": 0.29257,
+          "min": 0.15887,
+        },
       }
     }
   )

@@ -41,10 +41,12 @@ module.exports = {
       ...spotPrices.tomorrow
     ] as PriceRowWithTransfer[]
 
+    const withTransferPrices = transferPrices !== undefined
+
     const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) =>
       dateUtils.parseISODate(entry.start) >= dateRange.start && dateUtils.parseISODate(entry.start) < dateRange.end)
 
-    if (transferPrices !== undefined) {
+    if (withTransferPrices) {
       for (let f = 0; f < timeFilteredPrices.length; f++) {
         const hour = new Date(timeFilteredPrices[f].start).getHours()
         timeFilteredPrices[f].priceWithTransfer = Number(timeFilteredPrices[f].price) + ((hour >= 22 || hour < 7) ?
@@ -58,23 +60,23 @@ module.exports = {
 
       resultArray = weighted.getWeightedPrices({
         numberOfHours: numberOfHours,
-        priceList: timeFilteredPrices, useTransferPrices: transferPrices !== undefined, queryMode: queryMode
+        priceList: timeFilteredPrices, useTransferPrices: withTransferPrices, queryMode: queryMode
       })
 
     } else {
 
       if (queryMode === QueryMode.OverAveragePrices) { 
 
-        const avgPriceAll = transferPrices === undefined ? 
-          Number(utils.getAveragePrice(timeFilteredPrices)) : Number(utils.getAveragePriceWithTransfer(timeFilteredPrices))
+        const avgPriceAll = withTransferPrices ? 
+           Number(utils.getAveragePriceWithTransfer(timeFilteredPrices)) : Number(utils.getAveragePrice(timeFilteredPrices))
         resultArray = timeFilteredPrices.filter((row: PriceRowWithTransfer) => {
-          return transferPrices === undefined ? (row.price > avgPriceAll) : (row.priceWithTransfer > avgPriceAll)
+          return withTransferPrices ? (row.priceWithTransfer > avgPriceAll) : (row.price > avgPriceAll)
         })
 
       } else {
         // LowestPrices / HighestPrices
         timeFilteredPrices.sort((a, b) => {
-          return transferPrices !== undefined
+          return withTransferPrices
             ? (a.priceWithTransfer - b.priceWithTransfer)
             : (a.price - b.price)
         })
@@ -104,7 +106,15 @@ module.exports = {
         now: currentHourIsInList,
         min: lowestPrice,
         max: highestPrice,
-        avg: Number(utils.getAveragePrice(resultArray))
+        avg: Number(utils.getAveragePrice(resultArray)),
+        ...(withTransferPrices && { 
+          withTransferPrices: 
+          { 
+            avg: Number(utils.getAveragePriceWithTransfer(resultArray)),
+            min: Math.min(...(resultArray.map((entry: PriceRowWithTransfer) => entry.priceWithTransfer))),
+            max: Math.max(...(resultArray.map((entry: PriceRowWithTransfer) => entry.priceWithTransfer))),
+          } 
+        })
       }
     }
   }

@@ -10,9 +10,21 @@ var utils = require("./utils");
 let prices = {} as SpotPrices
 
 test('test getPrice with VAT', () => {
-  // VAT 24%
   expect(utils.getPrice(167.42)).toBe('0.20760')
 })
+
+test('test getPrice with VAT positive price', () => {
+  expect(utils.getPrice(1)).toBe('0.00124')
+})
+
+test('test getPrice VAT with negative price', () => {
+  expect(utils.getPrice(-500)).toBe('-0.50000')
+})
+
+test('test getPrice VAT with negative price', () => {
+  expect(utils.getPrice(-1)).toBe('-0.00100')
+})
+
 
 beforeEach(() => {
   prices = require('./testPrices.json');

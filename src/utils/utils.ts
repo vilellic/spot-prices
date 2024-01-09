@@ -18,7 +18,7 @@ module.exports = {
   },
 
   getPrice: function (inputPrice: Number) {
-    return Number((Number(inputPrice) / 1000) * constants.VAT).toFixed(5)
+    return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5)
   },
 
   getCurrentPriceFromTodayPrices: function (todayPrices: PriceRow[]) {

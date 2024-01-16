@@ -43,3 +43,8 @@ export interface SpotPrices {
     peakTransfer: number,
     offPeakTransfer: number
   }
+
+  export interface LinksContainer {
+    today: {}
+    tomorrow: {}
+  }

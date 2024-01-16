@@ -3,6 +3,9 @@ import { IncomingMessage, ServerResponse } from 'http';
 const moment = require('moment')
 const NodeCache = require('node-cache')
 
+const protocol: string = 'http'
+const port: number = 8089
+
 const server = http.createServer()
 
 import fetch from 'node-fetch';
@@ -23,6 +26,7 @@ var constants = require("./types/constants");
 var utils = require("./utils/utils");
 var dateUtils = require("./utils/dateUtils");
 var query = require('./services/query')
+var links = require('./services/links')
 
 const CronJob = require('cron').CronJob
 
@@ -95,7 +99,7 @@ const updateDayPrices = async (start: string, end: string) => {
 
 server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
-  console.log('Request url = ' + `http://${req.headers.host}` + req.url)
+  console.log('Request url = ' + `${protocol}://${req.headers.host}` + req.url)
 
   if (req.url === '/current') {
     // Current price
@@ -136,7 +140,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 
     res.end(JSON.stringify(prices))
   } else if (req.url?.startsWith('/query')) {
-    const parsed = new URL(req.url, `http://${req.headers.host}`)
+    const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
 
     const numberOfHours = Number(parsed.searchParams.get('hours'))
     const startTime = Number(parsed.searchParams.get('startTime'))
@@ -167,6 +171,8 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
       }  
     }
 
+  } else if (req.url?.startsWith('/links')) {
+    res.end(JSON.stringify(links.getExampleLinks({host: `${protocol}://${req.headers.host}`})))
   } else {
     res.statusCode = 404
     res.end('Not found')
@@ -298,4 +304,4 @@ initializeStoredFiles()
 initializeCacheFromDisk()
 updatePrices()
 updateCurrentPrice()
-server.listen(8089)
+server.listen(port)

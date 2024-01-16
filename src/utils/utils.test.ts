@@ -25,7 +25,6 @@ test('test getPrice VAT with negative price', () => {
   expect(utils.getPrice(-1)).toBe('-0.00100')
 })
 
-
 beforeEach(() => {
   prices = require('./testPrices.json');
 })

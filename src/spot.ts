@@ -172,7 +172,20 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     }
 
   } else if (req.url?.startsWith('/links')) {
-    res.end(JSON.stringify(links.getExampleLinks({host: `${protocol}://${req.headers.host}`})))
+
+    const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
+    const numberOfHours = Number(parsed.searchParams.get('hours'))
+    let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+    const tomorrowAvailable = isPriceListComplete(cachedPrices.tomorrow)
+    const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
+    const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
+    const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
+      offPeakTransfer: offPeakTransferPrice,
+      peakTransfer: peakTransferPrice
+    } : undefined
+    res.end(JSON.stringify(links.getExampleLinks({host: `${protocol}://${req.headers.host}`, 
+      tomorrowAvailable: tomorrowAvailable, noHours: numberOfHours, transferPrices: transferPrices})))
+
   } else {
     res.statusCode = 404
     res.end('Not found')

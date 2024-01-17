@@ -45,6 +45,12 @@ export interface SpotPrices {
   }
 
   export interface LinksContainer {
-    today: {}
-    tomorrow: {}
+    withoutTransferPrices: {
+      today: {}
+      tomorrow: {}  
+    }
+    withTransferPrices: {
+      today: {}
+      tomorrow: {}  
+    }
   }

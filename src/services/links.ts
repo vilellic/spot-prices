@@ -4,17 +4,21 @@ var dateUtils = require("../utils/dateUtils");
 
 export interface GetExampleLinksPars {
   host: string
+  tomorrowAvailable: boolean
+  noHours: number
+  transferPrices: TransferPrices
 }
-
-const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21)
-const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21)
-const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21) 
 
 module.exports = {
 
-  getExampleLinks: function ({ host }: GetExampleLinksPars): LinksContainer {
+  getExampleLinks: function ({ host, tomorrowAvailable, noHours, transferPrices }: 
+    GetExampleLinksPars): LinksContainer {
 
-    const amountOfHours: number = 6;
+    const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21)
+    const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21)
+    const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21) 
+
+    const amountOfHours: number = noHours ? noHours : 6;
 
     const dateRangeToday : DateRange = {
       start: yesterday21,
@@ -26,34 +30,48 @@ module.exports = {
       end: tomorrow21,
     }
 
-    const transferPrices: TransferPrices = {
+    const tp: TransferPrices = transferPrices ? transferPrices : {
       peakTransfer: 0.0445,
       offPeakTransfer: 0.0274
     }
 
-    return { 
-      today: {
-       "LowestPrices": host + createUrl("LowestPrices", amountOfHours, dateRangeToday, transferPrices),
-       "HighestPrices": host + createUrl("HighestPrices", amountOfHours, dateRangeToday, transferPrices),
-       "OverAveragePrices": host + createUrl("OverAveragePrices", amountOfHours, dateRangeToday, transferPrices),
-       "WeightedPrices": host + createUrl("WeightedPrices", amountOfHours, dateRangeToday, transferPrices),
-       "SequentialPrices": host + createUrl("SequentialPrices", amountOfHours, dateRangeToday, transferPrices)
-      },
-      tomorrow: {
-        "LowestPrices": host + createUrl("LowestPrices", amountOfHours, dateRangeTomorrow, transferPrices),
-        "HighestPrices": host + createUrl("HighestPrices", amountOfHours, dateRangeTomorrow, transferPrices),
-        "OverAveragePrices": host + createUrl("OverAveragePrices", amountOfHours, dateRangeTomorrow, transferPrices),
-        "WeightedPrices": host + createUrl("WeightedPrices", amountOfHours, dateRangeTomorrow, transferPrices),
-        "SequentialPrices": host + createUrl("SequentialPrices", amountOfHours, dateRangeTomorrow, transferPrices),
-      }
-    }
+    const queryModes: string[] = [ 'LowestPrices', 'HighestPrices', 'OverAveragePrices', 
+      'WeightedPrices', 'SequentialPrices' ]
 
+    const todayLinks = Object.fromEntries(queryModes.map((mode) => (
+      [mode, host + createUrl(mode, dateRangeToday, amountOfHours)]
+    )))
+
+    const tomorrowLinks = tomorrowAvailable ? Object.fromEntries(queryModes.map((mode) => (
+      [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours)]
+    ))) : [ 'no prices yet...' ]
+
+    const todayLinksWithTransfer = Object.fromEntries(queryModes.map((mode) => (
+      [mode, host + createUrl(mode, dateRangeToday, amountOfHours, tp)]
+    )))
+    
+    const tomorrowLinksWithTransfer = tomorrowAvailable ? Object.fromEntries(queryModes.map((mode) => (
+      [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours, tp)]
+    ))) : [ 'no prices yet...' ]
+
+    return {
+      withoutTransferPrices: {
+        today: todayLinks, 
+        tomorrow: tomorrowLinks  
+      },
+      withTransferPrices: {
+        today: todayLinksWithTransfer, 
+        tomorrow: tomorrowLinksWithTransfer  
+      } 
+    }
   }
 
 }
 
-const createUrl = (queryMode: string, numberOfHours: number, dateRange: DateRange, transferPrices: TransferPrices) : string => {
-  return `/query?queryMode=${queryMode}&hours=${numberOfHours}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
+const createUrl = (queryMode: string, dateRange: DateRange, numberOfHours?: number, transferPrices?: TransferPrices) : string => {
+  const noHoursPars = numberOfHours && queryMode !== 'OverAveragePrices' ? `&hours=${numberOfHours}` : ''
+  const transferPricesPars =  transferPrices ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}` : ''
+  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}${transferPricesPars}`
 }
 
 const getTimestamp = (date: Date) => {

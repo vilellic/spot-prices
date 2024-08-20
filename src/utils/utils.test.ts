@@ -9,14 +9,12 @@ jest.useFakeTimers()
 var utils = require("./utils");
 let prices = {} as SpotPrices
 
-// TODO: VAT increase is about to happen --> will break this
 test('test getPrice with VAT', () => {
-  expect(utils.getPrice(167.42)).toBe('0.20760')
+  expect(utils.getPrice(167.42)).toBe('0.21011')
 })
 
-// TODO: VAT increase is about to happen --> will break this
 test('test getPrice with VAT positive price', () => {
-  expect(utils.getPrice(1)).toBe('0.00124')
+  expect(utils.getPrice(1)).toBe('0.00125')
 })
 
 test('test getPrice VAT with negative price', () => {

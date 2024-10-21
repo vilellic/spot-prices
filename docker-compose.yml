@@ -1,0 +1,11 @@
+services:
+  spot-prices:
+    container_name: spot-prices
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Helsinki
+    ports:
+      - 8089:8089

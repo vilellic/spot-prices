@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cd ..
 rm -rf build/*
 rm -f current.json prices.json
 npx tsc

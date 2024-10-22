@@ -64,14 +64,10 @@ const updatePrices = async () => {
 }
 
 const updateCurrentPrice = async () => {
-  const currentPrice = {
-    price: Number,
-    time: Date,
-  }
   const json = await getCurrentJson()
   if (json.success === true) {
-    currentPrice.price = utils.getPrice(json.data[0].price)
-    currentPrice.time = dateUtils.getDate(json.data[0].timestamp)
+    const currentPrice = { price: utils.getPrice(json.data[0].price), 
+      start: dateUtils.getDateStr(json.data[0].timestamp)} as PriceRow
     spotCache.set(constants.CACHED_NAME_CURRENT, currentPrice)
   }
 }

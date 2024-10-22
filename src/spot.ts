@@ -162,6 +162,9 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
       res.end(getUnavailableResponse())
     } else {
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+      if (spotPrices === undefined) {
+        res.end(getUnavailableResponse())
+      }
       const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
         dateRange: dateRange, queryMode: queryMode, transferPrices})
       if (hours) {
@@ -176,6 +179,9 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
     const numberOfHours = Number(parsed.searchParams.get('hours'))
     let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+    if (cachedPrices === undefined) {
+      res.end('Not available')
+    }
     const tomorrowAvailable = isPriceListComplete(cachedPrices.tomorrow)
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))

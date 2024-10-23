@@ -22,7 +22,7 @@ callApi() {
 
 callApi $url # LowestPrices
 callApi "$url&queryMode=HighestPrices"
-callApi "$url&queryMode=OverAveragePrices"
+callApi "$url&queryMode=AboveAveragePrices"
 callApi "$url&queryMode=WeightedPrices"
 callApi "$url&queryMode=SequentialPrices"
 

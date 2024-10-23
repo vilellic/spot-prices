@@ -264,10 +264,10 @@ test('test sequential getHours, 5 lowest', () => {
   )
 })
 
-test('test over avg. prices', () => {
+test('test above avg. prices', () => {
   const result = query.getHours({
     spotPrices: prices, dateRange: fromTodayDateRange, 
-    queryMode: "OverAveragePrices"
+    queryMode: "AboveAveragePrices"
   })
 
   expect(result).toStrictEqual(
@@ -297,10 +297,10 @@ test('test over avg. prices', () => {
   )
 })
 
-test('test over avg. prices with transfer', () => {
+test('test above avg. prices with transfer', () => {
   const result = query.getHours({
     spotPrices: prices, dateRange: fromTodayDateRange, 
-    queryMode: "OverAveragePrices", transferPrices: transferPrices
+    queryMode: "AboveAveragePrices", transferPrices: transferPrices
   })
 
   expect(result).toStrictEqual(

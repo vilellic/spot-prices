@@ -35,7 +35,7 @@ module.exports = {
       offPeakTransfer: 0.0274
     }
 
-    const queryModes: string[] = [ 'LowestPrices', 'HighestPrices', 'OverAveragePrices', 
+    const queryModes: string[] = [ 'LowestPrices', 'HighestPrices', 'AboveAveragePrices', 
       'WeightedPrices', 'SequentialPrices' ]
 
     const todayLinks = Object.fromEntries(queryModes.map((mode) => (
@@ -69,7 +69,7 @@ module.exports = {
 }
 
 const createUrl = (queryMode: string, dateRange: DateRange, numberOfHours?: number, transferPrices?: TransferPrices) : string => {
-  const noHoursPars = numberOfHours && queryMode !== 'OverAveragePrices' ? `&hours=${numberOfHours}` : ''
+  const noHoursPars = numberOfHours && queryMode !== 'AboveAveragePrices' ? `&hours=${numberOfHours}` : ''
   const transferPricesPars =  transferPrices ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}` : ''
   return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}${transferPricesPars}`
 }

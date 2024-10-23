@@ -154,12 +154,13 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
       end: dateUtils.getDate(endTime),
     }
 
-    if (queryMode !== 'OverAveragePrices' && !numberOfHours) {
+    if (queryMode !== 'AboveAveragePrices' && !numberOfHours) {
       res.end(getUnavailableResponse())
     } else {
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-      if (spotPrices === undefined) {
+      if (!spotPrices.today) {
         res.end(getUnavailableResponse())
+        return
       }
       const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
         dateRange: dateRange, queryMode: queryMode, transferPrices})
@@ -177,6 +178,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
     if (cachedPrices === undefined) {
       res.end('Not available')
+      return
     }
     const tomorrowAvailable = isPriceListComplete(cachedPrices.tomorrow)
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
@@ -195,7 +197,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 })
 
 const getUnavailableResponse = () => {
-  return JSON.stringify({ hours: 'unavailable' })
+  return JSON.stringify({ hours: [] })
 }
 
 const isPriceListComplete = (priceList: PriceRow[]) => {

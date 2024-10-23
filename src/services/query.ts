@@ -15,7 +15,7 @@ interface GetHoursParameters {
 export enum QueryMode {
   LowestPrices = "LowestPrices",
   HighestPrices = "HighestPrices",
-  OverAveragePrices = "OverAveragePrices",
+  AboveAveragePrices = "AboveAveragePrices",
   WeightedPrices = "WeightedPrices",
   SequentialPrices = "SequentialPrices"
 }
@@ -26,12 +26,12 @@ module.exports = {
     queryMode, transferPrices }: GetHoursParameters): HoursContainer | undefined {
 
     // Validate queryMode parameter
-    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.OverAveragePrices,
+    if (![QueryMode.LowestPrices, QueryMode.HighestPrices, QueryMode.AboveAveragePrices,
     QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
       return undefined
     }
 
-    if (queryMode !== QueryMode.OverAveragePrices && numberOfHours === undefined) {
+    if (queryMode !== QueryMode.AboveAveragePrices && numberOfHours === undefined) {
       return undefined
     }
 
@@ -65,7 +65,7 @@ module.exports = {
 
     } else {
 
-      if (queryMode === QueryMode.OverAveragePrices) { 
+      if (queryMode === QueryMode.AboveAveragePrices) { 
 
         const avgPriceAll = withTransferPrices ? 
            Number(utils.getAveragePriceWithTransfer(timeFilteredPrices)) : Number(utils.getAveragePrice(timeFilteredPrices))

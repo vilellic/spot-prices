@@ -42,6 +42,12 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   } else if (req.url === '/') {
     rootController.handleRoot({res: res, cache: spotCache})
   } else if (req.url?.startsWith('/query')) {
+    const prices = spotCache.get(constants.CACHED_NAME_PRICES)
+    if (prices == undefined || prices.length == 0) {
+      res.end(getUnavailableResponse())
+      return
+    }
+
     const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
 
     const numberOfHours = Number(parsed.searchParams.get('hours'))
@@ -62,18 +68,16 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 
     if (queryMode !== 'AboveAveragePrices' && !numberOfHours) {
       res.end(getUnavailableResponse())
+      return
     } else {
-      const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-      if (!spotPrices.today) {
-        res.end(getUnavailableResponse())
-        return
-      }
-      const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
+      const hours = query.getHours({spotPrices: prices, numberOfHours: numberOfHours, 
         dateRange: dateRange, queryMode: queryMode, transferPrices})
       if (hours) {
         res.end(JSON.stringify(hours))
+        return
       } else {
         res.end(getUnavailableResponse())
+        return
       }  
     }
 

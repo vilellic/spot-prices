@@ -64,7 +64,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
       res.end(getUnavailableResponse())
     } else {
       const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-      if (!spotPrices.today) {
+      if (spotPrices === undefined || !spotPrices.today) {
         res.end(getUnavailableResponse())
         return
       }

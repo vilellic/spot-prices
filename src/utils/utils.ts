@@ -33,6 +33,10 @@ module.exports = {
       }
     }
     return currentPrice
+  },
+
+  isPriceListComplete: function (priceList: PriceRow[]) {
+    return priceList !== undefined && priceList.length >= 23
   }
 
 }

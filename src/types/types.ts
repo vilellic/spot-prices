@@ -1,3 +1,5 @@
+import { ServerResponse } from "http"
+
 export interface SpotPrices {
     yesterday: PriceRow[],
     today: PriceRow[],
@@ -53,4 +55,9 @@ export interface SpotPrices {
       today: {}
       tomorrow: {}  
     }
+  }
+
+  export interface ControllerContext {
+    res: ServerResponse;
+    cache: any;
   }

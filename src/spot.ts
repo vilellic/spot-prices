@@ -70,7 +70,12 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
       res.end(getUnavailableResponse())
       return
     } else {
-      const hours = query.getHours({spotPrices: prices, numberOfHours: numberOfHours, 
+      const spotPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
+      if (spotPrices === undefined || !spotPrices.today) {
+        res.end(getUnavailableResponse())
+        return
+      }
+      const hours = query.getHours({spotPrices: spotPrices, numberOfHours: numberOfHours, 
         dateRange: dateRange, queryMode: queryMode, transferPrices})
       if (hours) {
         res.end(JSON.stringify(hours))

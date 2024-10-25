@@ -30,7 +30,7 @@
     "typescript": "^5.2.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "TZ=Europe/Helsinki jest"
   },
   "repository": {
     "type": "git",

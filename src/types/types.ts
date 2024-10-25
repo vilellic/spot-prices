@@ -1,4 +1,4 @@
-import { ServerResponse } from "http"
+import { IncomingMessage, ServerResponse } from "http"
 
 export interface SpotPrices {
     yesterday: PriceRow[],
@@ -59,5 +59,6 @@ export interface SpotPrices {
 
   export interface ControllerContext {
     res: ServerResponse;
+    req?: IncomingMessage;
     cache: any;
   }

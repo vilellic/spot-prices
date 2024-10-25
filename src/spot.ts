@@ -1,5 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { DateRange, SpotPrices, TransferPrices } from './types/types';
 
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
@@ -13,10 +12,10 @@ const CronJob = require('cron').CronJob
 
 var constants = require("./types/constants");
 var utils = require("./utils/utils");
-var dateUtils = require("./utils/dateUtils");
-var query = require('./services/query')
-var links = require('./services/links')
+
 var rootController = require('./controller/rootController')
+var queryController = require('./controller/queryController')
+var linksController = require('./controller/linksController')
 
 require('log-timestamp')(function () {
   return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s'
@@ -38,77 +37,28 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   console.log('Request url = ' + `${protocol}://${req.headers.host}` + req.url)
 
   if (req.url === '/current') {
-    rootController.handleCurrent({res: res, cache: spotCache})
+    rootController.handleCurrent({ res: res, cache: spotCache })
   } else if (req.url === '/') {
-    rootController.handleRoot({res: res, cache: spotCache})
+    rootController.handleRoot({ res: res, cache: spotCache })
   } else if (req.url?.startsWith('/query')) {
-    const prices = spotCache.get(constants.CACHED_NAME_PRICES)
-    if (prices == undefined || prices.length == 0) {
-      res.end(getUnavailableResponse())
-      return
-    }
-
-    const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
-
-    const numberOfHours = Number(parsed.searchParams.get('hours'))
-    const startTime = Number(parsed.searchParams.get('startTime'))
-    const endTime = Number(parsed.searchParams.get('endTime'))
-    const queryMode: string = parsed.searchParams.get('queryMode') || 'LowestPrices'
-    const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
-    const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
-    const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
-      offPeakTransfer: offPeakTransferPrice,
-      peakTransfer: peakTransferPrice
-    } : undefined
-
-    const dateRange : DateRange = {
-      start: dateUtils.getDate(startTime),
-      end: dateUtils.getDate(endTime),
-    }
-
-    if (queryMode !== 'AboveAveragePrices' && !numberOfHours) {
-      res.end(getUnavailableResponse())
+    if (!utils.isCacheReady(spotCache)) {
+      res.end(queryController.getUnavailableResponse())
       return
     } else {
-      const hours = query.getHours({spotPrices: prices, numberOfHours: numberOfHours, 
-        dateRange: dateRange, queryMode: queryMode, transferPrices})
-      if (hours) {
-        res.end(JSON.stringify(hours))
-        return
-      } else {
-        res.end(getUnavailableResponse())
-        return
-      }  
+      queryController.handleQuery({ res: res, req: req, cache: spotCache })
     }
-
   } else if (req.url?.startsWith('/links')) {
-
-    const parsed = new URL(req.url, `${protocol}://${req.headers.host}`)
-    const numberOfHours = Number(parsed.searchParams.get('hours'))
-    let cachedPrices = spotCache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-    if (cachedPrices === undefined) {
-      res.end('Not available')
+    if (!utils.isCacheReady(spotCache)) {
+      res.end(linksController.getUnavailableResponse())
       return
+    } else {
+      linksController.handleLinks({ res: res, req: req, cache: spotCache })
     }
-    const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.tomorrow)
-    const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'))
-    const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'))
-    const transferPrices: TransferPrices | undefined = offPeakTransferPrice && peakTransferPrice ? {
-      offPeakTransfer: offPeakTransferPrice,
-      peakTransfer: peakTransferPrice
-    } : undefined
-    res.end(JSON.stringify(links.getExampleLinks({host: `${protocol}://${req.headers.host}`, 
-      tomorrowAvailable: tomorrowAvailable, noHours: numberOfHours, transferPrices: transferPrices})))
-
   } else {
     res.statusCode = 404
     res.end('Not found')
   }
 })
-
-const getUnavailableResponse = () => {
-  return JSON.stringify({ hours: [] })
-}
 
 function writeToDisk(name: string, content: string) {
   try {

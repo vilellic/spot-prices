@@ -37,6 +37,11 @@ module.exports = {
 
   isPriceListComplete: function (priceList: PriceRow[]) {
     return priceList !== undefined && priceList.length >= 23
+  },
+
+  isCacheReady: function (cache: any) {
+    const prices = cache.get(constants.CACHED_NAME_PRICES)
+    return (cache.keys().length > 0 && prices !== undefined && prices.today.length > 0)
   }
 
 }

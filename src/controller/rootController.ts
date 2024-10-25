@@ -17,7 +17,6 @@ module.exports = {
 
     let currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today)
     if (currentPrice === undefined) {
-      // Current price was not found for some reason. Fallback to call API to fetch price
       const currentJson = await getCurrentJson()
       if (currentJson.success == true) {
         currentPrice = utils.getPrice(currentJson.data[0].price)
@@ -38,16 +37,6 @@ module.exports = {
       tomorrow: cachedPrices.tomorrow
     }
     ctx.res.end(JSON.stringify(prices))
-  },
-
-  handleCurrent: async function (ctx: ControllerContext) {
-    // Current price
-    let currentPrice = ctx.cache.get(constants.CACHED_NAME_CURRENT)
-    if (currentPrice === undefined || Object.keys(currentPrice).length === 0) {
-      await this.updateCurrentPrice(ctx.cache)
-      currentPrice = ctx.cache.get(constants.CACHED_NAME_CURRENT)
-    }
-    ctx.res.end(JSON.stringify(currentPrice))
   },
 
   updatePrices: async function (cache: any) {
@@ -80,18 +69,6 @@ module.exports = {
 
     cache.set(constants.CACHED_NAME_PRICES, prices)
   },
-
-  updateCurrentPrice: async function (cache: any) {
-    const json = await getCurrentJson()
-    if (json.success === true) {
-      const currentPrice = {
-        price: utils.getPrice(json.data[0].price),
-        start: dateUtils.getDateStr(json.data[0].timestamp)
-      } as PriceRow
-      cache.set(constants.CACHED_NAME_CURRENT, currentPrice)
-    }
-  }
-
 }
 
 async function getCurrentJson() {
@@ -99,7 +76,7 @@ async function getCurrentJson() {
   try {
     const res = await fetch(url, { method: 'Get' })
     const json = await res.json()
-    console.log(url)
+    console.log('getCurrentJson() = ' + url)
     return json
   } catch (error) {
     console.log(error)
@@ -129,7 +106,7 @@ async function getPricesJson(start: string, end: string) {
   try {
     const res = await fetch(url, { method: 'Get' })
     const json = await res.json()
-    console.log(url)
+    console.log('getPricesJson() = ' + url)
     return json
   } catch (error) {
     console.log(error)

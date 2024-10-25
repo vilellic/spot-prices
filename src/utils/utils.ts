@@ -33,6 +33,18 @@ module.exports = {
       }
     }
     return currentPrice
+  },
+
+  isPriceListComplete: function (priceList: PriceRow[]) {
+    return priceList !== undefined && priceList.length >= 23
+  },
+
+  isCacheReady: function (cache: any) {
+    if (!cache.has(constants.CACHED_NAME_PRICES)) {
+      return false;
+    }
+    const prices = cache.get(constants.CACHED_NAME_PRICES)
+    return prices.today?.length > 0
   }
 
 }

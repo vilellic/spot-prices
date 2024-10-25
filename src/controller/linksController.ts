@@ -25,8 +25,4 @@ module.exports = {
     })))
   },
 
-  getUnavailableResponse: function () {
-    return JSON.stringify('Not available')
-  }
-
 }

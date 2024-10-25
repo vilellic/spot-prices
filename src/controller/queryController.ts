@@ -25,7 +25,6 @@ module.exports = {
 
     if (queryMode !== 'AboveAveragePrices' && !numberOfHours) {
       ctx.res.end(this.getUnavailableResponse())
-      return
     } else {
       const spotPrices = ctx.cache.get(constants.CACHED_NAME_PRICES) as SpotPrices
       const hours = query.getHours({
@@ -34,10 +33,8 @@ module.exports = {
       })
       if (hours) {
         ctx.res.end(JSON.stringify(hours))
-        return
       } else {
         ctx.res.end(this.getUnavailableResponse())
-        return
       }
     }
   },

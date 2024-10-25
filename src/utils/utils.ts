@@ -40,8 +40,11 @@ module.exports = {
   },
 
   isCacheReady: function (cache: any) {
+    if (!cache.has(constants.CACHED_NAME_PRICES)) {
+      return false;
+    }
     const prices = cache.get(constants.CACHED_NAME_PRICES)
-    return (cache.keys().length > 0 && prices !== undefined && prices.today.length > 0)
+    return prices.today?.length > 0
   }
 
 }

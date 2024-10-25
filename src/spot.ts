@@ -34,12 +34,9 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 
   if (!utils.isCacheReady(spotCache)) {
     await rootController.updatePrices(spotCache)
-    await rootController.updateCurrentPrice(spotCache)
   }
 
-  if (req.url === '/current') {
-    rootController.handleCurrent({ res: res, cache: spotCache })
-  } else if (req.url === '/') {
+  if (req.url === '/') {
     rootController.handleRoot({ res: res, cache: spotCache })
   } else if (req.url?.startsWith('/query')) {
     queryController.handleQuery({ res: res, req: req, cache: spotCache })
@@ -50,13 +47,6 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     res.end('Not found')
   }
 })
-
-function resetPrices() {
-  storeController.resetStoredFiles()
-  console.log(spotCache.getStats())
-  spotCache.flushAll()
-  console.log('Cache has been flushed')
-} 
 
 // every minute
 // eslint-disable-next-line no-new
@@ -70,34 +60,22 @@ new CronJob(
   timeZone
 )
 
-// every hour
-// eslint-disable-next-line no-new
-new CronJob(
-  '0 * * * *',
-  function () {
-    rootController.updateCurrentPrice(spotCache)
-  },
-  null,
-  true,
-  timeZone
-)
-
 // at midnight
 // eslint-disable-next-line no-new
 new CronJob(
   '0 0 * * *',
   function () {
-    resetPrices()
+    storeController.resetPrices()
     rootController.updatePrices(spotCache)
-    rootController.updateCurrentPrice(spotCache)
   },
   null,
   true,
   timeZone
 )
 
-storeController.initializeStoredFiles()
-storeController.initializeCacheFromDisk(spotCache)
+console.log('Spot Prices server starting ...')
+storeController.initStoredFilesIfNotExists()
+storeController.initCacheFromDisk(spotCache)
 rootController.updatePrices(spotCache)
-rootController.updateCurrentPrice(spotCache)
+console.log('Ready!')
 server.listen(port)

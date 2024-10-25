@@ -5,29 +5,25 @@ var constants = require("../types/constants");
 
 module.exports = {
 
-  initializeCacheFromDisk: function (cache: any) {
-    if (!cache.has(constants.CACHED_NAME_CURRENT)) {      
-      cache.set(constants.CACHED_NAME_CURRENT, readStoredResult(constants.CACHED_NAME_CURRENT))
-    }
+  initCacheFromDisk: function (cache: any) {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       cache.set(constants.CACHED_NAME_PRICES, readStoredResult(constants.CACHED_NAME_PRICES))
     }
     console.log('Cache contents: ')
-    console.log('CACHED_NAME_CURRENT: ' + JSON.stringify(cache.get(constants.CACHED_NAME_CURRENT)))
-    console.log('CACHED_NAME_PRICES: ' + JSON.stringify(cache.get(constants.CACHED_NAME_PRICES)))
+    console.log('CACHED_NAME_PRICES: ' + JSON.stringify(cache.get(constants.CACHED_NAME_PRICES), null, 2))
   },
 
-  resetStoredFiles: function () {
-    console.log('resetStoredFiles()')
-    writeToDisk(constants.CACHED_NAME_CURRENT, '{}')
-    writeToDisk(constants.CACHED_NAME_PRICES, '[]')
+  resetPrices: function(cache: any) {
+    this.resetStoredFiles()
+    console.log(cache.getStats())
+    cache.flushAll()
+    console.log('** Cache has been flushed **')
   },
 
-  initializeStoredFiles: function () {
-    if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_CURRENT)) ||
-      !existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
+  initStoredFilesIfNotExists: function () {
+    if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
       console.log('initializeStoredFiles()')
-      this.resetStoredFiles()      
+      resetStoredFiles()      
     }
   },
 
@@ -35,7 +31,6 @@ module.exports = {
     const storedResult = JSON.stringify(readStoredResult(name))
 
     if (updatedResult !== storedResult) {
-      console.log(`Writing ${name} to disk`)
       writeToDisk(name, updatedResult)
     }
   }
@@ -55,6 +50,11 @@ function writeToDisk(name: string, content: string) {
     writeFileSync(getStoredResultFileName(name), content, 'utf8')
     console.log('Updated result to disk = ' + name)
   } catch (error) {
-    console.log('An error has occurred ', error)
+    console.log('writeToDisk: error ', error)
   }
+}
+
+function resetStoredFiles() {
+  console.log('resetStoredFiles()')
+  writeToDisk(constants.CACHED_NAME_PRICES, '[]')
 }

@@ -3,7 +3,7 @@
 set -ex
 
 cleanPrices() {
-   rm -f current.json prices.json
+   rm -f prices.json
 }
 
 rm -rf build/*

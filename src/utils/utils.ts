@@ -1,5 +1,6 @@
 import { PriceRow, PriceRowWithTransfer } from "../types/types";
 var constants = require("../types/constants");
+var dateUtils = require("./dateUtils");
 
 module.exports = {
 
@@ -45,6 +46,17 @@ module.exports = {
     }
     const prices = cache.get(constants.CACHED_NAME_PRICES)
     return prices.today?.length > 0
+  },
+
+  dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
+    if (priceList === undefined || priceList.length <= 1) {
+      return false;
+    }
+    const start = dateUtils.parseISODate(priceList.at(0)?.start)
+    const end = dateUtils.parseISODate(priceList.at(-1)?.start)
+    end.add(1, 'hours')
+    end.subtract(1, 'milliseconds')
+    return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf()
   }
 
 }

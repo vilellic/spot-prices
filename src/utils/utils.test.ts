@@ -7,7 +7,12 @@ jest.useFakeTimers()
     .setSystemTime(fixedFakeDate);
 
 var utils = require("./utils");
+var dateUtils = require("./dateUtils");
 let prices = {} as SpotPrices
+
+beforeEach(() => {
+  prices = require('./testPrices.json');
+})
 
 test('test getPrice with VAT', () => {
   expect(utils.getPrice(167.42)).toBe('0.21011')
@@ -25,10 +30,6 @@ test('test getPrice VAT with negative price', () => {
   expect(utils.getPrice(-1)).toBe('-0.00100')
 })
 
-beforeEach(() => {
-  prices = require('./testPrices.json');
-})
-
 test('test getAveragePrice', () => {
   expect(utils.getAveragePrice(prices.today)).toBe('0.01185')
   expect(utils.getAveragePrice(prices.yesterday)).toBe('0.13479')
@@ -37,4 +38,13 @@ test('test getAveragePrice', () => {
 test('test getCurrentPriceFromToday', () => {
   // At 3 AM
   expect(utils.getCurrentPriceFromTodayPrices(prices.today)).toBe('-0.00241')
+})
+
+test('test time is in list range', () => {
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T05:03:42+0300'))).toBe(true)
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T00:00:00+0300'))).toBe(true)
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T23:59:59+0300'))).toBe(true)
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-13T02:11:07+0300'))).toBe(false)
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-11T13:42:22+0300'))).toBe(false)
+  expect( utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-11T23:59:59+0300'))).toBe(false)
 })

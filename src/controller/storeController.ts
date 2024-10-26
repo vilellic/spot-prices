@@ -2,6 +2,7 @@ const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
 var constants = require("../types/constants");
+var utils = require("../utils/utils");
 
 module.exports = {
 
@@ -11,10 +12,17 @@ module.exports = {
     }
     console.log('Cache contents: ')
     console.log('CACHED_NAME_PRICES: ' + JSON.stringify(cache.get(constants.CACHED_NAME_PRICES), null, 2))
+    const prices = cache.get(constants.CACHED_NAME_PRICES)
+
+    // Invalidate cache if current time is not in todays range
+    if (utils.isCacheReady(cache) && !utils.dateIsInPricesList(prices.today, new Date())) {
+      console.log('Invalidating old cache')
+      this.resetPrices(cache)
+    }
   },
 
   resetPrices: function(cache: any) {
-    this.resetStoredFiles()
+    resetStoredFiles()
     console.log(cache.getStats())
     cache.flushAll()
     console.log('** Cache has been flushed **')

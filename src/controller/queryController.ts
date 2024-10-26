@@ -1,7 +1,7 @@
 import { ControllerContext, DateRange, SpotPrices, TransferPrices } from "../types/types";
-var constants = require("../types/constants");
-var dateUtils = require("../utils/dateUtils");
-var query = require('../services/query')
+const constants = require("../types/constants");
+const dateUtils = require("../utils/dateUtils");
+const query = require('../services/query')
 
 module.exports = {
 

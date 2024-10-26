@@ -1,7 +1,7 @@
 import { ControllerContext, SpotPrices, TransferPrices } from "../types/types";
-var constants = require("../types/constants");
-var utils = require("../utils/utils");
-var links = require('../services/links')
+const constants = require("../types/constants");
+const utils = require("../utils/utils");
+const links = require('../services/links')
 
 module.exports = {
 

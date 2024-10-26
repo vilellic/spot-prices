@@ -1,16 +1,16 @@
 import { IncomingMessage, ServerResponse } from 'http';
+import NodeCache from 'node-cache';
 
 const http = require('http')
 const server = http.createServer()
 const moment = require('moment')
-const NodeCache = require('node-cache')
 const CronJob = require('cron').CronJob
 
-var utils = require("./utils/utils");
-var rootController = require('./controller/rootController')
-var queryController = require('./controller/queryController')
-var linksController = require('./controller/linksController')
-var storeController = require('./controller/storeController')
+const utils = require("./utils/utils");
+const rootController = require('./controller/rootController')
+const queryController = require('./controller/queryController')
+const linksController = require('./controller/linksController')
+const storeController = require('./controller/storeController')
 
 require('log-timestamp')(function () {
   return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s'
@@ -22,9 +22,9 @@ const protocol: string = 'http'
 const port: number = 8089
 const timeZone = 'Europe/Helsinki'
 
-const spotCache = new NodeCache()
+const spotCache : NodeCache = new NodeCache()
 
-spotCache.on('set', function (key: string, value: Object) {
+spotCache.on('set', function (key: string, value: object) {
   storeController.updateStoredResultWhenChanged(key, JSON.stringify(value))
 })
 

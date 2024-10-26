@@ -1,6 +1,7 @@
-import { PriceRow, PriceRowWithTransfer } from "../types/types";
-var constants = require("../types/constants");
-var dateUtils = require("./dateUtils");
+import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from "../types/types";
+const constants = require("../types/constants");
+const dateUtils = require("./dateUtils");
+import NodeCache from "node-cache";
 
 module.exports = {
 
@@ -18,7 +19,7 @@ module.exports = {
     return Number((avg).toFixed(5)).toString()
   },
 
-  getPrice: function (inputPrice: Number) {
+  getPrice: function (inputPrice: number) {
     return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5)
   },
 
@@ -40,16 +41,20 @@ module.exports = {
     return priceList !== undefined && priceList.length >= 23
   },
 
-  isCacheReady: function (cache: any) {
+  getSpotPricesFromCache: function(cache: NodeCache) : SpotPrices {
+    return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices()
+  },
+
+  isCacheReady: function (cache: NodeCache) {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       return false;
     }
-    const prices = cache.get(constants.CACHED_NAME_PRICES)
-    return prices.today?.length > 0
+    const spotPrices : SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices()
+    return spotPrices.today.length > 0
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
-    if (priceList === undefined || priceList.length <= 1) {
+    if (priceList === undefined || priceList.length <= 1) {
       return false;
     }
     const start = dateUtils.parseISODate(priceList.at(0)?.start)

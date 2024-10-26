@@ -1,19 +1,18 @@
-import { ControllerContext, SpotPrices } from "../types/types";
-var constants = require("../types/constants");
-var utils = require("../utils/utils");
-var dateUtils = require("../utils/dateUtils");
+import NodeCache from "node-cache";
+import { ControllerContext, getEmptySpotPrices, SpotPrices } from "../types/types";
+const constants = require("../types/constants");
+const utils = require("../utils/utils");
+const dateUtils = require("../utils/dateUtils");
 import { PricesContainer, PriceRow } from '../types/types';
 import fetch from 'node-fetch';
 
 module.exports = {
 
   handleRoot: async function (ctx: ControllerContext) {
-    // Today and tomorrow prices
-    let cachedPrices = ctx.cache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-    if (cachedPrices === undefined || cachedPrices.today.length === 0) {
+    if (!utils.isCacheReady(ctx.cache)) {
       await this.updatePrices(ctx.cache)
-      cachedPrices = ctx.cache.get(constants.CACHED_NAME_PRICES)
     }
+    const cachedPrices = utils.getSpotPricesFromCache(ctx.cache)
 
     let currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today)
     if (currentPrice === undefined) {
@@ -39,16 +38,11 @@ module.exports = {
     ctx.res.end(JSON.stringify(prices))
   },
 
-  updatePrices: async function (cache: any) {
+  updatePrices: async function (cache: NodeCache) {
     let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices
-
     let prices = {} as SpotPrices
     if (cachedPrices === undefined) {
-      cachedPrices = {
-        yesterday: [],
-        today: [],
-        tomorrow: []
-      } as SpotPrices
+      cachedPrices = getEmptySpotPrices()
     } else {
       prices = {
         today: cachedPrices.today,
@@ -106,7 +100,7 @@ async function getPricesJson(start: string, end: string) {
   try {
     const res = await fetch(url, { method: 'Get' })
     const json = await res.json()
-    console.log('getPricesJson() = ' + url)
+    console.log(url)
     return json
   } catch (error) {
     console.log(error)

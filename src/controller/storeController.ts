@@ -1,27 +1,29 @@
+import NodeCache from "node-cache";
+import { getEmptySpotPrices } from "../types/types";
 const { readFileSync } = require('fs')
 const { writeFileSync } = require('fs')
 const { existsSync } = require('fs')
-var constants = require("../types/constants");
-var utils = require("../utils/utils");
+const constants = require("../types/constants");
+const utils = require("../utils/utils");
 
 module.exports = {
 
-  initCacheFromDisk: function (cache: any) {
+  initCacheFromDisk: function (cache: NodeCache) {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       cache.set(constants.CACHED_NAME_PRICES, readStoredResult(constants.CACHED_NAME_PRICES))
     }
     console.log('Cache contents: ')
     console.log('CACHED_NAME_PRICES: ' + JSON.stringify(cache.get(constants.CACHED_NAME_PRICES), null, 2))
-    const prices = cache.get(constants.CACHED_NAME_PRICES)
+    const spotPrices = utils.getSpotPricesFromCache(cache)
 
     // Invalidate cache if current time is not in todays range
-    if (utils.isCacheReady(cache) && !utils.dateIsInPricesList(prices.today, new Date())) {
+    if (utils.isCacheReady(cache) && !utils.dateIsInPricesList(spotPrices.today, new Date())) {
       console.log('Invalidating old cache')
       this.resetPrices(cache)
     }
   },
 
-  resetPrices: function(cache: any) {
+  resetPrices: function(cache: NodeCache) {
     resetStoredFiles()
     console.log(cache.getStats())
     cache.flushAll()
@@ -64,5 +66,5 @@ function writeToDisk(name: string, content: string) {
 
 function resetStoredFiles() {
   console.log('resetStoredFiles()')
-  writeToDisk(constants.CACHED_NAME_PRICES, '[]')
+  writeToDisk(constants.CACHED_NAME_PRICES, JSON.stringify(getEmptySpotPrices()))
 }

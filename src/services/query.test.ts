@@ -1,14 +1,14 @@
 import { expect, test } from '@jest/globals';
 import { DateRange, SpotPrices, TransferPrices } from '../types/types';
 
-var dateUtils = require('../utils/dateUtils');
+import dateUtils from '../utils/dateUtils';
+import query from './query';
 
 // Will resolve to Tue Sep 12 2023 03:00:00 GMT+0300 (Eastern European Summer Time)
 const fixedFakeDate = new Date('2023-09-12');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
-var query = require('./query');
 let prices = {} as SpotPrices;
 
 const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21);
@@ -305,6 +305,7 @@ test('test daylight saving time, duplicate hour', () => {
   const start: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 0);
   const end: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 6);
 
+  // import daylightPrices from '../utils/testPricesDaylightSaving.json');
   const daylightPrices = require('../utils/testPricesDaylightSaving.json');
   const result = query.getHours({
     spotPrices: daylightPrices,

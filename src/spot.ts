@@ -1,16 +1,17 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import NodeCache from 'node-cache';
 
-const http = require('http');
+import http from 'http';
 const server = http.createServer();
-const moment = require('moment');
-const CronJob = require('cron').CronJob;
+import moment from 'moment';
+//(import CronJob from 'cron').CronJob;
+import CronJob from 'cron';
 
-const utils = require('./utils/utils');
-const rootController = require('./controller/rootController');
-const queryController = require('./controller/queryController');
-const linksController = require('./controller/linksController');
-const storeController = require('./controller/storeController');
+import utils from './utils/utils';
+import rootController from './controller/rootController';
+import queryController from './controller/queryController';
+import linksController from './controller/linksController';
+import storeController from './controller/storeController';
 
 require('log-timestamp')(function () {
   return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';

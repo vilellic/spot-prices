@@ -1,8 +1,8 @@
 import { DateRange, HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from '../types/types';
 
-var weighted = require('./weighted');
-var utils = require('../utils/utils');
-var dateUtils = require('../utils/dateUtils');
+import weighted from './weighted';
+import utils from '../utils/utils';
+import dateUtils from '../utils/dateUtils';
 
 interface GetHoursParameters {
   spotPrices: SpotPrices;
@@ -20,7 +20,7 @@ export enum QueryMode {
   SequentialPrices = 'SequentialPrices',
 }
 
-module.exports = {
+export default {
   getHours: function ({
     spotPrices,
     numberOfHours,

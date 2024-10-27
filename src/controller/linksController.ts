@@ -1,9 +1,9 @@
 import { ControllerContext, SpotPrices, TransferPrices } from '../types/types';
-const constants = require('../types/constants');
-const utils = require('../utils/utils');
-const links = require('../services/links');
+import constants from '../types/constants';
+import utils from '../utils/utils';
+import links from '../services/links';
 
-module.exports = {
+export default {
   handleLinks: function (ctx: ControllerContext) {
     const parsed = new URL(ctx.req?.url || '', `http://${ctx.req?.headers.host}`);
     const numberOfHours = Number(parsed.searchParams.get('hours'));

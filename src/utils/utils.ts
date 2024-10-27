@@ -1,9 +1,9 @@
 import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '../types/types';
-const constants = require('../types/constants');
-const dateUtils = require('./dateUtils');
+import constants from '../types/constants';
+import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
 
-module.exports = {
+export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
     const prices = pricesList.map((row) => Number(row.price));
     const sum = prices.reduce((acc, price) => acc + price, 0);

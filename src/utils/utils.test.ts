@@ -5,8 +5,8 @@ const fixedFakeDate = new Date('2023-09-12');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
-var utils = require('./utils');
-var dateUtils = require('./dateUtils');
+import utils from './utils';
+import dateUtils from './dateUtils';
 let prices = {} as SpotPrices;
 
 beforeEach(() => {

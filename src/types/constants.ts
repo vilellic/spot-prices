@@ -1,4 +1,4 @@
-module.exports = Object.freeze({
+export default Object.freeze({
   CACHED_NAME_PRICES: 'prices',
   VAT: 1.255,
 

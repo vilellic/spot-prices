@@ -1,7 +1,7 @@
 import { PriceRowWithTransfer } from '../types/types';
 import { QueryMode } from './query';
 
-var dateUtils = require('../utils/dateUtils');
+import dateUtils from '../utils/dateUtils';
 
 interface WeightedPricesParameters {
   numberOfHours: number;
@@ -10,7 +10,7 @@ interface WeightedPricesParameters {
   queryMode: QueryMode;
 }
 
-module.exports = {
+export default {
   getWeightedPrices: function ({
     numberOfHours,
     priceList,

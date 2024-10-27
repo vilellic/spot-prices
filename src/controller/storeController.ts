@@ -3,10 +3,10 @@ import { getEmptySpotPrices } from '../types/types';
 const { readFileSync } = require('fs');
 const { writeFileSync } = require('fs');
 const { existsSync } = require('fs');
-const constants = require('../types/constants');
-const utils = require('../utils/utils');
+import constants from '../types/constants';
+import utils from '../utils/utils';
 
-module.exports = {
+export default {
   initCacheFromDisk: function (cache: NodeCache) {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       cache.set(constants.CACHED_NAME_PRICES, readStoredResult(constants.CACHED_NAME_PRICES));

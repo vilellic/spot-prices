@@ -1,6 +1,6 @@
 import { DateRange, LinksContainer, TransferPrices } from '../types/types';
 
-var dateUtils = require('../utils/dateUtils');
+import dateUtils from '../utils/dateUtils';
 
 export interface GetExampleLinksPars {
   host: string;
@@ -9,7 +9,7 @@ export interface GetExampleLinksPars {
   transferPrices: TransferPrices;
 }
 
-module.exports = {
+export default {
   getExampleLinks: function ({
     host,
     tomorrowAvailable,

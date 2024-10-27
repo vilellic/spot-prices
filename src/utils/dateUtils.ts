@@ -1,7 +1,7 @@
 import { PriceRow } from '../types/types';
-const moment = require('moment');
+import moment from 'moment';
 
-module.exports = {
+export default {
   getDateStr: function (timestamp: number) {
     return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
   },

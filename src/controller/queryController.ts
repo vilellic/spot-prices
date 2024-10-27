@@ -1,9 +1,9 @@
 import { ControllerContext, DateRange, SpotPrices, TransferPrices } from '../types/types';
-const constants = require('../types/constants');
-const dateUtils = require('../utils/dateUtils');
-const query = require('../services/query');
+import constants from '../types/constants';
+import dateUtils from '../utils/dateUtils';
+import query from '../services/query';
 
-module.exports = {
+export default {
   handleQuery: function (ctx: ControllerContext) {
     const parsed = new URL(ctx.req?.url || '', `http://${ctx.req?.headers.host}`);
     const numberOfHours = Number(parsed.searchParams.get('hours'));

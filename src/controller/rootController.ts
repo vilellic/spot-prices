@@ -1,12 +1,13 @@
 import NodeCache from 'node-cache';
 import { ControllerContext, getEmptySpotPrices, SpotPrices } from '../types/types';
-const constants = require('../types/constants');
-const utils = require('../utils/utils');
-const dateUtils = require('../utils/dateUtils');
+//import constants from '../types/constants');
+import constants from '../types/constants';
+import utils from '../utils/utils';
+import dateUtils from '../utils/dateUtils';
 import { PricesContainer, PriceRow } from '../types/types';
 import fetch from 'node-fetch';
 
-module.exports = {
+export default {
   handleRoot: async function (ctx: ControllerContext) {
     if (!utils.isCacheReady(ctx.cache)) {
       await this.updatePrices(ctx.cache);

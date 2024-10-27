@@ -25,9 +25,11 @@ module.exports = {
 
   resetPrices: function(cache: NodeCache) {
     resetStoredFiles()
-    console.log(cache.getStats())
-    cache.flushAll()
-    console.log('** Cache has been flushed **')
+    if (cache !== undefined) {
+      console.log(cache.getStats())
+      cache.flushAll()
+      console.log('** Cache has been flushed **')  
+    }
   },
 
   initStoredFilesIfNotExists: function () {

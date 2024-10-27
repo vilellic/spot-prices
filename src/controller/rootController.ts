@@ -54,7 +54,7 @@ module.exports = {
     if (!utils.isPriceListComplete(cachedPrices.today)) {
       prices.today = await getDayPrices(dateUtils.getTodaySpanStart(), dateUtils.getTodaySpanEnd())
     }
-    if (!utils.isPriceListComplete(cachedPrices.tomorrow)) {
+    if (!utils.isPriceListComplete(cachedPrices.tomorrow) && (dateUtils.isTimeToGetTomorrowPrices() || cachedPrices.tomorrow.length == 0)) {
       prices.tomorrow = await getDayPrices(dateUtils.getTomorrowSpanStart(), dateUtils.getTomorrowSpanEnd())
     }
     if (!utils.isPriceListComplete(cachedPrices.yesterday)) {

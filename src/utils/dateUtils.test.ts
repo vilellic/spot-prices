@@ -2,6 +2,7 @@ import { expect, test } from '@jest/globals';
 
 const dateUtils = require("./dateUtils");
 
+// Tue Aug 22 2023 03:00:00 GMT+0300
 const fixedFakeDate = new Date('2023-08-22')
 
 jest.useFakeTimers()
@@ -27,4 +28,10 @@ test('test date span end', () => {
 
 test('test date str', () => {
   expect(dateUtils.getWeekdayAndHourStr(new Date())).toBe('3 Tue')
+})
+
+test('is it time to get tomorrow prices', () => {
+  expect(dateUtils.isTimeToGetTomorrowPrices()).toBe(false)
+  fixedFakeDate.setHours(15, 42)
+  expect(dateUtils.isTimeToGetTomorrowPrices(fixedFakeDate)).toBe(true)
 })

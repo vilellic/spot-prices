@@ -65,6 +65,13 @@ module.exports = {
       return this.parseISODate(a.start) - this.parseISODate(b.start)
     })
   },
+
+  isTimeToGetTomorrowPrices: function(now: Date = new Date()) {
+    const date : Date = this.getDateFromHourStarting(new Date(), 0, 14)
+    date.setMinutes(15)
+    return now.valueOf() >= date.valueOf()
+  }
+
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {

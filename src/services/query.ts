@@ -1,15 +1,8 @@
-import {
-  DateRange,
-  HoursContainer,
-  PriceRow,
-  PriceRowWithTransfer,
-  SpotPrices,
-  TransferPrices,
-} from "../types/types";
+import { DateRange, HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from '../types/types';
 
-var weighted = require("./weighted");
-var utils = require("../utils/utils");
-var dateUtils = require("../utils/dateUtils");
+var weighted = require('./weighted');
+var utils = require('../utils/utils');
+var dateUtils = require('../utils/dateUtils');
 
 interface GetHoursParameters {
   spotPrices: SpotPrices;
@@ -20,11 +13,11 @@ interface GetHoursParameters {
 }
 
 export enum QueryMode {
-  LowestPrices = "LowestPrices",
-  HighestPrices = "HighestPrices",
-  AboveAveragePrices = "AboveAveragePrices",
-  WeightedPrices = "WeightedPrices",
-  SequentialPrices = "SequentialPrices",
+  LowestPrices = 'LowestPrices',
+  HighestPrices = 'HighestPrices',
+  AboveAveragePrices = 'AboveAveragePrices',
+  WeightedPrices = 'WeightedPrices',
+  SequentialPrices = 'SequentialPrices',
 }
 
 module.exports = {
@@ -48,25 +41,17 @@ module.exports = {
       return undefined;
     }
 
-    if (
-      queryMode !== QueryMode.AboveAveragePrices &&
-      numberOfHours === undefined
-    ) {
+    if (queryMode !== QueryMode.AboveAveragePrices && numberOfHours === undefined) {
       return undefined;
     }
 
-    const pricesFlat = [
-      ...spotPrices.yesterday,
-      ...spotPrices.today,
-      ...spotPrices.tomorrow,
-    ] as PriceRowWithTransfer[];
+    const pricesFlat = [...spotPrices.yesterday, ...spotPrices.today, ...spotPrices.tomorrow] as PriceRowWithTransfer[];
 
     const withTransferPrices = transferPrices !== undefined;
 
     const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter(
       (entry) =>
-        dateUtils.parseISODate(entry.start) >= dateRange.start &&
-        dateUtils.parseISODate(entry.start) < dateRange.end,
+        dateUtils.parseISODate(entry.start) >= dateRange.start && dateUtils.parseISODate(entry.start) < dateRange.end,
     );
 
     if (withTransferPrices) {
@@ -74,17 +59,13 @@ module.exports = {
         const hour = new Date(timeFilteredPrices[f].start).getHours();
         timeFilteredPrices[f].priceWithTransfer =
           Number(timeFilteredPrices[f].price) +
-          (hour >= 22 || hour < 7
-            ? transferPrices.offPeakTransfer
-            : transferPrices.peakTransfer);
+          (hour >= 22 || hour < 7 ? transferPrices.offPeakTransfer : transferPrices.peakTransfer);
       }
     }
 
     let resultArray: PriceRowWithTransfer[] = [];
 
-    if (
-      [QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)
-    ) {
+    if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
       resultArray = weighted.getWeightedPrices({
         numberOfHours: numberOfHours,
         priceList: timeFilteredPrices,
@@ -97,16 +78,12 @@ module.exports = {
           ? Number(utils.getAveragePriceWithTransfer(timeFilteredPrices))
           : Number(utils.getAveragePrice(timeFilteredPrices));
         resultArray = timeFilteredPrices.filter((row: PriceRowWithTransfer) => {
-          return withTransferPrices
-            ? row.priceWithTransfer > avgPriceAll
-            : row.price > avgPriceAll;
+          return withTransferPrices ? row.priceWithTransfer > avgPriceAll : row.price > avgPriceAll;
         });
       } else {
         // LowestPrices / HighestPrices
         timeFilteredPrices.sort((a, b) => {
-          return withTransferPrices
-            ? a.priceWithTransfer - b.priceWithTransfer
-            : a.price - b.price;
+          return withTransferPrices ? a.priceWithTransfer - b.priceWithTransfer : a.price - b.price;
         });
 
         if (queryMode === QueryMode.HighestPrices) {
@@ -122,11 +99,7 @@ module.exports = {
     const lowestPrice = Math.min(...onlyPrices);
     const highestPrice = Math.max(...onlyPrices);
 
-    const hoursSet = new Set(
-      resultArray.map((entry: PriceRow) =>
-        dateUtils.getWeekdayAndHourStr(entry.start),
-      ),
-    );
+    const hoursSet = new Set(resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start)));
     const hours = [...hoursSet];
 
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
@@ -142,16 +115,8 @@ module.exports = {
         ...(withTransferPrices && {
           withTransferPrices: {
             avg: Number(utils.getAveragePriceWithTransfer(resultArray)),
-            min: Math.min(
-              ...resultArray.map(
-                (entry: PriceRowWithTransfer) => entry.priceWithTransfer,
-              ),
-            ),
-            max: Math.max(
-              ...resultArray.map(
-                (entry: PriceRowWithTransfer) => entry.priceWithTransfer,
-              ),
-            ),
+            min: Math.min(...resultArray.map((entry: PriceRowWithTransfer) => entry.priceWithTransfer)),
+            max: Math.max(...resultArray.map((entry: PriceRowWithTransfer) => entry.priceWithTransfer)),
           },
         }),
       },

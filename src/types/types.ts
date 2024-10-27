@@ -1,5 +1,5 @@
-import { IncomingMessage, ServerResponse } from "http";
-import NodeCache from "node-cache";
+import { IncomingMessage, ServerResponse } from 'http';
+import NodeCache from 'node-cache';
 
 export interface SpotPrices {
   yesterday: PriceRow[];

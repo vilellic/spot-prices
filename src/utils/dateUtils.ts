@@ -1,9 +1,9 @@
-import { PriceRow } from "../types/types";
-const moment = require("moment");
+import { PriceRow } from '../types/types';
+const moment = require('moment');
 
 module.exports = {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format("YYYY-MM-DDTHH:mm:ssZZ");
+    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
   },
 
   getDate: function (timestamp: number) {
@@ -17,7 +17,7 @@ module.exports = {
   },
 
   getWeekdayAndHourStr: function (date: Date) {
-    return new Date(date).getHours() + " " + moment(date).format("ddd");
+    return new Date(date).getHours() + ' ' + moment(date).format('ddd');
   },
 
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
@@ -53,11 +53,7 @@ module.exports = {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
-  getDateFromHourStarting: function (
-    date: Date,
-    offset: number,
-    hour: number,
-  ): Date {
+  getDateFromHourStarting: function (date: Date, offset: number, hour: number): Date {
     date.setDate(date.getDate() + offset);
     date.setHours(hour, 0, 0, 0);
     return date;

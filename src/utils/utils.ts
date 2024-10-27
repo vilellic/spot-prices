@@ -1,12 +1,7 @@
-import {
-  getEmptySpotPrices,
-  PriceRow,
-  PriceRowWithTransfer,
-  SpotPrices,
-} from "../types/types";
-const constants = require("../types/constants");
-const dateUtils = require("./dateUtils");
-import NodeCache from "node-cache";
+import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '../types/types';
+const constants = require('../types/constants');
+const dateUtils = require('./dateUtils');
+import NodeCache from 'node-cache';
 
 module.exports = {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -24,10 +19,7 @@ module.exports = {
   },
 
   getPrice: function (inputPrice: number) {
-    return Number(
-      (Number(inputPrice) / 1000) *
-        (Number(inputPrice) < 0 ? 1 : constants.VAT),
-    ).toFixed(5);
+    return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5);
   },
 
   getCurrentPriceFromTodayPrices: function (todayPrices: PriceRow[]) {
@@ -56,8 +48,7 @@ module.exports = {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       return false;
     }
-    const spotPrices: SpotPrices =
-      cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
+    const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
     return spotPrices.today.length > 0;
   },
 
@@ -67,8 +58,8 @@ module.exports = {
     }
     const start = dateUtils.parseISODate(priceList.at(0)?.start);
     const end = dateUtils.parseISODate(priceList.at(-1)?.start);
-    end.add(1, "hours");
-    end.subtract(1, "milliseconds");
+    end.add(1, 'hours');
+    end.subtract(1, 'milliseconds');
     return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
   },
 };

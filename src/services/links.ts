@@ -1,6 +1,6 @@
-import { DateRange, LinksContainer, TransferPrices } from "../types/types";
+import { DateRange, LinksContainer, TransferPrices } from '../types/types';
 
-var dateUtils = require("../utils/dateUtils");
+var dateUtils = require('../utils/dateUtils');
 
 export interface GetExampleLinksPars {
   host: string;
@@ -16,17 +16,9 @@ module.exports = {
     noHours,
     transferPrices,
   }: GetExampleLinksPars): LinksContainer {
-    const yesterday21: Date = dateUtils.getDateFromHourStarting(
-      new Date(),
-      -1,
-      21,
-    );
+    const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21);
     const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
-    const tomorrow21: Date = dateUtils.getDateFromHourStarting(
-      new Date(),
-      1,
-      21,
-    );
+    const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
 
     const amountOfHours: number = noHours ? noHours : 6;
 
@@ -48,44 +40,30 @@ module.exports = {
         };
 
     const queryModes: string[] = [
-      "LowestPrices",
-      "HighestPrices",
-      "AboveAveragePrices",
-      "WeightedPrices",
-      "SequentialPrices",
+      'LowestPrices',
+      'HighestPrices',
+      'AboveAveragePrices',
+      'WeightedPrices',
+      'SequentialPrices',
     ];
 
     const todayLinks = Object.fromEntries(
-      queryModes.map((mode) => [
-        mode,
-        host + createUrl(mode, dateRangeToday, amountOfHours),
-      ]),
+      queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeToday, amountOfHours)]),
     );
 
     const tomorrowLinks = tomorrowAvailable
-      ? Object.fromEntries(
-          queryModes.map((mode) => [
-            mode,
-            host + createUrl(mode, dateRangeTomorrow, amountOfHours),
-          ]),
-        )
-      : ["no prices yet..."];
+      ? Object.fromEntries(queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours)]))
+      : ['no prices yet...'];
 
     const todayLinksWithTransfer = Object.fromEntries(
-      queryModes.map((mode) => [
-        mode,
-        host + createUrl(mode, dateRangeToday, amountOfHours, tp),
-      ]),
+      queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeToday, amountOfHours, tp)]),
     );
 
     const tomorrowLinksWithTransfer = tomorrowAvailable
       ? Object.fromEntries(
-          queryModes.map((mode) => [
-            mode,
-            host + createUrl(mode, dateRangeTomorrow, amountOfHours, tp),
-          ]),
+          queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours, tp)]),
         )
-      : ["no prices yet..."];
+      : ['no prices yet...'];
 
     return {
       withoutTransferPrices: {
@@ -106,13 +84,10 @@ const createUrl = (
   numberOfHours?: number,
   transferPrices?: TransferPrices,
 ): string => {
-  const noHoursPars =
-    numberOfHours && queryMode !== "AboveAveragePrices"
-      ? `&hours=${numberOfHours}`
-      : "";
+  const noHoursPars = numberOfHours && queryMode !== 'AboveAveragePrices' ? `&hours=${numberOfHours}` : '';
   const transferPricesPars = transferPrices
     ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
-    : "";
+    : '';
   return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}${transferPricesPars}`;
 };
 

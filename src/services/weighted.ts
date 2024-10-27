@@ -1,7 +1,7 @@
-import { PriceRowWithTransfer } from "../types/types";
-import { QueryMode } from "./query";
+import { PriceRowWithTransfer } from '../types/types';
+import { QueryMode } from './query';
 
-var dateUtils = require("../utils/dateUtils");
+var dateUtils = require('../utils/dateUtils');
 
 interface WeightedPricesParameters {
   numberOfHours: number;
@@ -43,13 +43,7 @@ module.exports = {
       } else {
         weightedResults[t] = {
           start: priceList[t].start,
-          weightedResult: calculateWeightedSum(
-            weightArray,
-            numberOfHours,
-            priceList,
-            t,
-            useTransferPrices,
-          ),
+          weightedResult: calculateWeightedSum(weightArray, numberOfHours, priceList, t, useTransferPrices),
         };
       }
     }
@@ -61,10 +55,7 @@ module.exports = {
     const hoursArray = [] as PriceRowWithTransfer[];
 
     if (minWeightedResult !== undefined) {
-      const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(
-        priceList,
-        minWeightedResult.start,
-      );
+      const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(priceList, minWeightedResult.start);
       let runningIndex = indexOfWeightedResultFirstHour;
       for (let a = 0; a < numberOfHours; a++) {
         hoursArray.push(priceList[runningIndex++]);
@@ -84,9 +75,7 @@ const calculateWeightedSum = (
 ): number => {
   let result = 0;
   for (let i = 0; i < numberOfHours; i++) {
-    const price = useTransferPrices
-      ? priceList[index + i].priceWithTransfer
-      : priceList[index + i].price;
+    const price = useTransferPrices ? priceList[index + i].priceWithTransfer : priceList[index + i].price;
     result += price * weightArray[i];
   }
   return result;

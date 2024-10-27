@@ -7,6 +7,7 @@ cleanPrices() {
 }
 
 rm -rf build/*
+npm install
 npx tsc
 if [ "$1" == "clean" ]; then
    cleanPrices

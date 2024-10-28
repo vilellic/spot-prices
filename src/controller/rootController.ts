@@ -35,7 +35,7 @@ export default {
       tomorrow: cachedPrices.tomorrow.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
-    ctx.res.end(JSON.stringify(prices));
+    ctx.res.end(JSON.stringify(prices, null, 2));
   },
 
   updatePrices: async function (cache: NodeCache) {

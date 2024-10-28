@@ -37,7 +37,7 @@ export default {
         transferPrices,
       });
       if (hours) {
-        ctx.res.end(JSON.stringify(hours));
+        ctx.res.end(JSON.stringify(hours, null, 2));
       } else {
         ctx.res.end(this.getUnavailableResponse());
       }

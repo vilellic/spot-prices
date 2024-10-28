@@ -28,6 +28,8 @@ export default {
           noHours: numberOfHours,
           transferPrices: transferPrices,
         }),
+        null,
+        2,
       ),
     );
   },

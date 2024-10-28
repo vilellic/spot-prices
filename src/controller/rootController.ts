@@ -31,9 +31,10 @@ export default {
         ...avgTomorrowArray,
         tomorrowAvailable: tomorrowAvailable,
       },
-      today: cachedPrices.today,
-      tomorrow: cachedPrices.tomorrow,
+      today: cachedPrices.today.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      tomorrow: cachedPrices.tomorrow.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
+
     ctx.res.end(JSON.stringify(prices));
   },
 

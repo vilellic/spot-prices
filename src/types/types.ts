@@ -21,8 +21,14 @@ export interface PricesContainer {
     averageTomorrow?: string;
     tomorrowAvailable: boolean;
   };
-  today: PriceRow[];
-  tomorrow: PriceRow[];
+  today: {
+    start: string;
+    price: string;
+  }[];
+  tomorrow: {
+    start: string;
+    price: string;
+  }[];
 }
 
 export interface HoursContainer {

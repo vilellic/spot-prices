@@ -51,8 +51,8 @@ export interface PriceRowWithTransfer extends PriceRow {
 }
 
 export interface DateRange {
-  start: Date | moment.Moment;
-  end: Date | moment.Moment;
+  start: moment.Moment;
+  end: moment.Moment;
 }
 
 export interface TransferPrices {

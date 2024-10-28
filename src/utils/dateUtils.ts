@@ -53,10 +53,10 @@ export default {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
-  getDateFromHourStarting: function (date: Date, offset: number, hour: number): Date {
+  getDateFromHourStarting: function (date: Date, offset: number, hour: number): moment.Moment {
     date.setDate(date.getDate() + offset);
     date.setHours(hour, 0, 0, 0);
-    return date;
+    return moment(date);
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -66,7 +66,7 @@ export default {
   },
 
   isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
-    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14);
+    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toDate();
     date.setMinutes(15);
     return now.valueOf() >= date.valueOf();
   },

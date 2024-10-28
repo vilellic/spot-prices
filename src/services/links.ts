@@ -16,9 +16,9 @@ export default {
     noHours,
     transferPrices,
   }: GetExampleLinksPars): LinksContainer {
-    const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21);
-    const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
-    const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
+    const yesterday21 = dateUtils.getDateFromHourStarting(new Date(), -1, 21);
+    const today21 = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
+    const tomorrow21 = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
 
     const amountOfHours: number = noHours ? noHours : 6;
 
@@ -88,5 +88,9 @@ const createUrl = (
   const transferPricesPars = transferPrices
     ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
     : '';
-  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${dateRange.start.valueOf}&endTime=${dateRange.end.valueOf}${transferPricesPars}`;
+  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start.toDate())}&endTime=${getTimestamp(dateRange.end.toDate())}${transferPricesPars}`;
+};
+
+const getTimestamp = (date: Date) => {
+  return date.getTime() / 1000;
 };

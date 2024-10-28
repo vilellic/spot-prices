@@ -12,10 +12,12 @@ import queryController from './controller/queryController';
 import linksController from './controller/linksController';
 import storeController from './controller/storeController';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require('log-timestamp')(function () {
   return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
 });
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 require('console');
 
 const protocol: string = 'http';
@@ -49,7 +51,6 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 });
 
 // every minute
-// eslint-disable-next-line no-new
 new CronJob(
   '* * * * *',
   function () {
@@ -61,7 +62,6 @@ new CronJob(
 );
 
 // at midnight
-// eslint-disable-next-line no-new
 new CronJob(
   '0 0 * * *',
   function () {

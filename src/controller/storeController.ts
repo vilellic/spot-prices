@@ -22,11 +22,9 @@ export default {
 
   resetPrices: function (cache: NodeCache) {
     resetStoredFiles();
-    if (cache !== undefined) {
-      console.log(cache.getStats());
-      cache.flushAll();
-      console.log('** Cache has been flushed **');
-    }
+    console.log(cache.getStats());
+    cache.flushAll();
+    console.log('** Cache has been flushed **');
   },
 
   initStoredFilesIfNotExists: function () {

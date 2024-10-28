@@ -31,6 +31,7 @@ const transferPrices: TransferPrices = {
 };
 
 beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   prices = require('../utils/testPrices.json');
 });
 
@@ -295,7 +296,7 @@ test('test daylight saving time, duplicate hour', () => {
   const start = dateUtils.getDateFromHourStarting(new Date(), 0, 0);
   const end = dateUtils.getDateFromHourStarting(new Date(), 0, 6);
 
-  // import daylightPrices from '../utils/testPricesDaylightSaving.json');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const daylightPrices = require('../utils/testPricesDaylightSaving.json');
   const result = query.getHours({
     spotPrices: daylightPrices,

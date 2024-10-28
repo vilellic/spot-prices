@@ -10,6 +10,7 @@ import dateUtils from './dateUtils';
 let prices = {} as SpotPrices;
 
 beforeEach(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   prices = require('./testPrices.json');
 });
 

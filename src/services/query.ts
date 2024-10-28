@@ -6,7 +6,7 @@ import dateUtils from '../utils/dateUtils';
 
 interface GetHoursParameters {
   spotPrices: SpotPrices;
-  numberOfHours: number;
+  numberOfHours?: number;
   dateRange: DateRange;
   queryMode: QueryMode;
   transferPrices?: TransferPrices;
@@ -65,7 +65,7 @@ export default {
 
     let resultArray: PriceRowWithTransfer[] = [];
 
-    if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
+    if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode) && numberOfHours) {
       resultArray = weighted.getWeightedPrices({
         numberOfHours: numberOfHours,
         priceList: timeFilteredPrices,
@@ -99,7 +99,9 @@ export default {
     const lowestPrice = Math.min(...onlyPrices);
     const highestPrice = Math.max(...onlyPrices);
 
-    const hoursSet = new Set(resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(entry.start)));
+    const hoursSet = new Set(
+      resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(new Date(entry.start))),
+    );
     const hours = [...hoursSet];
 
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());

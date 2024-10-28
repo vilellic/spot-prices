@@ -12,7 +12,7 @@ export default {
     return momentDate;
   },
 
-  parseISODate: function (isoDateStr: string) {
+  parseISODate: function (isoDateStr: string): moment.Moment {
     return moment(new Date(isoDateStr));
   },
 
@@ -61,7 +61,7 @@ export default {
 
   sortByDate: function (array: PriceRow[]) {
     array.sort((a, b) => {
-      return this.parseISODate(a.start) - this.parseISODate(b.start);
+      return this.parseISODate(a.start).valueOf() - this.parseISODate(b.start).valueOf();
     });
   },
 

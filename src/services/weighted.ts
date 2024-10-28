@@ -56,7 +56,7 @@ export default {
 
     if (minWeightedResult !== undefined) {
       const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(priceList, minWeightedResult.start);
-      let runningIndex = indexOfWeightedResultFirstHour;
+      let runningIndex = indexOfWeightedResultFirstHour || 0;
       for (let a = 0; a < numberOfHours; a++) {
         hoursArray.push(priceList[runningIndex++]);
       }

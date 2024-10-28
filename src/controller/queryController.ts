@@ -1,7 +1,7 @@
 import { ControllerContext, DateRange, SpotPrices, TransferPrices } from '../types/types';
 import constants from '../types/constants';
 import dateUtils from '../utils/dateUtils';
-import query from '../services/query';
+import query, { QueryMode } from '../services/query';
 
 export default {
   handleQuery: function (ctx: ControllerContext) {
@@ -33,7 +33,7 @@ export default {
         spotPrices: spotPrices,
         numberOfHours: numberOfHours,
         dateRange: dateRange,
-        queryMode: queryMode,
+        queryMode: QueryMode[queryMode as keyof typeof QueryMode],
         transferPrices,
       });
       if (hours) {

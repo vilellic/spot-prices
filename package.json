@@ -5,7 +5,7 @@
   "main": "spot.js",
   "dependencies": {
     "clone": "^2.1.2",
-    "cron": "^2.3.0",
+    "cron": "^3.1.7",
     "log-timestamp": "^0.3.0",
     "luxon": "^3.3.0",
     "moment": "^2.29.4",

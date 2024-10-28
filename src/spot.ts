@@ -4,8 +4,7 @@ import NodeCache from 'node-cache';
 import http from 'http';
 const server = http.createServer();
 import moment from 'moment';
-//(import CronJob from 'cron').CronJob;
-import CronJob from 'cron';
+import { CronJob } from 'cron';
 
 import utils from './utils/utils';
 import rootController from './controller/rootController';
@@ -66,7 +65,7 @@ new CronJob(
 new CronJob(
   '0 0 * * *',
   function () {
-    storeController.resetPrices();
+    storeController.resetPrices(spotCache);
     rootController.updatePrices(spotCache);
   },
   null,

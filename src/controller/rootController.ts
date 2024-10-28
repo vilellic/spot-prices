@@ -1,6 +1,5 @@
 import NodeCache from 'node-cache';
 import { ControllerContext, getEmptySpotPrices, SpotPrices } from '../types/types';
-//import constants from '../types/constants');
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
@@ -18,7 +17,7 @@ export default {
     if (currentPrice === undefined) {
       const currentJson = await getCurrentJson();
       if (currentJson.success == true) {
-        currentPrice = utils.getPrice(currentJson.data[0].price);
+        currentPrice = Number(utils.getPrice(currentJson.data[0].price));
       }
     }
 
@@ -27,7 +26,7 @@ export default {
 
     const prices: PricesContainer = {
       info: {
-        current: currentPrice,
+        current: `${currentPrice}`,
         averageToday: utils.getAveragePrice(cachedPrices.today),
         ...avgTomorrowArray,
         tomorrowAvailable: tomorrowAvailable,
@@ -89,7 +88,7 @@ const getDayPrices = async (start: string, end: string) => {
     for (let i = 0; i < pricesJson.data.fi.length; i++) {
       const priceRow: PriceRow = {
         start: dateUtils.getDateStr(pricesJson.data.fi[i].timestamp),
-        price: utils.getPrice(pricesJson.data.fi[i].price),
+        price: Number(utils.getPrice(pricesJson.data.fi[i].price)),
       };
       prices.push(priceRow);
     }

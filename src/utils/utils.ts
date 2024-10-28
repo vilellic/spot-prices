@@ -8,7 +8,7 @@ export default {
     const prices = pricesList.map((row) => Number(row.price));
     const sum = prices.reduce((acc, price) => acc + price, 0);
     const avg = sum / prices.length;
-    return Number(avg.toFixed(5)).toString();
+    return Number(avg).toFixed(5);
   },
 
   getAveragePriceWithTransfer: function (pricesList: PriceRowWithTransfer[]) {
@@ -18,7 +18,7 @@ export default {
     return Number(avg.toFixed(5)).toString();
   },
 
-  getPrice: function (inputPrice: number) {
+  getPrice: function (inputPrice: number): string {
     return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5);
   },
 
@@ -56,10 +56,15 @@ export default {
     if (priceList === undefined || priceList.length <= 1) {
       return false;
     }
-    const start = dateUtils.parseISODate(priceList.at(0)?.start);
-    const end = dateUtils.parseISODate(priceList.at(-1)?.start);
-    end.add(1, 'hours');
-    end.subtract(1, 'milliseconds');
-    return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
+    const startStr = priceList.at(0)?.start;
+    const endStr = priceList.at(-1)?.start;
+    if (startStr && endStr) {
+      const start = dateUtils.parseISODate(startStr);
+      const end = dateUtils.parseISODate(endStr);
+      end.add(1, 'hours');
+      end.subtract(1, 'milliseconds');
+      return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
+    }
+    return false;
   },
 };

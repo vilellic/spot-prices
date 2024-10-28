@@ -10,11 +10,11 @@ jest.useFakeTimers().setSystemTime(fixedFakeDate);
 test('parse ISO date', () => {
   const parsedDate = dateUtils.parseISODate('2023-09-13T05:00:00+0300');
   expect(parsedDate.toISOString()).toBe('2023-09-13T02:00:00.000Z');
-  expect(new Date(parsedDate)).toBeInstanceOf(Date);
+  expect(new Date(parsedDate.valueOf())).toBeInstanceOf(Date);
 });
 
 test('test getDate', () => {
-  expect(dateUtils.getDateStr('1694570400')).toBe('2023-09-13T05:00:00+0300');
+  expect(dateUtils.getDateStr(1694570400)).toBe('2023-09-13T05:00:00+0300');
 });
 
 test('test date span start', () => {

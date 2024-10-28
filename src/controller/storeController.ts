@@ -1,8 +1,6 @@
 import NodeCache from 'node-cache';
 import { getEmptySpotPrices } from '../types/types';
-const { readFileSync } = require('fs');
-const { writeFileSync } = require('fs');
-const { existsSync } = require('fs');
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 
@@ -53,7 +51,7 @@ function getStoredResultFileName(name: string) {
 
 function readStoredResult(name: string) {
   const data = readFileSync(getStoredResultFileName(name));
-  return JSON.parse(data);
+  return JSON.parse(data.toString());
 }
 
 function writeToDisk(name: string, content: string) {

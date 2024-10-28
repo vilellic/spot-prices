@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals';
 import { DateRange, SpotPrices, TransferPrices } from '../types/types';
 
 import dateUtils from '../utils/dateUtils';
-import query from './query';
+import query, { QueryMode } from './query';
 
 // Will resolve to Tue Sep 12 2023 03:00:00 GMT+0300 (Eastern European Summer Time)
 const fixedFakeDate = new Date('2023-09-12');
@@ -39,7 +39,7 @@ test('test getHours, 3 lowest', () => {
     spotPrices: prices,
     numberOfHours: 3,
     dateRange: fromYesterdayDateRange,
-    queryMode: 'LowestPrices',
+    queryMode: QueryMode.LowestPrices,
   });
 
   expect(today).toStrictEqual({
@@ -56,7 +56,7 @@ test('test getHours, 3 lowest', () => {
     spotPrices: prices,
     numberOfHours: 3,
     dateRange: fromTodayDateRange,
-    queryMode: 'LowestPrices',
+    queryMode: QueryMode.LowestPrices,
   });
   expect(tomorrow).toStrictEqual({
     hours: ['2 Wed', '3 Wed', '4 Wed'],
@@ -74,7 +74,7 @@ test('test getHours with transfer', () => {
     spotPrices: prices,
     numberOfHours: 14,
     dateRange: fromTodayDateRange,
-    queryMode: 'LowestPrices',
+    queryMode: QueryMode.LowestPrices,
     transferPrices: transferPrices,
   });
 
@@ -116,7 +116,7 @@ test('test getHours, 1 lowest', () => {
     spotPrices: prices,
     numberOfHours: 1,
     dateRange: fromYesterdayDateRange,
-    queryMode: 'LowestPrices',
+    queryMode: QueryMode.LowestPrices,
   });
   expect(result).toStrictEqual({
     hours: ['1 Tue'],
@@ -134,7 +134,7 @@ test('test getHours, 8 lowest', () => {
     spotPrices: prices,
     numberOfHours: 8,
     dateRange: fromYesterdayDateRange,
-    queryMode: 'LowestPrices',
+    queryMode: QueryMode.LowestPrices,
   });
   expect(result).toStrictEqual({
     hours: ['23 Mon', '0 Tue', '1 Tue', '2 Tue', '3 Tue', '4 Tue', '5 Tue', '6 Tue'],
@@ -152,7 +152,7 @@ test('test getHours, 6 highest', () => {
     spotPrices: prices,
     numberOfHours: 6,
     dateRange: fromYesterdayDateRange,
-    queryMode: 'HighestPrices',
+    queryMode: QueryMode.HighestPrices,
   });
   expect(today).toStrictEqual({
     hours: ['9 Tue', '10 Tue', '17 Tue', '18 Tue', '19 Tue', '20 Tue'],
@@ -168,7 +168,7 @@ test('test getHours, 6 highest', () => {
     spotPrices: prices,
     numberOfHours: 6,
     dateRange: fromTodayDateRange,
-    queryMode: 'HighestPrices',
+    queryMode: QueryMode.HighestPrices,
   });
   expect(tomorrow).toStrictEqual({
     hours: ['9 Wed', '10 Wed', '11 Wed', '12 Wed', '17 Wed', '20 Wed'],
@@ -186,7 +186,7 @@ test('test weighted getHours, 3 lowest', () => {
     spotPrices: prices,
     numberOfHours: 3,
     dateRange: fromTodayDateRange,
-    queryMode: 'WeightedPrices',
+    queryMode: QueryMode.WeightedPrices,
   });
   expect(result).toStrictEqual({
     hours: ['3 Wed', '4 Wed', '5 Wed'],
@@ -204,7 +204,7 @@ test('test sequential getHours, 5 lowest', () => {
     spotPrices: prices,
     numberOfHours: 5,
     dateRange: fromTodayDateRange,
-    queryMode: 'SequentialPrices',
+    queryMode: QueryMode.SequentialPrices,
   });
 
   expect(result).toStrictEqual({
@@ -222,7 +222,7 @@ test('test above avg. prices', () => {
   const result = query.getHours({
     spotPrices: prices,
     dateRange: fromTodayDateRange,
-    queryMode: 'AboveAveragePrices',
+    queryMode: QueryMode.AboveAveragePrices,
   });
 
   expect(result).toStrictEqual({
@@ -254,7 +254,7 @@ test('test above avg. prices with transfer', () => {
   const result = query.getHours({
     spotPrices: prices,
     dateRange: fromTodayDateRange,
-    queryMode: 'AboveAveragePrices',
+    queryMode: QueryMode.AboveAveragePrices,
     transferPrices: transferPrices,
   });
 
@@ -288,16 +288,6 @@ test('test above avg. prices with transfer', () => {
   });
 });
 
-test('test invalid query mode', () => {
-  const result = query.getHours({
-    spotPrices: prices,
-    numberOfHours: 3,
-    fromTodayDateRange,
-    queryMode: 'WwfeightedsfPrices',
-  });
-  expect(result).toBe(undefined);
-});
-
 test('test daylight saving time, duplicate hour', () => {
   const fixedFakeDate = new Date('2023-10-29');
   jest.useFakeTimers().setSystemTime(fixedFakeDate);
@@ -311,7 +301,7 @@ test('test daylight saving time, duplicate hour', () => {
     spotPrices: daylightPrices,
     numberOfHours: 5,
     dateRange: { start: start, end: end },
-    queryMode: 'WeightedPrices',
+    queryMode: QueryMode.WeightedPrices,
   });
 
   expect(result).toStrictEqual({

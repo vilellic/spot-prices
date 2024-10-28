@@ -6,7 +6,7 @@ export interface GetExampleLinksPars {
   host: string;
   tomorrowAvailable: boolean;
   noHours: number;
-  transferPrices: TransferPrices;
+  transferPrices?: TransferPrices;
 }
 
 export default {
@@ -88,9 +88,5 @@ const createUrl = (
   const transferPricesPars = transferPrices
     ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
     : '';
-  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}${transferPricesPars}`;
-};
-
-const getTimestamp = (date: Date) => {
-  return date.getTime() / 1000;
+  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${dateRange.start.valueOf}&endTime=${dateRange.end.valueOf}${transferPricesPars}`;
 };

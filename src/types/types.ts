@@ -1,69 +1,74 @@
-import { IncomingMessage, ServerResponse } from "http"
-import NodeCache from "node-cache";
+import { IncomingMessage, ServerResponse } from 'http';
+import NodeCache from 'node-cache';
+import moment from 'moment';
 
 export interface SpotPrices {
-  yesterday: PriceRow[],
-  today: PriceRow[],
-  tomorrow: PriceRow[]
+  yesterday: PriceRow[];
+  today: PriceRow[];
+  tomorrow: PriceRow[];
 }
 
-export const getEmptySpotPrices = (): SpotPrices => (
-  {
-    yesterday: [] as PriceRow[],
-    today: [] as PriceRow[],
-    tomorrow: [] as PriceRow[]
-  }
-)
+export const getEmptySpotPrices = (): SpotPrices => ({
+  yesterday: [] as PriceRow[],
+  today: [] as PriceRow[],
+  tomorrow: [] as PriceRow[],
+});
 
 export interface PricesContainer {
   info: {
-    current: number,
-    averageToday: number,
-    averageTomorrow?: number,
-    tomorrowAvailable: boolean,
-  }
-  today: PriceRow[]
-  tomorrow: PriceRow[]
+    current: string;
+    averageToday: string;
+    averageTomorrow?: string;
+    tomorrowAvailable: boolean;
+  };
+  today: {
+    start: string;
+    price: string;
+  }[];
+  tomorrow: {
+    start: string;
+    price: string;
+  }[];
 }
 
 export interface HoursContainer {
-  hours: string[]
+  hours: string[];
   info: {
-    now: boolean,
-    min: number,
-    max: number,
-    avg: number
-  }
+    now: boolean;
+    min: number;
+    max: number;
+    avg: number;
+  };
 }
 
 export interface PriceRow {
-  start: string,
-  price: number,
+  start: string;
+  price: number;
 }
 
 export interface PriceRowWithTransfer extends PriceRow {
-  priceWithTransfer: number,
+  priceWithTransfer: number;
 }
 
 export interface DateRange {
-  start: Date,
-  end: Date
+  start: moment.Moment;
+  end: moment.Moment;
 }
 
 export interface TransferPrices {
-  peakTransfer: number,
-  offPeakTransfer: number
+  peakTransfer: number;
+  offPeakTransfer: number;
 }
 
 export interface LinksContainer {
   withoutTransferPrices: {
-    today: {}
-    tomorrow: {}
-  }
+    today: {};
+    tomorrow: {};
+  };
   withTransferPrices: {
-    today: {}
-    tomorrow: {}
-  }
+    today: {};
+    tomorrow: {};
+  };
 }
 
 export interface ControllerContext {

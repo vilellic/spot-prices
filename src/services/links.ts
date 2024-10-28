@@ -1,80 +1,96 @@
-import { DateRange, LinksContainer, TransferPrices } from "../types/types";
+import { DateRange, LinksContainer, TransferPrices } from '../types/types';
 
-var dateUtils = require("../utils/dateUtils");
+import dateUtils from '../utils/dateUtils';
 
 export interface GetExampleLinksPars {
-  host: string
-  tomorrowAvailable: boolean
-  noHours: number
-  transferPrices: TransferPrices
+  host: string;
+  tomorrowAvailable: boolean;
+  noHours: number;
+  transferPrices?: TransferPrices;
 }
 
-module.exports = {
-
-  getExampleLinks: function ({ host, tomorrowAvailable, noHours, transferPrices }: 
-    GetExampleLinksPars): LinksContainer {
-
-    const yesterday21: Date = dateUtils.getDateFromHourStarting(new Date(), -1, 21)
-    const today21: Date = dateUtils.getDateFromHourStarting(new Date(), 0, 21)
-    const tomorrow21: Date = dateUtils.getDateFromHourStarting(new Date(), 1, 21) 
+export default {
+  getExampleLinks: function ({
+    host,
+    tomorrowAvailable,
+    noHours,
+    transferPrices,
+  }: GetExampleLinksPars): LinksContainer {
+    const yesterday21 = dateUtils.getDateFromHourStarting(new Date(), -1, 21);
+    const today21 = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
+    const tomorrow21 = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
 
     const amountOfHours: number = noHours ? noHours : 6;
 
-    const dateRangeToday : DateRange = {
+    const dateRangeToday: DateRange = {
       start: yesterday21,
       end: today21,
-    }
+    };
 
-    const dateRangeTomorrow : DateRange = {
+    const dateRangeTomorrow: DateRange = {
       start: today21,
       end: tomorrow21,
-    }
+    };
 
-    const tp: TransferPrices = transferPrices ? transferPrices : {
-      peakTransfer: 0.0445,
-      offPeakTransfer: 0.0274
-    }
+    const tp: TransferPrices = transferPrices
+      ? transferPrices
+      : {
+          peakTransfer: 0.0445,
+          offPeakTransfer: 0.0274,
+        };
 
-    const queryModes: string[] = [ 'LowestPrices', 'HighestPrices', 'AboveAveragePrices', 
-      'WeightedPrices', 'SequentialPrices' ]
+    const queryModes: string[] = [
+      'LowestPrices',
+      'HighestPrices',
+      'AboveAveragePrices',
+      'WeightedPrices',
+      'SequentialPrices',
+    ];
 
-    const todayLinks = Object.fromEntries(queryModes.map((mode) => (
-      [mode, host + createUrl(mode, dateRangeToday, amountOfHours)]
-    )))
+    const todayLinks = Object.fromEntries(
+      queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeToday, amountOfHours)]),
+    );
 
-    const tomorrowLinks = tomorrowAvailable ? Object.fromEntries(queryModes.map((mode) => (
-      [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours)]
-    ))) : [ 'no prices yet...' ]
+    const tomorrowLinks = tomorrowAvailable
+      ? Object.fromEntries(queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours)]))
+      : ['no prices yet...'];
 
-    const todayLinksWithTransfer = Object.fromEntries(queryModes.map((mode) => (
-      [mode, host + createUrl(mode, dateRangeToday, amountOfHours, tp)]
-    )))
-    
-    const tomorrowLinksWithTransfer = tomorrowAvailable ? Object.fromEntries(queryModes.map((mode) => (
-      [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours, tp)]
-    ))) : [ 'no prices yet...' ]
+    const todayLinksWithTransfer = Object.fromEntries(
+      queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeToday, amountOfHours, tp)]),
+    );
+
+    const tomorrowLinksWithTransfer = tomorrowAvailable
+      ? Object.fromEntries(
+          queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeTomorrow, amountOfHours, tp)]),
+        )
+      : ['no prices yet...'];
 
     return {
       withoutTransferPrices: {
-        today: todayLinks, 
-        tomorrow: tomorrowLinks  
+        today: todayLinks,
+        tomorrow: tomorrowLinks,
       },
       withTransferPrices: {
-        today: todayLinksWithTransfer, 
-        tomorrow: tomorrowLinksWithTransfer  
-      } 
-    }
-  }
+        today: todayLinksWithTransfer,
+        tomorrow: tomorrowLinksWithTransfer,
+      },
+    };
+  },
+};
 
-}
-
-const createUrl = (queryMode: string, dateRange: DateRange, numberOfHours?: number, transferPrices?: TransferPrices) : string => {
-  const noHoursPars = numberOfHours && queryMode !== 'AboveAveragePrices' ? `&hours=${numberOfHours}` : ''
-  const transferPricesPars =  transferPrices ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}` : ''
-  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start)}&endTime=${getTimestamp(dateRange.end)}${transferPricesPars}`
-}
+const createUrl = (
+  queryMode: string,
+  dateRange: DateRange,
+  numberOfHours?: number,
+  transferPrices?: TransferPrices,
+): string => {
+  const noHoursPars = numberOfHours && queryMode !== 'AboveAveragePrices' ? `&hours=${numberOfHours}` : '';
+  const transferPricesPars = transferPrices
+    ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
+    : '';
+  return `/query?queryMode=${queryMode}${noHoursPars}&startTime=${getTimestamp(dateRange.start.toDate())}&endTime=${getTimestamp(dateRange.end.toDate())}${transferPricesPars}`;
+};
 
 const getTimestamp = (date: Date) => {
-  return date.getTime() / 1000
-}
-
+  return date.getTime() / 1000;
+};

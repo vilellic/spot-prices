@@ -29,7 +29,7 @@ test('test date str', () => {
   expect(dateUtils.getWeekdayAndHourStr(new Date())).toBe('3 Tue');
 });
 
-test('is it time to get tomorrow prices', () => {
+test('test is it time to get tomorrow prices', () => {
   expect(dateUtils.isTimeToGetTomorrowPrices()).toBe(false);
   fixedFakeDate.setHours(15, 42);
   expect(dateUtils.isTimeToGetTomorrowPrices(fixedFakeDate)).toBe(true);

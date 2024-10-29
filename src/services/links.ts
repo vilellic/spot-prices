@@ -1,6 +1,7 @@
 import { DateRange, LinksContainer, TransferPrices } from '../types/types';
 
 import dateUtils from '../utils/dateUtils';
+import { QueryMode } from './query';
 
 export interface GetExampleLinksPars {
   host: string;
@@ -39,13 +40,7 @@ export default {
           offPeakTransfer: 0.0274,
         };
 
-    const queryModes: string[] = [
-      'LowestPrices',
-      'HighestPrices',
-      'AboveAveragePrices',
-      'WeightedPrices',
-      'SequentialPrices',
-    ];
+    const queryModes = Object.values(QueryMode);
 
     const todayLinks = Object.fromEntries(
       queryModes.map((mode) => [mode, host + createUrl(mode, dateRangeToday, amountOfHours)]),
@@ -79,12 +74,12 @@ export default {
 };
 
 const createUrl = (
-  queryMode: string,
+  queryMode: QueryMode,
   dateRange: DateRange,
   numberOfHours?: number,
   transferPrices?: TransferPrices,
 ): string => {
-  const noHoursPars = numberOfHours && queryMode !== 'AboveAveragePrices' ? `&hours=${numberOfHours}` : '';
+  const noHoursPars = numberOfHours && queryMode !== QueryMode.AboveAveragePrices ? `&hours=${numberOfHours}` : '';
   const transferPricesPars = transferPrices
     ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
     : '';

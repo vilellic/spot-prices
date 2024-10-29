@@ -9,7 +9,7 @@ export default {
     const numberOfHours = Number(parsed.searchParams.get('hours'));
     const startTime = Number(parsed.searchParams.get('startTime'));
     const endTime = Number(parsed.searchParams.get('endTime'));
-    const queryMode: string = parsed.searchParams.get('queryMode') || 'LowestPrices';
+    const queryModePar: string = parsed.searchParams.get('queryMode') || 'LowestPrices';
     const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'));
     const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'));
     const transferPrices: TransferPrices | undefined =
@@ -20,12 +20,14 @@ export default {
           }
         : undefined;
 
+    const queryMode = QueryMode[queryModePar as keyof typeof QueryMode];
+
     const dateRange: DateRange = {
       start: dateUtils.getDate(startTime),
       end: dateUtils.getDate(endTime),
     };
 
-    if (queryMode !== 'AboveAveragePrices' && !numberOfHours) {
+    if (queryMode !== QueryMode.AboveAveragePrices && !numberOfHours) {
       ctx.res.end(this.getUnavailableResponse());
     } else {
       const spotPrices = ctx.cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
@@ -33,7 +35,7 @@ export default {
         spotPrices: spotPrices,
         numberOfHours: numberOfHours,
         dateRange: dateRange,
-        queryMode: QueryMode[queryMode as keyof typeof QueryMode],
+        queryMode: queryMode,
         transferPrices,
       });
       if (hours) {

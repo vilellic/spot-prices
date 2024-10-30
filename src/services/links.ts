@@ -6,7 +6,7 @@ import { QueryMode } from './query';
 export interface GetExampleLinksPars {
   host: string;
   tomorrowAvailable: boolean;
-  noHours: number;
+  noHours?: number;
   transferPrices?: TransferPrices;
 }
 

@@ -8,6 +8,7 @@ cleanPrices() {
 
 rm -rf build/*
 npm install
+npx prettier . --write
 npx tsc
 if [ "$1" == "clean" ]; then
    cleanPrices

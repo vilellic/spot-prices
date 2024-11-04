@@ -14,7 +14,7 @@ export default {
     const spotPrices = utils.getSpotPricesFromCache(cache);
 
     // Invalidate cache if current time is not in todays range
-    if (utils.isCacheReady(cache) && !utils.dateIsInPricesList(spotPrices.today, new Date())) {
+    if (utils.isCacheValid(cache) && !utils.dateIsInPricesList(spotPrices.today, new Date())) {
       console.log('Invalidating old cache');
       this.resetPrices(cache);
     }

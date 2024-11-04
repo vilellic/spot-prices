@@ -44,7 +44,7 @@ export default {
     return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
   },
 
-  isCacheReady: function (cache: NodeCache) {
+  isCacheValid: function (cache: NodeCache) {
     if (!cache.has(constants.CACHED_NAME_PRICES)) {
       return false;
     }

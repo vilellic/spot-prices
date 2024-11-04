@@ -4,6 +4,7 @@
   "description": "With this Node.js server finnish electricity spot prices can be served to Home Assistant using REST platform to read data from local server.",
   "main": "spot.js",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "clone": "^2.1.2",
     "cron": "^3.1.7",
     "log-timestamp": "^0.3.0",

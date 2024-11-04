@@ -1,12 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import NodeCache from 'node-cache';
-
 import http from 'http';
 const server = http.createServer();
 import moment from 'moment';
 import { CronJob } from 'cron';
 
-import utils from './utils/utils';
 import rootController from './controller/rootController';
 import queryController from './controller/queryController';
 import linksController from './controller/linksController';
@@ -34,9 +32,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
   console.log('Request url = ' + `${protocol}://${req.headers.host}` + req.url);
 
-  if (!utils.isCacheReady(spotCache)) {
-    await rootController.updatePrices(spotCache);
-  }
+  await rootController.updatePrices(spotCache);
 
   if (req.url === '/') {
     rootController.handleRoot({ res: res, cache: spotCache });

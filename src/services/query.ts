@@ -107,8 +107,14 @@ export default {
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
     const currentHourIsInList = hours.includes(currentHourDateStr);
 
+    const hourRange =
+      queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
+        ? `${dateUtils.getHourStr(resultArray.at(0)?.start)}-${dateUtils.getHourStr(resultArray.at(-1)?.start, 1)}`
+        : undefined;
+
     return {
       hours,
+      ...(hourRange && { hourRange: hourRange }),
       info: {
         now: currentHourIsInList,
         min: lowestPrice,

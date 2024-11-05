@@ -20,6 +20,17 @@ export default {
     return new Date(date).getHours() + ' ' + moment(date).format('ddd');
   },
 
+  getHourStr: function (input: string | undefined, addHours?: number) {
+    if (!input) {
+      return 'x';
+    }
+    const date = new Date(input);
+    if (addHours) {
+      date.setHours(date.getHours() + addHours);
+    }
+    return moment(date).format('HH');
+  },
+
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
     for (let i = 0; i < datePriceArray.length; i++) {
       if (datePriceArray[i].start === date) {

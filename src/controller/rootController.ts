@@ -7,6 +7,8 @@ import { PricesContainer, PriceRow } from '../types/types';
 import fetch from 'node-fetch';
 import { Mutex } from 'async-mutex';
 
+const mutex = new Mutex();
+
 export default {
   handleRoot: async function (ctx: ControllerContext) {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
@@ -37,7 +39,6 @@ export default {
   },
 
   updatePrices: async function (cache: NodeCache) {
-    const mutex = new Mutex();
     await mutex.runExclusive(async () => {
       let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
       let prices = {} as SpotPrices;

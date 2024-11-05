@@ -79,8 +79,6 @@ test('test getHours with transfer', () => {
     transferPrices: transferPrices,
   });
 
-  //console.log(JSON.stringify(withTransfer, null, 2))
-
   expect(withTransfer).toStrictEqual({
     hours: [
       '21 Tue',
@@ -191,6 +189,7 @@ test('test weighted getHours, 3 lowest', () => {
   });
   expect(result).toStrictEqual({
     hours: ['3 Wed', '4 Wed', '5 Wed'],
+    hourRange: '03-06',
     info: {
       now: false,
       min: 0.01104,
@@ -210,6 +209,7 @@ test('test sequential getHours, 5 lowest', () => {
 
   expect(result).toStrictEqual({
     hours: ['1 Wed', '2 Wed', '3 Wed', '4 Wed', '5 Wed'],
+    hourRange: '01-06',
     info: {
       now: false,
       min: 0.01104,
@@ -307,6 +307,7 @@ test('test daylight saving time, duplicate hour', () => {
 
   expect(result).toStrictEqual({
     hours: ['2 Sun', '3 Sun', '4 Sun', '5 Sun'],
+    hourRange: '02-06',
     info: {
       now: true,
       min: 0.02623,

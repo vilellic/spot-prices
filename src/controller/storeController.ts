@@ -1,8 +1,9 @@
 import NodeCache from 'node-cache';
-import { getEmptySpotPrices } from '../types/types';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import constants from '../types/constants';
 import utils from '../utils/utils';
+import dateUtils from '../utils/dateUtils';
+import { SpotPrices } from '../types/types';
 
 export default {
   initCacheFromDisk: function (cache: NodeCache) {
@@ -21,7 +22,6 @@ export default {
   },
 
   resetPrices: function (cache: NodeCache) {
-    resetStoredFiles();
     console.log(cache.getStats());
     cache.flushAll();
     console.log('** Cache has been flushed **');
@@ -34,11 +34,26 @@ export default {
     }
   },
 
-  updateStoredResultWhenChanged: function (name: string, updatedResult: string) {
-    const storedResult = JSON.stringify(readStoredResult(name));
+  updateStoredResultWhenChanged: function (name: string, value: object) {
+    const spotPrices = value as SpotPrices;
+    const fromFile = readFileSync(getStoredResultFileName(name));
+    const json = JSON.parse(fromFile.toString());
 
-    if (updatedResult !== storedResult) {
-      writeToDisk(name, updatedResult);
+    const yesterday = dateUtils.getYesterdayName();
+    const today = dateUtils.getTodayName();
+    const tomorrow = dateUtils.getTomorrowName();
+
+    const updated = {
+      [yesterday]: json.yesterday,
+      [today]: json.today,
+      [tomorrow]: json.tomorrow,
+      ...(utils.isPriceListComplete(spotPrices.yesterday) && { [yesterday]: spotPrices.yesterday }),
+      ...(utils.isPriceListComplete(spotPrices.today) && { [today]: spotPrices.today }),
+      ...(utils.isPriceListComplete(spotPrices.tomorrow) && { [tomorrow]: spotPrices.tomorrow }),
+    };
+
+    if (JSON.stringify(updated) !== JSON.stringify(json)) {
+      writeToDisk(name, JSON.stringify(updated, null, 2));
     }
   },
 };
@@ -48,8 +63,13 @@ function getStoredResultFileName(name: string) {
 }
 
 function readStoredResult(name: string) {
-  const data = readFileSync(getStoredResultFileName(name));
-  return JSON.parse(data.toString());
+  const fromFile = readFileSync(getStoredResultFileName(name));
+  const json = JSON.parse(fromFile.toString());
+  return {
+    yesterday: json[dateUtils.getYesterdayName()],
+    today: json[dateUtils.getTodayName()],
+    tomorrow: json[dateUtils.getTomorrowName()],
+  };
 }
 
 function writeToDisk(name: string, content: string) {
@@ -63,5 +83,5 @@ function writeToDisk(name: string, content: string) {
 
 function resetStoredFiles() {
   console.log('resetStoredFiles()');
-  writeToDisk(constants.CACHED_NAME_PRICES, JSON.stringify(getEmptySpotPrices()));
+  writeToDisk(constants.CACHED_NAME_PRICES, '{}');
 }

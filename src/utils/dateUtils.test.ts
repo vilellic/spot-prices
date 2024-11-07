@@ -29,6 +29,18 @@ test('test date str', () => {
   expect(dateUtils.getWeekdayAndHourStr(new Date())).toBe('3 Tue');
 });
 
+test('test get today as string', () => {
+  expect(dateUtils.getTodayName()).toBe('22-08-2023');
+});
+
+test('test get yesterday as string', () => {
+  expect(dateUtils.getYesterdayName()).toBe('21-08-2023');
+});
+
+test('test get tomorrow as string', () => {
+  expect(dateUtils.getTomorrowName()).toBe('23-08-2023');
+});
+
 test('test is it time to get tomorrow prices', () => {
   expect(dateUtils.isTimeToGetTomorrowPrices()).toBe(false);
   fixedFakeDate.setHours(15, 42);

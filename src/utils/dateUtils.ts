@@ -64,6 +64,16 @@ export default {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
+  getTodayName: function () {
+    return moment(getDateSpanStartWithOffset(new Date(), 0)).format('DD-MM-YYYY');
+  },
+  getYesterdayName: function () {
+    return moment(getDateSpanStartWithOffset(new Date(), -1)).format('DD-MM-YYYY');
+  },
+  getTomorrowName: function () {
+    return moment(getDateSpanStartWithOffset(new Date(), 1)).format('DD-MM-YYYY');
+  },
+
   getDateFromHourStarting: function (date: Date, offset: number, hour: number): moment.Moment {
     date.setDate(date.getDate() + offset);
     date.setHours(hour, 0, 0, 0);

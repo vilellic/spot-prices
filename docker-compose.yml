@@ -9,3 +9,6 @@ services:
       - TZ=Europe/Helsinki
     ports:
       - 8089:8089
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"

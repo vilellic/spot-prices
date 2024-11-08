@@ -39,14 +39,16 @@ export default {
     const fromFile = readFileSync(getStoredResultFileName(name));
     const json = JSON.parse(fromFile.toString());
 
+    const otherday = dateUtils.getDateJsonName(-2);
     const yesterday = dateUtils.getYesterdayName();
     const today = dateUtils.getTodayName();
     const tomorrow = dateUtils.getTomorrowName();
 
     const updated = {
-      [yesterday]: json.yesterday,
-      [today]: json.today,
-      [tomorrow]: json.tomorrow,
+      [otherday]: json[otherday],
+      [yesterday]: json[yesterday],
+      [today]: json[today],
+      [tomorrow]: json[tomorrow],
       ...(utils.isPriceListComplete(spotPrices.yesterday) && { [yesterday]: spotPrices.yesterday }),
       ...(utils.isPriceListComplete(spotPrices.today) && { [today]: spotPrices.today }),
       ...(utils.isPriceListComplete(spotPrices.tomorrow) && { [tomorrow]: spotPrices.tomorrow }),

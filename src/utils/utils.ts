@@ -49,7 +49,7 @@ export default {
       return false;
     }
     const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-    return spotPrices.today.length > 0;
+    return spotPrices.today?.length > 0;
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {

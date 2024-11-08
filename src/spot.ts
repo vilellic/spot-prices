@@ -25,7 +25,7 @@ const timeZone = 'Europe/Helsinki';
 const spotCache: NodeCache = new NodeCache();
 
 spotCache.on('set', function (key: string, value: object) {
-  storeController.updateStoredResultWhenChanged(key, JSON.stringify(value));
+  storeController.updateStoredResultWhenChanged(key, value);
 });
 
 server.on('request', async (req: IncomingMessage, res: ServerResponse) => {

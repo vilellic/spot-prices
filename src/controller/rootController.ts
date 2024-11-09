@@ -26,13 +26,13 @@ export default {
 
     const prices: PricesContainer = {
       info: {
-        current: `${currentPrice}`,
+        current: `${currentPrice?.toFixed(5)}`,
         averageToday: utils.getAveragePrice(cachedPrices.today),
         ...avgTomorrowArray,
         tomorrowAvailable: tomorrowAvailable,
       },
-      today: cachedPrices.today.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
-      tomorrow: cachedPrices.tomorrow.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      today: cachedPrices.today?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      tomorrow: cachedPrices.tomorrow?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
     ctx.res.end(JSON.stringify(prices, null, 2));
@@ -57,7 +57,7 @@ export default {
       }
       if (
         !utils.isPriceListComplete(cachedPrices.tomorrow) &&
-        (dateUtils.isTimeToGetTomorrowPrices() || cachedPrices.tomorrow.length == 0)
+        (dateUtils.isTimeToGetTomorrowPrices() || !cachedPrices.tomorrow || cachedPrices.tomorrow.length === 0)
       ) {
         prices.tomorrow = await getDayPrices(dateUtils.getTomorrowSpanStart(), dateUtils.getTomorrowSpanEnd());
       }

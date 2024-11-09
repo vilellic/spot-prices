@@ -17,11 +17,11 @@ export default {
     // Invalidate cache if current time is not in todays range
     if (utils.isCacheValid(cache) && !utils.dateIsInPricesList(spotPrices.today, new Date())) {
       console.log('Invalidating old cache');
-      this.resetPrices(cache);
+      this.flushCache(cache);
     }
   },
 
-  resetPrices: function (cache: NodeCache) {
+  flushCache: function (cache: NodeCache) {
     console.log(cache.getStats());
     cache.flushAll();
     console.log('** Cache has been flushed **');
@@ -30,7 +30,7 @@ export default {
   initStoredFilesIfNotExists: function () {
     if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
       console.log('initializeStoredFiles()');
-      resetStoredFiles();
+      this.resetStoredFiles();
     }
   },
 
@@ -58,6 +58,11 @@ export default {
       writeToDisk(name, JSON.stringify(updated, null, 2));
     }
   },
+
+  resetStoredFiles: function () {
+    console.log('resetStoredFiles()');
+    writeToDisk(constants.CACHED_NAME_PRICES, '{}');
+  },
 };
 
 function getStoredResultFileName(name: string) {
@@ -81,9 +86,4 @@ function writeToDisk(name: string, content: string) {
   } catch (error) {
     console.log('writeToDisk: error ', error);
   }
-}
-
-function resetStoredFiles() {
-  console.log('resetStoredFiles()');
-  writeToDisk(constants.CACHED_NAME_PRICES, '{}');
 }

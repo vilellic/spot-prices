@@ -45,7 +45,11 @@ export default {
       return undefined;
     }
 
-    const pricesFlat = [...spotPrices.yesterday, ...spotPrices.today, ...spotPrices.tomorrow] as PriceRowWithTransfer[];
+    const pricesFlat = [
+      ...spotPrices.yesterday,
+      ...spotPrices.today,
+      ...(spotPrices.tomorrow ?? []),
+    ] as PriceRowWithTransfer[];
 
     const withTransferPrices = transferPrices !== undefined;
 

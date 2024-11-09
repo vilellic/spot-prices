@@ -40,6 +40,14 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     queryController.handleQuery({ res: res, req: req, cache: spotCache });
   } else if (req.url?.startsWith('/links')) {
     linksController.handleLinks({ res: res, req: req, cache: spotCache });
+  } else if (req.url === '/reset') {
+    storeController.flushCache(spotCache);
+    storeController.initCacheFromDisk(spotCache);
+    res.end('Ok');
+  } else if (req.url === '/resetAll') {
+    storeController.flushCache(spotCache);
+    storeController.resetStoredFiles();
+    res.end('Ok');
   } else {
     res.statusCode = 404;
     res.end('Not found');
@@ -61,7 +69,8 @@ new CronJob(
 new CronJob(
   '0 0 * * *',
   function () {
-    storeController.resetPrices(spotCache);
+    storeController.flushCache(spotCache);
+    storeController.initCacheFromDisk(spotCache);
     rootController.updatePrices(spotCache);
   },
   null,

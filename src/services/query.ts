@@ -1,4 +1,12 @@
-import { DateRange, HoursContainer, PriceRow, PriceRowWithTransfer, SpotPrices, TransferPrices } from '../types/types';
+import {
+  DateRange,
+  Hours,
+  HoursContainer,
+  PriceRow,
+  PriceRowWithTransfer,
+  SpotPrices,
+  TransferPrices,
+} from '../types/types';
 
 import weighted from './weighted';
 import utils from '../utils/utils';
@@ -111,14 +119,31 @@ export default {
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
     const currentHourIsInList = hours.includes(currentHourDateStr);
 
+    /*
     const hourRange =
       queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
         ? `${dateUtils.getHourStr(resultArray.at(0)?.start)}-${dateUtils.getHourStr(resultArray.at(-1)?.start, 1)}`
         : undefined;
+    */
+
+    const startEndFields =
+      queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
+        ? {
+            start: dateUtils.getHourStr(resultArray.at(0)?.start),
+            end: dateUtils.getHourStr(resultArray.at(-1)?.start, 1),
+            startTime: resultArray.at(0)?.start,
+            endTime: dateUtils.getIsoDateStr(resultArray.at(-1)?.start, 1),
+          }
+        : undefined;
+
+    const hoursObject: Hours = {
+      list: [...hours],
+      ...startEndFields,
+    };
 
     return {
-      hours,
-      ...(hourRange && { hourRange: hourRange }),
+      hours: hoursObject,
+      // ...(hourRange && { hourRange: hourRange }),
       info: {
         now: currentHourIsInList,
         min: lowestPrice,

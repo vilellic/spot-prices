@@ -1,9 +1,10 @@
 import { PriceRow } from '../types/types';
 import moment from 'moment';
+import constants from '../types/constants';
 
 export default {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
+    return this.getDate(timestamp).format(constants.ISO_DATE_FORMAT);
   },
 
   getDate: function (timestamp: number) {
@@ -24,11 +25,11 @@ export default {
     if (!input) {
       return 'x';
     }
-    const date = new Date(input);
-    if (addHours) {
-      date.setHours(date.getHours() + addHours);
-    }
-    return moment(date).format('HH');
+    return addToDateAndFormat(input, 'HH', addHours);
+  },
+
+  getIsoDateStr: function (input: string | undefined, addHours?: number) {
+    return addToDateAndFormat(input, constants.ISO_DATE_FORMAT, addHours);
   },
 
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
@@ -114,4 +115,15 @@ const getDateSpanEndWithOffset = (date: Date, offset: number) => {
   date.setHours(24, 0, 0, 0);
   date.setMilliseconds(date.getMilliseconds() - 1);
   return date;
+};
+
+const addToDateAndFormat = (input: string | undefined, format: string, addHours?: number) => {
+  if (!input) {
+    return undefined;
+  }
+  const date = new Date(input);
+  if (addHours) {
+    date.setHours(date.getHours() + addHours);
+  }
+  return moment(date).format(format);
 };

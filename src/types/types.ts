@@ -32,13 +32,21 @@ export interface PricesContainer {
 }
 
 export interface HoursContainer {
-  hours: string[];
+  hours: Hours;
   info: {
     now: boolean;
     min: number;
     max: number;
     avg: number;
   };
+}
+
+export interface Hours {
+  list: string[];
+  start?: string;
+  end?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface PriceRow {

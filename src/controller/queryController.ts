@@ -38,7 +38,7 @@ export default {
         queryMode: queryMode,
         transferPrices,
       });
-      if (hours) {
+      if (hours && numberOfHours >= 1 && numberOfHours <= 24) {
         ctx.res.end(JSON.stringify(hours, null, 2));
       } else {
         ctx.res.end(this.getUnavailableResponse());
@@ -47,6 +47,6 @@ export default {
   },
 
   getUnavailableResponse: function () {
-    return JSON.stringify({ hours: [] });
+    return JSON.stringify({ hours: {} });
   },
 };

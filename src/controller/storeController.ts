@@ -44,17 +44,27 @@ export default {
     const today = dateUtils.getTodayName();
     const tomorrow = dateUtils.getTomorrowName();
 
+    const yesterdayKeyFromCache = dateUtils.getDateFromFirstRow(spotPrices.yesterday) || yesterday;
+    const todayKeyFromCache = dateUtils.getDateFromFirstRow(spotPrices.today) || today;
+    const tomorrowKeyFromCache = dateUtils.getDateFromFirstRow(spotPrices.tomorrow) || tomorrow;
+
     const updated = {
       [otherday]: json[otherday],
       [yesterday]: json[yesterday],
       [today]: json[today],
       [tomorrow]: json[tomorrow],
-      ...(utils.isPriceListComplete(spotPrices.yesterday) && { [yesterday]: spotPrices.yesterday }),
-      ...(utils.isPriceListComplete(spotPrices.today) && { [today]: spotPrices.today }),
-      ...(utils.isPriceListComplete(spotPrices.tomorrow) && { [tomorrow]: spotPrices.tomorrow }),
+      ...(utils.isPriceListComplete(spotPrices.yesterday) && { [yesterdayKeyFromCache]: spotPrices.yesterday }),
+      ...(utils.isPriceListComplete(spotPrices.today) && { [todayKeyFromCache]: spotPrices.today }),
+      ...(utils.isPriceListComplete(spotPrices.tomorrow) && { [tomorrowKeyFromCache]: spotPrices.tomorrow }),
     };
 
     if (JSON.stringify(updated) !== JSON.stringify(json)) {
+      console.log(
+        'updateStoredResultWhenChanged() updated = ' +
+          JSON.stringify(updated, null, 2) +
+          ' --- json = ' +
+          JSON.stringify(json, null, 2),
+      );
       writeToDisk(name, JSON.stringify(updated, null, 2));
     }
   },

@@ -40,6 +40,10 @@ export default {
     return undefined;
   },
 
+  getDateFromFirstRow: function (datePriceArray: PriceRow[]) {
+    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).format('DD-MM-YYYY') : undefined;
+  },
+
   getTodaySpanStart: function () {
     return getDateSpanStartWithOffset(new Date(), 0).toISOString();
   },

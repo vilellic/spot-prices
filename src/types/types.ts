@@ -18,7 +18,11 @@ export interface PricesContainer {
   info: {
     current: string;
     averageToday: string;
+    averageTodayOffPeak: string;
+    averageTodayPeak: string;
     averageTomorrow?: string;
+    averageTomorrowOffPeak?: string;
+    averageTomorrowPeak?: string;
     tomorrowAvailable: boolean;
   };
   today: {
@@ -32,13 +36,21 @@ export interface PricesContainer {
 }
 
 export interface HoursContainer {
-  hours: string[];
+  hours: Hours;
   info: {
     now: boolean;
     min: number;
     max: number;
     avg: number;
   };
+}
+
+export interface Hours {
+  list: string[];
+  start?: string;
+  end?: string;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface PriceRow {

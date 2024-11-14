@@ -44,7 +44,9 @@ test('test getHours, 3 lowest', () => {
   });
 
   expect(today).toStrictEqual({
-    hours: ['1 Tue', '2 Tue', '3 Tue'],
+    hours: {
+      list: ['1 Tue', '2 Tue', '3 Tue'],
+    },
     info: {
       avg: -0.00261,
       max: -0.00241,
@@ -60,7 +62,9 @@ test('test getHours, 3 lowest', () => {
     queryMode: QueryMode.LowestPrices,
   });
   expect(tomorrow).toStrictEqual({
-    hours: ['2 Wed', '3 Wed', '4 Wed'],
+    hours: {
+      list: ['2 Wed', '3 Wed', '4 Wed'],
+    },
     info: {
       min: 0.01104,
       max: 0.01178,
@@ -80,22 +84,24 @@ test('test getHours with transfer', () => {
   });
 
   expect(withTransfer).toStrictEqual({
-    hours: [
-      '21 Tue',
-      '22 Tue',
-      '23 Tue',
-      '0 Wed',
-      '1 Wed',
-      '2 Wed',
-      '3 Wed',
-      '4 Wed',
-      '5 Wed',
-      '6 Wed',
-      '7 Wed',
-      '14 Wed',
-      '15 Wed',
-      '16 Wed',
-    ],
+    hours: {
+      list: [
+        '21 Tue',
+        '22 Tue',
+        '23 Tue',
+        '0 Wed',
+        '1 Wed',
+        '2 Wed',
+        '3 Wed',
+        '4 Wed',
+        '5 Wed',
+        '6 Wed',
+        '7 Wed',
+        '14 Wed',
+        '15 Wed',
+        '16 Wed',
+      ],
+    },
     info: {
       now: false,
       min: 0.01104,
@@ -118,7 +124,9 @@ test('test getHours, 1 lowest', () => {
     queryMode: QueryMode.LowestPrices,
   });
   expect(result).toStrictEqual({
-    hours: ['1 Tue'],
+    hours: {
+      list: ['1 Tue'],
+    },
     info: {
       avg: -0.00286,
       max: -0.00286,
@@ -136,7 +144,9 @@ test('test getHours, 8 lowest', () => {
     queryMode: QueryMode.LowestPrices,
   });
   expect(result).toStrictEqual({
-    hours: ['23 Mon', '0 Tue', '1 Tue', '2 Tue', '3 Tue', '4 Tue', '5 Tue', '6 Tue'],
+    hours: {
+      list: ['23 Mon', '0 Tue', '1 Tue', '2 Tue', '3 Tue', '4 Tue', '5 Tue', '6 Tue'],
+    },
     info: {
       now: true,
       min: -0.00286,
@@ -154,7 +164,9 @@ test('test getHours, 6 highest', () => {
     queryMode: QueryMode.HighestPrices,
   });
   expect(today).toStrictEqual({
-    hours: ['9 Tue', '10 Tue', '17 Tue', '18 Tue', '19 Tue', '20 Tue'],
+    hours: {
+      list: ['9 Tue', '10 Tue', '17 Tue', '18 Tue', '19 Tue', '20 Tue'],
+    },
     info: {
       now: false,
       min: 0.01789,
@@ -170,7 +182,9 @@ test('test getHours, 6 highest', () => {
     queryMode: QueryMode.HighestPrices,
   });
   expect(tomorrow).toStrictEqual({
-    hours: ['9 Wed', '10 Wed', '11 Wed', '12 Wed', '17 Wed', '20 Wed'],
+    hours: {
+      list: ['9 Wed', '10 Wed', '11 Wed', '12 Wed', '17 Wed', '20 Wed'],
+    },
     info: {
       now: false,
       min: 0.19896,
@@ -188,8 +202,13 @@ test('test weighted getHours, 3 lowest', () => {
     queryMode: QueryMode.WeightedPrices,
   });
   expect(result).toStrictEqual({
-    hours: ['3 Wed', '4 Wed', '5 Wed'],
-    hourRange: '03-06',
+    hours: {
+      list: ['3 Wed', '4 Wed', '5 Wed'],
+      start: '03',
+      end: '06',
+      startTime: '2023-09-13T03:00:00+0300',
+      endTime: '2023-09-13T06:00:00+0300',
+    },
     info: {
       now: false,
       min: 0.01104,
@@ -208,8 +227,13 @@ test('test sequential getHours, 5 lowest', () => {
   });
 
   expect(result).toStrictEqual({
-    hours: ['1 Wed', '2 Wed', '3 Wed', '4 Wed', '5 Wed'],
-    hourRange: '01-06',
+    hours: {
+      list: ['1 Wed', '2 Wed', '3 Wed', '4 Wed', '5 Wed'],
+      start: '01',
+      end: '06',
+      startTime: '2023-09-13T01:00:00+0300',
+      endTime: '2023-09-13T06:00:00+0300',
+    },
     info: {
       now: false,
       min: 0.01104,
@@ -227,21 +251,23 @@ test('test above avg. prices', () => {
   });
 
   expect(result).toStrictEqual({
-    hours: [
-      '8 Wed',
-      '9 Wed',
-      '10 Wed',
-      '11 Wed',
-      '12 Wed',
-      '13 Wed',
-      '14 Wed',
-      '15 Wed',
-      '16 Wed',
-      '17 Wed',
-      '18 Wed',
-      '19 Wed',
-      '20 Wed',
-    ],
+    hours: {
+      list: [
+        '8 Wed',
+        '9 Wed',
+        '10 Wed',
+        '11 Wed',
+        '12 Wed',
+        '13 Wed',
+        '14 Wed',
+        '15 Wed',
+        '16 Wed',
+        '17 Wed',
+        '18 Wed',
+        '19 Wed',
+        '20 Wed',
+      ],
+    },
     info: {
       now: false,
       min: 0.11437,
@@ -260,21 +286,23 @@ test('test above avg. prices with transfer', () => {
   });
 
   expect(result).toStrictEqual({
-    hours: [
-      '8 Wed',
-      '9 Wed',
-      '10 Wed',
-      '11 Wed',
-      '12 Wed',
-      '13 Wed',
-      '14 Wed',
-      '15 Wed',
-      '16 Wed',
-      '17 Wed',
-      '18 Wed',
-      '19 Wed',
-      '20 Wed',
-    ],
+    hours: {
+      list: [
+        '8 Wed',
+        '9 Wed',
+        '10 Wed',
+        '11 Wed',
+        '12 Wed',
+        '13 Wed',
+        '14 Wed',
+        '15 Wed',
+        '16 Wed',
+        '17 Wed',
+        '18 Wed',
+        '19 Wed',
+        '20 Wed',
+      ],
+    },
     info: {
       now: false,
       min: 0.11437,
@@ -306,8 +334,13 @@ test('test daylight saving time, duplicate hour', () => {
   });
 
   expect(result).toStrictEqual({
-    hours: ['2 Sun', '3 Sun', '4 Sun', '5 Sun'],
-    hourRange: '02-06',
+    hours: {
+      list: ['2 Sun', '3 Sun', '4 Sun', '5 Sun'],
+      start: '02',
+      end: '06',
+      startTime: '2023-10-29T02:00:00+0300',
+      endTime: '2023-10-29T06:00:00+0200',
+    },
     info: {
       now: true,
       min: 0.02623,

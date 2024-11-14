@@ -1,9 +1,10 @@
-import { PriceRow } from '../types/types';
+import { PriceRow, SpotPrices } from '../types/types';
 import moment from 'moment';
+import constants from '../types/constants';
 
 export default {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
+    return this.getDate(timestamp).format(constants.ISO_DATE_FORMAT);
   },
 
   getDate: function (timestamp: number) {
@@ -24,11 +25,11 @@ export default {
     if (!input) {
       return 'x';
     }
-    const date = new Date(input);
-    if (addHours) {
-      date.setHours(date.getHours() + addHours);
-    }
-    return moment(date).format('HH');
+    return addToDateAndFormat(input, 'HH', addHours);
+  },
+
+  getIsoDateStr: function (input: string | undefined, addHours?: number) {
+    return addToDateAndFormat(input, constants.ISO_DATE_FORMAT, addHours);
   },
 
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
@@ -101,6 +102,41 @@ export default {
     date.setMinutes(15);
     return now.valueOf() >= date.valueOf();
   },
+
+  getTodayOffPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.yesterday, ...spotPrices.today] as PriceRow[];
+    const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
+    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
+    return this.filterHours(priceRows, yesterday22, today07);
+  },
+
+  getTodayPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today] as PriceRow[];
+    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
+    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
+    return this.filterHours(priceRows, today07, today22);
+  },
+
+  getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
+    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
+    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
+    return this.filterHours(priceRows, today22, tomorrow07);
+  },
+
+  getTomorrowPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
+    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
+    const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
+    return this.filterHours(priceRows, tomorrow07, tomorrow22);
+  },
+
+  filterHours: function (priceRows: PriceRow[], start: moment.Moment, end: moment.Moment) {
+    return priceRows.filter((priceRow) => {
+      const priceRowStart = this.parseISODate(priceRow.start);
+      return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
+    });
+  },
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {
@@ -114,4 +150,15 @@ const getDateSpanEndWithOffset = (date: Date, offset: number) => {
   date.setHours(24, 0, 0, 0);
   date.setMilliseconds(date.getMilliseconds() - 1);
   return date;
+};
+
+const addToDateAndFormat = (input: string | undefined, format: string, addHours?: number) => {
+  if (!input) {
+    return undefined;
+  }
+  const date = new Date(input);
+  if (addHours) {
+    date.setHours(date.getHours() + addHours);
+  }
+  return moment(date).format(format);
 };

@@ -23,13 +23,23 @@ export default {
 
     const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.tomorrow);
     const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(cachedPrices.tomorrow) } : [];
+    const avgTomorrowOffPeakArray = tomorrowAvailable
+      ? { averageTomorrowOffPeak: utils.getAveragePrice(dateUtils.getTomorrowOffPeakHours(cachedPrices)) }
+      : [];
+    const avgTomorrowPeakArray = tomorrowAvailable
+      ? { averageTomorrowPeak: utils.getAveragePrice(dateUtils.getTomorrowPeakHours(cachedPrices)) }
+      : [];
 
     const prices: PricesContainer = {
       info: {
         current: `${currentPrice?.toFixed(5)}`,
         averageToday: utils.getAveragePrice(cachedPrices.today),
-        ...avgTomorrowArray,
+        averageTodayOffPeak: utils.getAveragePrice(dateUtils.getTodayOffPeakHours(cachedPrices)),
+        averageTodayPeak: utils.getAveragePrice(dateUtils.getTodayPeakHours(cachedPrices)),
         tomorrowAvailable: tomorrowAvailable,
+        ...avgTomorrowArray,
+        ...avgTomorrowOffPeakArray,
+        ...avgTomorrowPeakArray,
       },
       today: cachedPrices.today?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
       tomorrow: cachedPrices.tomorrow?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),

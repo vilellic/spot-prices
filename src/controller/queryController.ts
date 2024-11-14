@@ -38,7 +38,7 @@ export default {
         queryMode: queryMode,
         transferPrices,
       });
-      if (hours && numberOfHours >= 1 && numberOfHours <= 24) {
+      if (queryMode === QueryMode.AboveAveragePrices || (hours && numberOfHours >= 1 && numberOfHours <= 24)) {
         ctx.res.end(JSON.stringify(hours, null, 2));
       } else {
         ctx.res.end(this.getUnavailableResponse());

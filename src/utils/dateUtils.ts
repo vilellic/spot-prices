@@ -1,4 +1,4 @@
-import { PriceRow } from '../types/types';
+import { PriceRow, SpotPrices } from '../types/types';
 import moment from 'moment';
 import constants from '../types/constants';
 
@@ -101,6 +101,41 @@ export default {
     const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toDate();
     date.setMinutes(15);
     return now.valueOf() >= date.valueOf();
+  },
+
+  getTodayOffPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.yesterday, ...spotPrices.today] as PriceRow[];
+    const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
+    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
+    return this.filterHours(priceRows, yesterday22, today07);
+  },
+
+  getTodayPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today] as PriceRow[];
+    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
+    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
+    return this.filterHours(priceRows, today07, today22);
+  },
+
+  getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
+    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
+    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
+    return this.filterHours(priceRows, today22, tomorrow07);
+  },
+
+  getTomorrowPeakHours: function (spotPrices: SpotPrices) {
+    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
+    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
+    const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
+    return this.filterHours(priceRows, tomorrow07, tomorrow22);
+  },
+
+  filterHours: function (priceRows: PriceRow[], start: moment.Moment, end: moment.Moment) {
+    return priceRows.filter((priceRow) => {
+      const priceRowStart = this.parseISODate(priceRow.start);
+      return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
+    });
   },
 };
 

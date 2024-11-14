@@ -18,7 +18,11 @@ export interface PricesContainer {
   info: {
     current: string;
     averageToday: string;
+    averageTodayOffPeak: string;
+    averageTodayPeak: string;
     averageTomorrow?: string;
+    averageTomorrowOffPeak?: string;
+    averageTomorrowPeak?: string;
     tomorrowAvailable: boolean;
   };
   today: {

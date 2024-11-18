@@ -88,3 +88,18 @@ export interface ControllerContext {
   req?: IncomingMessage;
   cache: NodeCache;
 }
+
+export interface EleringResponseEntry {
+  timestamp: number;
+  price: number;
+}
+
+export interface EleringResponse {
+  success: boolean;
+  data: {
+    ee: EleringResponseEntry[];
+    fi: EleringResponseEntry[];
+    lv: EleringResponseEntry[];
+    lt: EleringResponseEntry[];
+  };
+}

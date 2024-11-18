@@ -1,10 +1,9 @@
 import NodeCache from 'node-cache';
-import { ControllerContext, getEmptySpotPrices, SpotPrices } from '../types/types';
+import { ControllerContext, EleringResponse, getEmptySpotPrices, SpotPrices } from '../types/types';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
 import { PricesContainer, PriceRow } from '../types/types';
-import fetch from 'node-fetch';
 import { Mutex } from 'async-mutex';
 
 const mutex = new Mutex();
@@ -13,14 +12,7 @@ export default {
   handleRoot: async function (ctx: ControllerContext) {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
 
-    let currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today);
-    if (currentPrice === undefined) {
-      const currentJson = await getCurrentJson();
-      if (currentJson.success == true) {
-        currentPrice = Number(utils.getPrice(currentJson.data[0].price));
-      }
-    }
-
+    const currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today);
     const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.tomorrow);
     const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(cachedPrices.tomorrow) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
@@ -45,7 +37,7 @@ export default {
       tomorrow: cachedPrices.tomorrow?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
-    ctx.res.end(JSON.stringify(prices, null, 2));
+    return prices;
   },
 
   updatePrices: async function (cache: NodeCache) {
@@ -80,28 +72,15 @@ export default {
   },
 };
 
-async function getCurrentJson() {
-  const url = `${constants.ELERING_API_PREFIX}/price/FI/current`;
-  try {
-    const res = await fetch(url, { method: 'Get' });
-    const json = await res.json();
-    console.log('getCurrentJson() = ' + url);
-    return json;
-  } catch (error) {
-    console.log(error);
-    return { success: false };
-  }
-}
-
 const getDayPrices = async (start: string, end: string) => {
   const prices = [];
 
-  const pricesJson = await getPricesJson(start, end);
-  if (pricesJson.success === true) {
-    for (let i = 0; i < pricesJson.data.fi.length; i++) {
+  const eleringResponse = await getPricesJson(start, end);
+  if (eleringResponse.success === true) {
+    for (let i = 0; i < eleringResponse.data.fi.length; i++) {
       const priceRow: PriceRow = {
-        start: dateUtils.getDateStr(pricesJson.data.fi[i].timestamp),
-        price: Number(utils.getPrice(pricesJson.data.fi[i].price)),
+        start: dateUtils.getDateStr(eleringResponse.data.fi[i].timestamp),
+        price: Number(utils.getPrice(eleringResponse.data.fi[i].price)),
       };
       prices.push(priceRow);
     }
@@ -116,9 +95,9 @@ async function getPricesJson(start: string, end: string) {
     const res = await fetch(url, { method: 'Get' });
     const json = await res.json();
     console.log(url);
-    return json;
+    return json as Promise<EleringResponse>;
   } catch (error) {
     console.log(error);
-    return { success: false };
+    return { success: false } as EleringResponse;
   }
 }

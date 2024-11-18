@@ -5,13 +5,13 @@ import query, { QueryMode } from '../services/query';
 
 export default {
   handleQuery: function (ctx: ControllerContext) {
-    const parsed = new URL(ctx.req?.url || '', `http://${ctx.req?.headers.host}`);
-    const numberOfHours = Number(parsed.searchParams.get('hours'));
-    const startTime = Number(parsed.searchParams.get('startTime'));
-    const endTime = Number(parsed.searchParams.get('endTime'));
-    const queryModePar: string = parsed.searchParams.get('queryMode') || 'LowestPrices';
-    const offPeakTransferPrice = Number(parsed.searchParams.get('offPeakTransferPrice'));
-    const peakTransferPrice = Number(parsed.searchParams.get('peakTransferPrice'));
+    const url = ctx.url;
+    const numberOfHours = Number(url?.searchParams.get('hours'));
+    const startTime = Number(url?.searchParams.get('startTime'));
+    const endTime = Number(url?.searchParams.get('endTime'));
+    const queryModePar: string = url?.searchParams.get('queryMode') || 'LowestPrices';
+    const offPeakTransferPrice = Number(url?.searchParams.get('offPeakTransferPrice'));
+    const peakTransferPrice = Number(url?.searchParams.get('peakTransferPrice'));
     const transferPrices: TransferPrices | undefined =
       offPeakTransferPrice && peakTransferPrice
         ? {
@@ -28,7 +28,7 @@ export default {
     };
 
     if (queryMode !== QueryMode.AboveAveragePrices && !numberOfHours) {
-      ctx.res.end(this.getUnavailableResponse());
+      return this.getUnavailableResponse();
     } else {
       const spotPrices = ctx.cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
       const hours = query.getHours({
@@ -39,14 +39,14 @@ export default {
         transferPrices,
       });
       if (queryMode === QueryMode.AboveAveragePrices || (hours && numberOfHours >= 1 && numberOfHours <= 24)) {
-        ctx.res.end(JSON.stringify(hours, null, 2));
+        return hours;
       } else {
-        ctx.res.end(this.getUnavailableResponse());
+        return this.getUnavailableResponse();
       }
     }
   },
 
   getUnavailableResponse: function () {
-    return JSON.stringify({ hours: {} });
+    return { hours: {} };
   },
 };

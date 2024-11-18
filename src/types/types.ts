@@ -1,4 +1,3 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import NodeCache from 'node-cache';
 import moment from 'moment';
 
@@ -84,7 +83,21 @@ export interface LinksContainer {
 }
 
 export interface ControllerContext {
-  res: ServerResponse;
-  req?: IncomingMessage;
   cache: NodeCache;
+  url?: URL;
+}
+
+export interface EleringResponseEntry {
+  timestamp: number;
+  price: number;
+}
+
+export interface EleringResponse {
+  success: boolean;
+  data: {
+    ee: EleringResponseEntry[];
+    fi: EleringResponseEntry[];
+    lv: EleringResponseEntry[];
+    lt: EleringResponseEntry[];
+  };
 }

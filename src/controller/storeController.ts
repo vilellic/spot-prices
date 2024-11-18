@@ -59,12 +59,6 @@ export default {
     };
 
     if (JSON.stringify(updated) !== JSON.stringify(json)) {
-      console.log(
-        'updateStoredResultWhenChanged() updated = ' +
-          JSON.stringify(updated, null, 2) +
-          ' --- json = ' +
-          JSON.stringify(json, null, 2),
-      );
       writeToDisk(name, JSON.stringify(updated, null, 2));
     }
   },

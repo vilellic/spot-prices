@@ -22,15 +22,12 @@ export default {
     return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5);
   },
 
-  getCurrentPriceFromTodayPrices: function (todayPrices: PriceRow[]) {
-    if (todayPrices === undefined) {
-      return undefined;
-    }
+  getCurrentPrice: function (prices: PriceRow[]) {
     const currentHour = new Date().getHours();
     let currentPrice;
-    for (let h = 0; h < todayPrices.length; h++) {
-      if (new Date(todayPrices[h].start).getHours() === currentHour) {
-        currentPrice = todayPrices[h].price;
+    for (let h = 0; h < prices.length; h++) {
+      if (new Date(prices[h].start).getHours() === currentHour) {
+        currentPrice = prices[h].price;
       }
     }
     return currentPrice;
@@ -49,7 +46,7 @@ export default {
       return false;
     }
     const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-    return spotPrices.today?.length > 0;
+    return spotPrices.prices.length > 0;
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {

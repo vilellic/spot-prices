@@ -12,9 +12,9 @@ export default {
   handleRoot: async function (ctx: ControllerContext) {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
 
-    const currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today);
-    const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.tomorrow);
-    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(cachedPrices.tomorrow) } : [];
+    const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
+    const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.prices);
+    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(dateUtils.getTomorrowHours(cachedPrices)) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
       ? { averageTomorrowOffPeak: utils.getAveragePrice(dateUtils.getTomorrowOffPeakHours(cachedPrices)) }
       : [];
@@ -25,7 +25,7 @@ export default {
     const prices: PricesContainer = {
       info: {
         current: `${currentPrice?.toFixed(5)}`,
-        averageToday: utils.getAveragePrice(cachedPrices.today),
+        averageToday: utils.getAveragePrice(dateUtils.getTodayHours(cachedPrices)),
         averageTodayOffPeak: utils.getAveragePrice(dateUtils.getTodayOffPeakHours(cachedPrices)),
         averageTodayPeak: utils.getAveragePrice(dateUtils.getTodayPeakHours(cachedPrices)),
         tomorrowAvailable: tomorrowAvailable,
@@ -33,8 +33,8 @@ export default {
         ...avgTomorrowOffPeakArray,
         ...avgTomorrowPeakArray,
       },
-      today: cachedPrices.today?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
-      tomorrow: cachedPrices.tomorrow?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      today: dateUtils.getTodayHours(cachedPrices).map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      tomorrow: dateUtils.getTomorrowHours(cachedPrices).map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
     return prices;

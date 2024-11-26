@@ -6,16 +6,14 @@ import timezone from 'dayjs/plugin/timezone'
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
-dayjs.tz.setDefault("Europe/Helsinki")
 
 export default {
   getDateStr: function (timestamp: number) {
-    return dayjs(timestamp * 1000).toISOString();
+    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
   },
 
   getDate: function (timestamp: number) {
-    // const tz = "Europe/Helsinki";
-    return dayjs.tz(timestamp, "Europe/Helsinki");
+    return dayjs.unix(timestamp).tz("Europe/Moscow")
   },
 
   parseISODate: function (isoDateStr: string): dayjs.Dayjs {
@@ -108,36 +106,53 @@ export default {
     return now.valueOf() >= date.valueOf();
   },
 
+  getYesterdayHours: function (spotPrices: SpotPrices) {
+    return getDayHours(spotPrices, -1);
+  },
+
+  getTodayHours: function (spotPrices: SpotPrices) {
+    return getDayHours(spotPrices, 0);
+  },
+
+  getTomorrowHours: function (spotPrices: SpotPrices) {
+    return getDayHours(spotPrices, 1);
+  },
+
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
     const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
-    return this.filterHours(spotPrices.prices, yesterday22, today07);
+    return filterHours(spotPrices.prices, yesterday22, today07);
   },
 
   getTodayPeakHours: function (spotPrices: SpotPrices) {
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
-    return this.filterHours(spotPrices.prices, today07, today22);
+    return filterHours(spotPrices.prices, today07, today22);
   },
 
   getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
-    return this.filterHours(spotPrices.prices, today22, tomorrow07);
+    return filterHours(spotPrices.prices, today22, tomorrow07);
   },
 
   getTomorrowPeakHours: function (spotPrices: SpotPrices) {
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
     const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
-    return this.filterHours(spotPrices.prices, tomorrow07, tomorrow22);
+    return filterHours(spotPrices.prices, tomorrow07, tomorrow22);
   },
 
-  filterHours: function (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) {
-    return priceRows.filter((priceRow) => {
-      const priceRowStart = this.parseISODate(priceRow.start);
-      return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
-    });
-  },
+};
+
+const filterHours = (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) => {
+  return priceRows.filter((priceRow) => {
+    const priceRowStart = dayjs(priceRow.start);
+    return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
+  });
+};
+
+const getDayHours = (spotPrices: SpotPrices, offset: number) => {
+  return filterHours(spotPrices.prices, dayjs(getDateSpanStartWithOffset(new Date(), offset)), dayjs(getDateSpanEndWithOffset(new Date(), offset)));
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {

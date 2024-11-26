@@ -11,9 +11,9 @@ import storeController from './controller/storeController';
 import constants from './types/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-require('log-timestamp')(function () {
-  return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
-});
+//require('log-timestamp')(function () {
+//  return '[ ' + moment(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
+//});
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('console');

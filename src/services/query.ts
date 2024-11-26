@@ -11,6 +11,9 @@ import {
 import weighted from './weighted';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
+import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
+dayjs.extend(isBetween)
 
 interface GetHoursParameters {
   spotPrices: SpotPrices;
@@ -54,16 +57,14 @@ export default {
     }
 
     const pricesFlat = [
-      ...spotPrices.yesterday,
-      ...spotPrices.today,
-      ...(spotPrices.tomorrow ?? []),
+      ...spotPrices.prices,
     ] as PriceRowWithTransfer[];
 
     const withTransferPrices = transferPrices !== undefined;
 
     const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter(
       (entry) =>
-        dateUtils.parseISODate(entry.start) >= dateRange.start && dateUtils.parseISODate(entry.start) < dateRange.end,
+        dayjs(entry.start).isBetween(dateRange.start, dayjs(dateRange.end), 'hour', '[)')
     );
 
     if (withTransferPrices) {

@@ -1,24 +1,29 @@
 import { PriceRow, SpotPrices } from '../types/types';
-import moment from 'moment';
 import constants from '../types/constants';
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Europe/Helsinki")
 
 export default {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format(constants.ISO_DATE_FORMAT);
+    return dayjs(timestamp * 1000).toISOString();
   },
 
   getDate: function (timestamp: number) {
-    const timestampNumber = Number(timestamp * 1000);
-    const momentDate = moment(new Date(timestampNumber));
-    return momentDate;
+    // const tz = "Europe/Helsinki";
+    return dayjs.tz(timestamp, "Europe/Helsinki");
   },
 
-  parseISODate: function (isoDateStr: string): moment.Moment {
-    return moment(new Date(isoDateStr));
+  parseISODate: function (isoDateStr: string): dayjs.Dayjs {
+    return dayjs(isoDateStr);
   },
 
   getWeekdayAndHourStr: function (date: Date) {
-    return new Date(date).getHours() + ' ' + moment(date).format('ddd');
+    return new Date(date).getHours() + ' ' + dayjs(date).format('ddd');
   },
 
   getHourStr: function (input: string | undefined, addHours?: number) {
@@ -70,7 +75,7 @@ export default {
   },
 
   getDateJsonName: function (offset: number) {
-    return moment(getDateSpanStartWithOffset(new Date(), offset)).format('DD-MM-YYYY');
+    return dayjs(getDateSpanStartWithOffset(new Date(), offset)).format('DD-MM-YYYY');
   },
 
   getTodayName: function () {
@@ -85,10 +90,10 @@ export default {
     return this.getDateJsonName(1);
   },
 
-  getDateFromHourStarting: function (date: Date, offset: number, hour: number): moment.Moment {
+  getDateFromHourStarting: function (date: Date, offset: number, hour: number): dayjs.Dayjs {
     date.setDate(date.getDate() + offset);
     date.setHours(hour, 0, 0, 0);
-    return moment(date);
+    return dayjs(date);
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -104,34 +109,30 @@ export default {
   },
 
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.yesterday, ...spotPrices.today] as PriceRow[];
     const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
-    return this.filterHours(priceRows, yesterday22, today07);
+    return this.filterHours(spotPrices.prices, yesterday22, today07);
   },
 
   getTodayPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today] as PriceRow[];
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
-    return this.filterHours(priceRows, today07, today22);
+    return this.filterHours(spotPrices.prices, today07, today22);
   },
 
   getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
-    return this.filterHours(priceRows, today22, tomorrow07);
+    return this.filterHours(spotPrices.prices, today22, tomorrow07);
   },
 
   getTomorrowPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
     const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
-    return this.filterHours(priceRows, tomorrow07, tomorrow22);
+    return this.filterHours(spotPrices.prices, tomorrow07, tomorrow22);
   },
 
-  filterHours: function (priceRows: PriceRow[], start: moment.Moment, end: moment.Moment) {
+  filterHours: function (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) {
     return priceRows.filter((priceRow) => {
       const priceRowStart = this.parseISODate(priceRow.start);
       return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
@@ -160,5 +161,5 @@ const addToDateAndFormat = (input: string | undefined, format: string, addHours?
   if (addHours) {
     date.setHours(date.getHours() + addHours);
   }
-  return moment(date).format(format);
+  return dayjs(date).format(format);
 };

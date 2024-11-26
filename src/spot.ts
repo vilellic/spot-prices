@@ -2,7 +2,6 @@ import { IncomingMessage, ServerResponse } from 'http';
 import NodeCache from 'node-cache';
 import http from 'http';
 const server = http.createServer();
-import moment from 'moment';
 import { CronJob } from 'cron';
 
 import rootController from './controller/rootController';

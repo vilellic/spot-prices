@@ -42,6 +42,11 @@ export default {
 
   updatePrices: async function (cache: NodeCache) {
     await mutex.runExclusive(async () => {
+      const spotPrices = cache.has(constants.CACHED_NAME_PRICES) ? cache.get(constants.CACHED_NAME_PRICES) as SpotPrices : getEmptySpotPrices();
+      if (!utils.isPriceListComplete(dateUtils.getYesterdaySpanStart, dateUtils.getTodaySpanEnd())) {
+
+      }
+      /*
       let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
       let prices = {} as SpotPrices;
       if (cachedPrices === undefined) {
@@ -68,6 +73,7 @@ export default {
       }
 
       cache.set(constants.CACHED_NAME_PRICES, prices);
+      */
     });
   },
 };

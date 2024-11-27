@@ -33,10 +33,6 @@ export default {
     return currentPrice;
   },
 
-  isPriceListComplete: function (priceList: PriceRow[]) {
-    return priceList !== undefined && priceList.length >= 23;
-  },
-
   getSpotPricesFromCache: function (cache: NodeCache): SpotPrices {
     return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
   },
@@ -46,7 +42,7 @@ export default {
       return false;
     }
     const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-    return spotPrices.prices.length > 0;
+    return spotPrices.prices?.length > 0;
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {

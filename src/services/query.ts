@@ -11,9 +11,9 @@ import {
 import weighted from './weighted';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
-import dayjs from 'dayjs'
-import isBetween from 'dayjs/plugin/isBetween'
-dayjs.extend(isBetween)
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+dayjs.extend(isBetween);
 
 interface GetHoursParameters {
   spotPrices: SpotPrices;
@@ -56,15 +56,12 @@ export default {
       return undefined;
     }
 
-    const pricesFlat = [
-      ...spotPrices.prices,
-    ] as PriceRowWithTransfer[];
+    const pricesFlat = [...spotPrices.prices] as PriceRowWithTransfer[];
 
     const withTransferPrices = transferPrices !== undefined;
 
-    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter(
-      (entry) =>
-        dayjs(entry.start).isBetween(dateRange.start, dayjs(dateRange.end), 'hour', '[)')
+    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter((entry) =>
+      dayjs(entry.start).isBetween(dateRange.start, dayjs(dateRange.end), 'hour', '[)'),
     );
 
     if (withTransferPrices) {
@@ -123,11 +120,11 @@ export default {
     const startEndFields =
       queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
         ? {
-          start: dateUtils.getHourStr(resultArray.at(0)?.start),
-          end: dateUtils.getHourStr(resultArray.at(-1)?.start, 1),
-          startTime: resultArray.at(0)?.start,
-          endTime: dateUtils.getIsoDateStr(resultArray.at(-1)?.start, 1),
-        }
+            start: dateUtils.getHourStr(resultArray.at(0)?.start),
+            end: dateUtils.getHourStr(resultArray.at(-1)?.start, 1),
+            startTime: resultArray.at(0)?.start,
+            endTime: dateUtils.getIsoDateStr(resultArray.at(-1)?.start, 1),
+          }
         : undefined;
 
     const hoursObject: Hours = {

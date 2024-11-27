@@ -31,9 +31,9 @@ test('test getPrice VAT with negative price', () => {
 });
 
 test('test getAveragePrice', () => {
-  expect(utils.getAveragePrice(dateUtils.getTodayHours(spotPrices))).toBe('0.01185');
-  expect(utils.getAveragePrice(dateUtils.getYesterdayHours(spotPrices))).toBe('0.13479');
-  expect(utils.getAveragePrice(dateUtils.getTomorrowHours(spotPrices))).toBe('0.11482');
+  expect(utils.getAveragePrice(dateUtils.getTodayHours(spotPrices.prices))).toBe('0.01185');
+  expect(utils.getAveragePrice(dateUtils.getYesterdayHours(spotPrices.prices))).toBe('0.13479');
+  expect(utils.getAveragePrice(dateUtils.getTomorrowHours(spotPrices.prices))).toBe('0.11482');
 });
 
 test('test getCurrentPriceFromToday', () => {

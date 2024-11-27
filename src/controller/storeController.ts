@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
-import { SpotPrices } from '../types/types';
 
 export default {
   initCacheFromDisk: function (cache: NodeCache) {
@@ -15,7 +14,7 @@ export default {
     const spotPrices = utils.getSpotPricesFromCache(cache);
 
     // Invalidate cache if current time is not in todays range
-    if (utils.isCacheValid(cache) && !utils.dateIsInPricesList(spotPrices.today, new Date())) {
+    if (utils.isCacheValid(cache) && !utils.dateIsInPricesList(spotPrices.prices, new Date())) {
       console.log('Invalidating old cache');
       this.flushCache(cache);
     }
@@ -35,6 +34,8 @@ export default {
   },
 
   updateStoredResultWhenChanged: function (name: string, value: object) {
+    console.log('name = ' + name + ", value = " + value);
+    /*
     const spotPrices = value as SpotPrices;
     const fromFile = readFileSync(getStoredResultFileName(name));
     const json = JSON.parse(fromFile.toString());
@@ -61,6 +62,7 @@ export default {
     if (JSON.stringify(updated) !== JSON.stringify(json)) {
       writeToDisk(name, JSON.stringify(updated, null, 2));
     }
+      */
   },
 
   resetStoredFiles: function () {

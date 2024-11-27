@@ -1,8 +1,8 @@
 import { PriceRow, SpotPrices } from '../types/types';
 import constants from '../types/constants';
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import timezone from 'dayjs/plugin/timezone'
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -13,7 +13,7 @@ export default {
   },
 
   getDate: function (timestamp: number) {
-    return dayjs.unix(timestamp).tz("Europe/Moscow")
+    return dayjs.unix(timestamp).tz('Europe/Moscow');
   },
 
   parseISODate: function (isoDateStr: string): dayjs.Dayjs {
@@ -106,16 +106,16 @@ export default {
     return now.valueOf() >= date.valueOf();
   },
 
-  getYesterdayHours: function (spotPrices: SpotPrices) {
-    return getDayHours(spotPrices, -1);
+  getYesterdayHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, -1);
   },
 
-  getTodayHours: function (spotPrices: SpotPrices) {
-    return getDayHours(spotPrices, 0);
+  getTodayHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, 0);
   },
 
-  getTomorrowHours: function (spotPrices: SpotPrices) {
-    return getDayHours(spotPrices, 1);
+  getTomorrowHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, 1);
   },
 
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
@@ -141,18 +141,21 @@ export default {
     const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
     return filterHours(spotPrices.prices, tomorrow07, tomorrow22);
   },
-
 };
 
 const filterHours = (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) => {
-  return priceRows.filter((priceRow) => {
+  return priceRows?.filter((priceRow) => {
     const priceRowStart = dayjs(priceRow.start);
     return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
-  });
+  }) || [];
 };
 
-const getDayHours = (spotPrices: SpotPrices, offset: number) => {
-  return filterHours(spotPrices.prices, dayjs(getDateSpanStartWithOffset(new Date(), offset)), dayjs(getDateSpanEndWithOffset(new Date(), offset)));
+const getDayHours = (prices: PriceRow[], offset: number) => {
+  return filterHours(
+    prices,
+    dayjs(getDateSpanStartWithOffset(new Date(), offset)),
+    dayjs(getDateSpanEndWithOffset(new Date(), offset)),
+  );
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {

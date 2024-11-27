@@ -13,8 +13,9 @@ export default {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
 
     const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
-    const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.prices);
-    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(dateUtils.getTomorrowHours(cachedPrices)) } : [];
+    const tomorrowHours = dateUtils.getTomorrowHours(cachedPrices.prices);
+    const tomorrowAvailable = tomorrowHours.length >= 23;
+    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(tomorrowHours) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
       ? { averageTomorrowOffPeak: utils.getAveragePrice(dateUtils.getTomorrowOffPeakHours(cachedPrices)) }
       : [];
@@ -25,7 +26,7 @@ export default {
     const prices: PricesContainer = {
       info: {
         current: `${currentPrice?.toFixed(5)}`,
-        averageToday: utils.getAveragePrice(dateUtils.getTodayHours(cachedPrices)),
+        averageToday: utils.getAveragePrice(dateUtils.getTodayHours(cachedPrices.prices)),
         averageTodayOffPeak: utils.getAveragePrice(dateUtils.getTodayOffPeakHours(cachedPrices)),
         averageTodayPeak: utils.getAveragePrice(dateUtils.getTodayPeakHours(cachedPrices)),
         tomorrowAvailable: tomorrowAvailable,
@@ -33,8 +34,10 @@ export default {
         ...avgTomorrowOffPeakArray,
         ...avgTomorrowPeakArray,
       },
-      today: dateUtils.getTodayHours(cachedPrices).map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
-      tomorrow: dateUtils.getTomorrowHours(cachedPrices).map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      today: dateUtils
+        .getTodayHours(cachedPrices.prices)
+        .map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      tomorrow: tomorrowHours.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
     return prices;
@@ -42,10 +45,18 @@ export default {
 
   updatePrices: async function (cache: NodeCache) {
     await mutex.runExclusive(async () => {
-      const spotPrices = cache.has(constants.CACHED_NAME_PRICES) ? cache.get(constants.CACHED_NAME_PRICES) as SpotPrices : getEmptySpotPrices();
-      if (!utils.isPriceListComplete(dateUtils.getYesterdaySpanStart, dateUtils.getTodaySpanEnd())) {
-
+      const spotPrices = cache.has(constants.CACHED_NAME_PRICES)
+        ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
+        : getEmptySpotPrices();
+      const yesterdayAndTodayHours = [
+        ...dateUtils.getYesterdayHours(spotPrices.prices),
+        ...dateUtils.getTodayHours(spotPrices.prices),
+      ];
+      if (yesterdayAndTodayHours.length < 47) {
+        spotPrices.prices = await getDayPrices(dateUtils.getYesterdaySpanStart(), dateUtils.getTomorrowSpanEnd());
       }
+      cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+
       /*
       let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
       let prices = {} as SpotPrices;

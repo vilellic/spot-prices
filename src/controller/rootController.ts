@@ -48,14 +48,35 @@ export default {
       const spotPrices = cache.has(constants.CACHED_NAME_PRICES)
         ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
         : getEmptySpotPrices();
+
+      const yesterdayHours = dateUtils.getYesterdayHours(spotPrices.prices);
+      const todayHours = dateUtils.getTodayHours(spotPrices.prices);
+      const tomorrowHours = dateUtils.getTomorrowHours(spotPrices.prices);
+
+      let start = undefined;
+      if (yesterdayHours.length < 24) {
+        start = dateUtils.getYesterdaySpanStart();
+      } else if (todayHours.length < 24) {
+        start = dateUtils.getTodaySpanStart();
+      } else if (
+        tomorrowHours.length < 24 &&
+        (dateUtils.isTimeToGetTomorrowPrices() || !tomorrowHours || tomorrowHours.length === 0)
+      ) {
+        start = dateUtils.getTomorrowSpanStart();
+      }
+      if (start) {
+        spotPrices.prices = await getDayPrices(start, dateUtils.getTomorrowSpanEnd());
+      }
+      cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+
+      /*
       const yesterdayAndTodayHours = [
         ...dateUtils.getYesterdayHours(spotPrices.prices),
         ...dateUtils.getTodayHours(spotPrices.prices),
       ];
       if (yesterdayAndTodayHours.length < 47) {
         spotPrices.prices = await getDayPrices(dateUtils.getYesterdaySpanStart(), dateUtils.getTomorrowSpanEnd());
-      }
-      cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+      }*/
 
       /*
       let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;

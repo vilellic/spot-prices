@@ -2,6 +2,7 @@ import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '
 import constants from '../types/constants';
 import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
+import dayjs from 'dayjs';
 
 export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -37,14 +38,6 @@ export default {
     return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
   },
 
-  isCacheValid: function (cache: NodeCache) {
-    if (!cache.has(constants.CACHED_NAME_PRICES)) {
-      return false;
-    }
-    const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-    return spotPrices.prices?.length > 0;
-  },
-
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
     if (priceList === undefined || priceList.length <= 1) {
       return false;
@@ -59,5 +52,14 @@ export default {
       return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
     }
     return false;
+  },
+
+  removeDuplicatesAndSort: function (prices: PriceRow[]): PriceRow[] {
+    const uniqueItems = new Map<string, PriceRow>();
+    prices.forEach((item) => {
+      uniqueItems.set(item.start, item);
+    });
+    const uniqueArray = Array.from(uniqueItems.values());
+    return uniqueArray.sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf());
   },
 };

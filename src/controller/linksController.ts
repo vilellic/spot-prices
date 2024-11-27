@@ -15,9 +15,9 @@ export default {
     const transferPrices: TransferPrices | undefined =
       offPeakTransferPrice && peakTransferPrice
         ? {
-          offPeakTransfer: offPeakTransferPrice,
-          peakTransfer: peakTransferPrice,
-        }
+            offPeakTransfer: offPeakTransferPrice,
+            peakTransfer: peakTransferPrice,
+          }
         : undefined;
 
     return links.getExampleLinks({

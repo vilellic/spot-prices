@@ -118,6 +118,14 @@ export default {
     return getDayHours(prices, 1);
   },
 
+  getHoursToStore: function (prices: PriceRow[]) {
+    return filterHours(
+      prices,
+      dayjs(getDateSpanStartWithOffset(new Date(), -2)),
+      dayjs(getDateSpanEndWithOffset(new Date(), 1)),
+    );
+  },
+
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
     const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
@@ -144,10 +152,12 @@ export default {
 };
 
 const filterHours = (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) => {
-  return priceRows?.filter((priceRow) => {
-    const priceRowStart = dayjs(priceRow.start);
-    return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
-  }) || [];
+  return (
+    priceRows?.filter((priceRow) => {
+      const priceRowStart = dayjs(priceRow.start);
+      return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
+    }) || []
+  );
 };
 
 const getDayHours = (prices: PriceRow[], offset: number) => {

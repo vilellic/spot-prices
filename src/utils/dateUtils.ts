@@ -1,27 +1,22 @@
 import { PriceRow, SpotPrices } from '../types/types';
 import constants from '../types/constants';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import { DateTime } from "luxon";
 
 export default {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format('YYYY-MM-DDTHH:mm:ssZZ');
+    return this.getDate(timestamp).toISO();
   },
 
   getDate: function (timestamp: number) {
-    return dayjs.unix(timestamp).tz('Europe/Moscow');
+    return DateTime.fromSeconds(timestamp);
   },
 
-  parseISODate: function (isoDateStr: string): dayjs.Dayjs {
-    return dayjs(isoDateStr);
+  parseISODate: function (isoDateStr: string) {
+    return DateTime.fromISO(isoDateStr);
   },
 
   getWeekdayAndHourStr: function (date: Date) {
-    return new Date(date).getHours() + ' ' + dayjs(date).format('ddd');
+    return new Date(date).getHours() + ' ' + DateTime.fromJSDate(date).toFormat('EEE');
   },
 
   getHourStr: function (input: string | undefined, addHours?: number) {
@@ -45,7 +40,7 @@ export default {
   },
 
   getDateFromFirstRow: function (datePriceArray: PriceRow[]) {
-    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).format('DD-MM-YYYY') : undefined;
+    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).toFormat('DD-MM-YYYY') : undefined;
   },
 
   getTodaySpanStart: function () {
@@ -72,26 +67,8 @@ export default {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
-  getDateJsonName: function (offset: number) {
-    return dayjs(getDateSpanStartWithOffset(new Date(), offset)).format('DD-MM-YYYY');
-  },
-
-  getTodayName: function () {
-    return this.getDateJsonName(0);
-  },
-
-  getYesterdayName: function () {
-    return this.getDateJsonName(-1);
-  },
-
-  getTomorrowName: function () {
-    return this.getDateJsonName(1);
-  },
-
-  getDateFromHourStarting: function (date: Date, offset: number, hour: number): dayjs.Dayjs {
-    date.setDate(date.getDate() + offset);
-    date.setHours(hour, 0, 0, 0);
-    return dayjs(date);
+  getDateFromHourStarting: function (date: Date, offset: number, hour: number) {
+    return DateTime.fromJSDate(date).plus({ day: offset }).set({ hour: hour, minute: 0, millisecond: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -101,7 +78,7 @@ export default {
   },
 
   isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
-    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toDate();
+    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toJSDate();
     date.setMinutes(15);
     return now.valueOf() >= date.valueOf();
   },
@@ -121,8 +98,8 @@ export default {
   getHoursToStore: function (prices: PriceRow[]) {
     return filterHours(
       prices,
-      dayjs(getDateSpanStartWithOffset(new Date(), -2)),
-      dayjs(getDateSpanEndWithOffset(new Date(), 1)),
+      DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), -2)),
+      DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), 1)),
     );
   },
 
@@ -151,10 +128,10 @@ export default {
   },
 };
 
-const filterHours = (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs) => {
+const filterHours = (priceRows: PriceRow[], start: DateTime, end: DateTime) => {
   return (
     priceRows?.filter((priceRow) => {
-      const priceRowStart = dayjs(priceRow.start);
+      const priceRowStart = DateTime.fromISO(priceRow.start);
       return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
     }) || []
   );
@@ -163,8 +140,8 @@ const filterHours = (priceRows: PriceRow[], start: dayjs.Dayjs, end: dayjs.Dayjs
 const getDayHours = (prices: PriceRow[], offset: number) => {
   return filterHours(
     prices,
-    dayjs(getDateSpanStartWithOffset(new Date(), offset)),
-    dayjs(getDateSpanEndWithOffset(new Date(), offset)),
+    DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), offset)),
+    DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), offset)),
   );
 };
 
@@ -189,5 +166,5 @@ const addToDateAndFormat = (input: string | undefined, format: string, addHours?
   if (addHours) {
     date.setHours(date.getHours() + addHours);
   }
-  return dayjs(date).format(format);
+  return DateTime.fromJSDate(date).toFormat(format);
 };

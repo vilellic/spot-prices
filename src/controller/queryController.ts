@@ -15,16 +15,16 @@ export default {
     const transferPrices: TransferPrices | undefined =
       offPeakTransferPrice && peakTransferPrice
         ? {
-            offPeakTransfer: offPeakTransferPrice,
-            peakTransfer: peakTransferPrice,
-          }
+          offPeakTransfer: offPeakTransferPrice,
+          peakTransfer: peakTransferPrice,
+        }
         : undefined;
 
     const queryMode = QueryMode[queryModePar as keyof typeof QueryMode];
 
     const dateRange: DateRange = {
-      start: dateUtils.getDate(startTime).toDate(),
-      end: dateUtils.getDate(endTime).toDate(),
+      start: dateUtils.getDate(startTime).toJSDate(),
+      end: dateUtils.getDate(endTime).toJSDate(),
     };
 
     if (queryMode !== QueryMode.AboveAveragePrices && !numberOfHours) {

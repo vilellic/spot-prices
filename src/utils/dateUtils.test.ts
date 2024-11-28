@@ -9,12 +9,12 @@ jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
 test('parse ISO date', () => {
   const parsedDate = dateUtils.parseISODate('2023-09-13T05:00:00+0300');
-  expect(parsedDate.toISOString()).toBe('2023-09-13T02:00:00.000Z');
+  expect(parsedDate.toUTC().toString()).toBe('2023-09-13T02:00:00.000Z');
   expect(new Date(parsedDate.valueOf())).toBeInstanceOf(Date);
 });
 
 test('test getDate', () => {
-  expect(dateUtils.getDateStr(1694570400)).toBe('2023-09-13T05:00:00+0300');
+  expect(dateUtils.getDateStr(1694570400)).toBe('2023-09-13T05:00:00.000+03:00');
 });
 
 test('test date span start', () => {
@@ -27,18 +27,6 @@ test('test date span end', () => {
 
 test('test date str', () => {
   expect(dateUtils.getWeekdayAndHourStr(new Date())).toBe('3 Tue');
-});
-
-test('test get today as string', () => {
-  expect(dateUtils.getTodayName()).toBe('22-08-2023');
-});
-
-test('test get yesterday as string', () => {
-  expect(dateUtils.getYesterdayName()).toBe('21-08-2023');
-});
-
-test('test get tomorrow as string', () => {
-  expect(dateUtils.getTomorrowName()).toBe('23-08-2023');
 });
 
 test('test is it time to get tomorrow prices', () => {

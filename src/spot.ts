@@ -3,17 +3,17 @@ import NodeCache from 'node-cache';
 import http from 'http';
 const server = http.createServer();
 import { CronJob } from 'cron';
+import { DateTime } from "luxon";
 
 import rootController from './controller/rootController';
 import queryController from './controller/queryController';
 import linksController from './controller/linksController';
 import storeController from './controller/storeController';
 import constants from './types/constants';
-import dayjs from 'dayjs';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('log-timestamp')(function () {
-  return '[ ' + dayjs(new Date()).format('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
+  return '[ ' + DateTime.now().toFormat('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

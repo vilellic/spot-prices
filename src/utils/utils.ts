@@ -2,7 +2,7 @@ import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '
 import constants from '../types/constants';
 import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
-import dayjs from 'dayjs';
+import { DateTime } from "luxon";
 
 export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -46,9 +46,7 @@ export default {
     const endStr = priceList.at(-1)?.start;
     if (startStr && endStr) {
       const start = dateUtils.parseISODate(startStr);
-      const end = dateUtils.parseISODate(endStr);
-      end.add(1, 'hours');
-      end.subtract(1, 'milliseconds');
+      const end = dateUtils.parseISODate(endStr).plus({ hours: 1 }).minus({ milliseconds: 1 });
       return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
     }
     return false;
@@ -60,6 +58,6 @@ export default {
       uniqueItems.set(item.start, item);
     });
     const uniqueArray = Array.from(uniqueItems.values());
-    return uniqueArray.sort((a, b) => dayjs(a.start).valueOf() - dayjs(b.start).valueOf());
+    return uniqueArray.sort((a, b) => DateTime.fromISO(a.start).valueOf() - DateTime.fromISO(b.start).valueOf());
   },
 };

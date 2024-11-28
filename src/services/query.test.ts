@@ -16,13 +16,13 @@ const today21 = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
 const tomorrow21 = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
 
 const fromYesterdayDateRange: DateRange = {
-  start: yesterday21.toDate(),
-  end: today21.toDate(),
+  start: yesterday21.toJSDate(),
+  end: today21.toJSDate(),
 };
 
 const fromTodayDateRange: DateRange = {
-  start: today21.toDate(),
-  end: tomorrow21.toDate(),
+  start: today21.toJSDate(),
+  end: tomorrow21.toJSDate(),
 };
 
 const transferPrices: TransferPrices = {
@@ -321,8 +321,8 @@ test('test daylight saving time, duplicate hour', () => {
   const fixedFakeDate = new Date('2023-10-29');
   jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
-  const start = dateUtils.getDateFromHourStarting(new Date(), 0, 0).toDate();
-  const end = dateUtils.getDateFromHourStarting(new Date(), 0, 6).toDate();
+  const start = dateUtils.getDateFromHourStarting(new Date(), 0, 0).toJSDate();
+  const end = dateUtils.getDateFromHourStarting(new Date(), 0, 6).toJSDate();
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const daylightPrices = require('../utils/testPricesDaylightSaving.json');

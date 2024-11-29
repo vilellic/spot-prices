@@ -68,44 +68,6 @@ export default {
         spotPrices.prices = await getDayPrices(start, dateUtils.getTomorrowSpanEnd());
       }
       cache.set(constants.CACHED_NAME_PRICES, spotPrices);
-
-      /*
-      const yesterdayAndTodayHours = [
-        ...dateUtils.getYesterdayHours(spotPrices.prices),
-        ...dateUtils.getTodayHours(spotPrices.prices),
-      ];
-      if (yesterdayAndTodayHours.length < 47) {
-        spotPrices.prices = await getDayPrices(dateUtils.getYesterdaySpanStart(), dateUtils.getTomorrowSpanEnd());
-      }*/
-
-      /*
-      let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
-      let prices = {} as SpotPrices;
-      if (cachedPrices === undefined) {
-        cachedPrices = getEmptySpotPrices();
-      } else {
-        prices = {
-          today: cachedPrices.today,
-          tomorrow: cachedPrices.tomorrow,
-          yesterday: cachedPrices.yesterday,
-        };
-      }
-
-      if (!utils.isPriceListComplete(cachedPrices.today)) {
-        prices.today = await getDayPrices(dateUtils.getTodaySpanStart(), dateUtils.getTodaySpanEnd());
-      }
-      if (
-        !utils.isPriceListComplete(cachedPrices.tomorrow) &&
-        (dateUtils.isTimeToGetTomorrowPrices() || !cachedPrices.tomorrow || cachedPrices.tomorrow.length === 0)
-      ) {
-        prices.tomorrow = await getDayPrices(dateUtils.getTomorrowSpanStart(), dateUtils.getTomorrowSpanEnd());
-      }
-      if (!utils.isPriceListComplete(cachedPrices.yesterday)) {
-        prices.yesterday = await getDayPrices(dateUtils.getYesterdaySpanStart(), dateUtils.getYesterdaySpanEnd());
-      }
-
-      cache.set(constants.CACHED_NAME_PRICES, prices);
-      */
     });
   },
 };

@@ -12,9 +12,10 @@ export default {
   handleRoot: async function (ctx: ControllerContext) {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
 
-    const currentPrice = utils.getCurrentPriceFromTodayPrices(cachedPrices.today);
-    const tomorrowAvailable = utils.isPriceListComplete(cachedPrices.tomorrow);
-    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(cachedPrices.tomorrow) } : [];
+    const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
+    const tomorrowHours = dateUtils.getTomorrowHours(cachedPrices.prices);
+    const tomorrowAvailable = tomorrowHours.length >= 23;
+    const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(tomorrowHours) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
       ? { averageTomorrowOffPeak: utils.getAveragePrice(dateUtils.getTomorrowOffPeakHours(cachedPrices)) }
       : [];
@@ -25,7 +26,7 @@ export default {
     const prices: PricesContainer = {
       info: {
         current: `${currentPrice?.toFixed(5)}`,
-        averageToday: utils.getAveragePrice(cachedPrices.today),
+        averageToday: utils.getAveragePrice(dateUtils.getTodayHours(cachedPrices.prices)),
         averageTodayOffPeak: utils.getAveragePrice(dateUtils.getTodayOffPeakHours(cachedPrices)),
         averageTodayPeak: utils.getAveragePrice(dateUtils.getTodayPeakHours(cachedPrices)),
         tomorrowAvailable: tomorrowAvailable,
@@ -33,8 +34,10 @@ export default {
         ...avgTomorrowOffPeakArray,
         ...avgTomorrowPeakArray,
       },
-      today: cachedPrices.today?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
-      tomorrow: cachedPrices.tomorrow?.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      today: dateUtils
+        .getTodayHours(cachedPrices.prices)
+        .map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
+      tomorrow: tomorrowHours.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
 
     return prices;
@@ -42,32 +45,29 @@ export default {
 
   updatePrices: async function (cache: NodeCache) {
     await mutex.runExclusive(async () => {
-      let cachedPrices = cache.get(constants.CACHED_NAME_PRICES) as SpotPrices;
-      let prices = {} as SpotPrices;
-      if (cachedPrices === undefined) {
-        cachedPrices = getEmptySpotPrices();
-      } else {
-        prices = {
-          today: cachedPrices.today,
-          tomorrow: cachedPrices.tomorrow,
-          yesterday: cachedPrices.yesterday,
-        };
-      }
+      const spotPrices = cache.has(constants.CACHED_NAME_PRICES)
+        ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
+        : getEmptySpotPrices();
 
-      if (!utils.isPriceListComplete(cachedPrices.today)) {
-        prices.today = await getDayPrices(dateUtils.getTodaySpanStart(), dateUtils.getTodaySpanEnd());
-      }
-      if (
-        !utils.isPriceListComplete(cachedPrices.tomorrow) &&
-        (dateUtils.isTimeToGetTomorrowPrices() || !cachedPrices.tomorrow || cachedPrices.tomorrow.length === 0)
+      const yesterdayHours = dateUtils.getYesterdayHours(spotPrices.prices);
+      const todayHours = dateUtils.getTodayHours(spotPrices.prices);
+      const tomorrowHours = dateUtils.getTomorrowHours(spotPrices.prices);
+
+      let start = undefined;
+      if (yesterdayHours.length < 24) {
+        start = dateUtils.getYesterdaySpanStart();
+      } else if (todayHours.length < 24) {
+        start = dateUtils.getTodaySpanStart();
+      } else if (
+        tomorrowHours.length < 24 &&
+        (dateUtils.isTimeToGetTomorrowPrices() || !tomorrowHours || tomorrowHours.length === 0)
       ) {
-        prices.tomorrow = await getDayPrices(dateUtils.getTomorrowSpanStart(), dateUtils.getTomorrowSpanEnd());
+        start = dateUtils.getTomorrowSpanStart();
       }
-      if (!utils.isPriceListComplete(cachedPrices.yesterday)) {
-        prices.yesterday = await getDayPrices(dateUtils.getYesterdaySpanStart(), dateUtils.getYesterdaySpanEnd());
+      if (start) {
+        spotPrices.prices = await getDayPrices(start, dateUtils.getTomorrowSpanEnd());
       }
-
-      cache.set(constants.CACHED_NAME_PRICES, prices);
+      cache.set(constants.CACHED_NAME_PRICES, spotPrices);
     });
   },
 };

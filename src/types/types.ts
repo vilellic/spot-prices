@@ -1,16 +1,11 @@
 import NodeCache from 'node-cache';
-import moment from 'moment';
 
 export interface SpotPrices {
-  yesterday: PriceRow[];
-  today: PriceRow[];
-  tomorrow: PriceRow[];
+  prices: PriceRow[];
 }
 
 export const getEmptySpotPrices = (): SpotPrices => ({
-  yesterday: [] as PriceRow[],
-  today: [] as PriceRow[],
-  tomorrow: [] as PriceRow[],
+  prices: [] as PriceRow[],
 });
 
 export interface PricesContainer {
@@ -62,8 +57,8 @@ export interface PriceRowWithTransfer extends PriceRow {
 }
 
 export interface DateRange {
-  start: moment.Moment;
-  end: moment.Moment;
+  start: Date;
+  end: Date;
 }
 
 export interface TransferPrices {

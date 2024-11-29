@@ -4,7 +4,7 @@ import { DateRange, SpotPrices, TransferPrices } from '../types/types';
 import dateUtils from '../utils/dateUtils';
 import query, { QueryMode } from './query';
 
-// Will resolve to Tue Sep 12 2023 03:00:00 GMT+0300 (Eastern European Summer Time)
+// Will resolve to Tue Sep 12 2023 03:00:00 GMT+03:00 (Eastern European Summer Time)
 const fixedFakeDate = new Date('2023-09-12');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
@@ -16,13 +16,13 @@ const today21 = dateUtils.getDateFromHourStarting(new Date(), 0, 21);
 const tomorrow21 = dateUtils.getDateFromHourStarting(new Date(), 1, 21);
 
 const fromYesterdayDateRange: DateRange = {
-  start: yesterday21,
-  end: today21,
+  start: yesterday21.toJSDate(),
+  end: today21.toJSDate(),
 };
 
 const fromTodayDateRange: DateRange = {
-  start: today21,
-  end: tomorrow21,
+  start: today21.toJSDate(),
+  end: tomorrow21.toJSDate(),
 };
 
 const transferPrices: TransferPrices = {
@@ -206,8 +206,8 @@ test('test weighted getHours, 3 lowest', () => {
       list: ['3 Wed', '4 Wed', '5 Wed'],
       start: '03',
       end: '06',
-      startTime: '2023-09-13T03:00:00+0300',
-      endTime: '2023-09-13T06:00:00+0300',
+      startTime: '2023-09-13T03:00:00.000+03:00',
+      endTime: '2023-09-13T06:00:00.000+03:00',
     },
     info: {
       now: false,
@@ -231,8 +231,8 @@ test('test sequential getHours, 5 lowest', () => {
       list: ['1 Wed', '2 Wed', '3 Wed', '4 Wed', '5 Wed'],
       start: '01',
       end: '06',
-      startTime: '2023-09-13T01:00:00+0300',
-      endTime: '2023-09-13T06:00:00+0300',
+      startTime: '2023-09-13T01:00:00.000+03:00',
+      endTime: '2023-09-13T06:00:00.000+03:00',
     },
     info: {
       now: false,
@@ -321,8 +321,8 @@ test('test daylight saving time, duplicate hour', () => {
   const fixedFakeDate = new Date('2023-10-29');
   jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
-  const start = dateUtils.getDateFromHourStarting(new Date(), 0, 0);
-  const end = dateUtils.getDateFromHourStarting(new Date(), 0, 6);
+  const start = dateUtils.getDateFromHourStarting(new Date(), 0, 0).toJSDate();
+  const end = dateUtils.getDateFromHourStarting(new Date(), 0, 6).toJSDate();
 
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const daylightPrices = require('../utils/testPricesDaylightSaving.json');
@@ -338,8 +338,8 @@ test('test daylight saving time, duplicate hour', () => {
       list: ['2 Sun', '3 Sun', '4 Sun', '5 Sun'],
       start: '02',
       end: '06',
-      startTime: '2023-10-29T02:00:00+0300',
-      endTime: '2023-10-29T06:00:00+0200',
+      startTime: '2023-10-29T02:00:00.000+03:00',
+      endTime: '2023-10-29T06:00:00.000+02:00',
     },
     info: {
       now: true,

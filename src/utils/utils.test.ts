@@ -7,11 +7,11 @@ jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
 import utils from './utils';
 import dateUtils from './dateUtils';
-let prices = {} as SpotPrices;
+let spotPrices = {} as SpotPrices;
 
 beforeEach(() => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  prices = require('./testPrices.json');
+  spotPrices = require('./testPrices.json');
 });
 
 test('test getPrice with VAT', () => {
@@ -31,32 +31,34 @@ test('test getPrice VAT with negative price', () => {
 });
 
 test('test getAveragePrice', () => {
-  expect(utils.getAveragePrice(prices.today)).toBe('0.01185');
-  expect(utils.getAveragePrice(prices.yesterday)).toBe('0.13479');
+  expect(utils.getAveragePrice(dateUtils.getTodayHours(spotPrices.prices))).toBe('0.01185');
+  expect(utils.getAveragePrice(dateUtils.getYesterdayHours(spotPrices.prices))).toBe('0.13479');
+  expect(utils.getAveragePrice(dateUtils.getTomorrowHours(spotPrices.prices))).toBe('0.11482');
 });
 
 test('test getCurrentPriceFromToday', () => {
   // At 3 AM
-  expect(utils.getCurrentPriceFromTodayPrices(prices.today)).toBe('-0.00241');
+  expect(utils.getCurrentPrice(spotPrices.prices)).toBe('-0.00241');
 });
 
 test('test time is in list range', () => {
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toDate())).toBe(
+  const todayHours = dateUtils.getTodayHours(spotPrices.prices);
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T00:00:00+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T00:00:00+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-12T23:59:59+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T23:59:59+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-13T02:11:07+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-13T02:11:07+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-11T13:42:22+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T13:42:22+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(prices.today, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toJSDate())).toBe(
     false,
   );
 });

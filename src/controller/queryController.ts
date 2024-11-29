@@ -23,8 +23,8 @@ export default {
     const queryMode = QueryMode[queryModePar as keyof typeof QueryMode];
 
     const dateRange: DateRange = {
-      start: dateUtils.getDate(startTime),
-      end: dateUtils.getDate(endTime),
+      start: dateUtils.getDate(startTime).toJSDate(),
+      end: dateUtils.getDate(endTime).toJSDate(),
     };
 
     if (queryMode !== QueryMode.AboveAveragePrices && !numberOfHours) {

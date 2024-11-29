@@ -2,6 +2,7 @@ import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '
 import constants from '../types/constants';
 import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
+import { DateTime } from 'luxon';
 
 export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -22,34 +23,19 @@ export default {
     return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5);
   },
 
-  getCurrentPriceFromTodayPrices: function (todayPrices: PriceRow[]) {
-    if (todayPrices === undefined) {
-      return undefined;
-    }
-    const currentHour = new Date().getHours();
+  getCurrentPrice: function (prices: PriceRow[]) {
+    const currentStartHour = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toISO();
     let currentPrice;
-    for (let h = 0; h < todayPrices.length; h++) {
-      if (new Date(todayPrices[h].start).getHours() === currentHour) {
-        currentPrice = todayPrices[h].price;
+    for (let h = 0; h < prices.length; h++) {
+      if (DateTime.fromISO(prices[h].start).toISO() === currentStartHour) {
+        currentPrice = prices[h].price;
       }
     }
     return currentPrice;
   },
 
-  isPriceListComplete: function (priceList: PriceRow[]) {
-    return priceList !== undefined && priceList.length >= 23;
-  },
-
   getSpotPricesFromCache: function (cache: NodeCache): SpotPrices {
     return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-  },
-
-  isCacheValid: function (cache: NodeCache) {
-    if (!cache.has(constants.CACHED_NAME_PRICES)) {
-      return false;
-    }
-    const spotPrices: SpotPrices = cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
-    return spotPrices.today?.length > 0;
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
@@ -60,11 +46,18 @@ export default {
     const endStr = priceList.at(-1)?.start;
     if (startStr && endStr) {
       const start = dateUtils.parseISODate(startStr);
-      const end = dateUtils.parseISODate(endStr);
-      end.add(1, 'hours');
-      end.subtract(1, 'milliseconds');
+      const end = dateUtils.parseISODate(endStr).plus({ hours: 1 }).minus({ milliseconds: 1 });
       return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
     }
     return false;
+  },
+
+  removeDuplicatesAndSort: function (prices: PriceRow[]): PriceRow[] {
+    const uniqueItems = new Map<string, PriceRow>();
+    prices.forEach((item) => {
+      uniqueItems.set(item.start, item);
+    });
+    const uniqueArray = Array.from(uniqueItems.values());
+    return uniqueArray.sort((a, b) => DateTime.fromISO(a.start).valueOf() - DateTime.fromISO(b.start).valueOf());
   },
 };

@@ -1,24 +1,22 @@
 import { PriceRow, SpotPrices } from '../types/types';
-import moment from 'moment';
 import constants from '../types/constants';
+import { DateTime } from 'luxon';
 
 export default {
   getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).format(constants.ISO_DATE_FORMAT);
+    return this.getDate(timestamp).toISO();
   },
 
   getDate: function (timestamp: number) {
-    const timestampNumber = Number(timestamp * 1000);
-    const momentDate = moment(new Date(timestampNumber));
-    return momentDate;
+    return DateTime.fromSeconds(timestamp);
   },
 
-  parseISODate: function (isoDateStr: string): moment.Moment {
-    return moment(new Date(isoDateStr));
+  parseISODate: function (isoDateStr: string) {
+    return DateTime.fromISO(isoDateStr);
   },
 
   getWeekdayAndHourStr: function (date: Date) {
-    return new Date(date).getHours() + ' ' + moment(date).format('ddd');
+    return new Date(date).getHours() + ' ' + DateTime.fromJSDate(date).toFormat('EEE');
   },
 
   getHourStr: function (input: string | undefined, addHours?: number) {
@@ -42,7 +40,7 @@ export default {
   },
 
   getDateFromFirstRow: function (datePriceArray: PriceRow[]) {
-    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).format('DD-MM-YYYY') : undefined;
+    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).toFormat('DD-MM-YYYY') : undefined;
   },
 
   getTodaySpanStart: function () {
@@ -69,26 +67,8 @@ export default {
     return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
-  getDateJsonName: function (offset: number) {
-    return moment(getDateSpanStartWithOffset(new Date(), offset)).format('DD-MM-YYYY');
-  },
-
-  getTodayName: function () {
-    return this.getDateJsonName(0);
-  },
-
-  getYesterdayName: function () {
-    return this.getDateJsonName(-1);
-  },
-
-  getTomorrowName: function () {
-    return this.getDateJsonName(1);
-  },
-
-  getDateFromHourStarting: function (date: Date, offset: number, hour: number): moment.Moment {
-    date.setDate(date.getDate() + offset);
-    date.setHours(hour, 0, 0, 0);
-    return moment(date);
+  getDateFromHourStarting: function (date: Date, offset: number, hour: number) {
+    return DateTime.fromJSDate(date).plus({ day: offset }).set({ hour: hour, minute: 0, second: 0, millisecond: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -98,45 +78,71 @@ export default {
   },
 
   isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
-    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toDate();
+    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toJSDate();
     date.setMinutes(15);
     return now.valueOf() >= date.valueOf();
   },
 
+  getYesterdayHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, -1);
+  },
+
+  getTodayHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, 0);
+  },
+
+  getTomorrowHours: function (prices: PriceRow[]) {
+    return getDayHours(prices, 1);
+  },
+
+  getHoursToStore: function (prices: PriceRow[]) {
+    return filterHours(
+      prices,
+      DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), -2)),
+      DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), 1)),
+    );
+  },
+
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.yesterday, ...spotPrices.today] as PriceRow[];
     const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
-    return this.filterHours(priceRows, yesterday22, today07);
+    return filterHours(spotPrices.prices, yesterday22, today07);
   },
 
   getTodayPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today] as PriceRow[];
     const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
-    return this.filterHours(priceRows, today07, today22);
+    return filterHours(spotPrices.prices, today07, today22);
   },
 
   getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
     const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
-    return this.filterHours(priceRows, today22, tomorrow07);
+    return filterHours(spotPrices.prices, today22, tomorrow07);
   },
 
   getTomorrowPeakHours: function (spotPrices: SpotPrices) {
-    const priceRows = [...spotPrices.today, ...(spotPrices.tomorrow ?? [])] as PriceRow[];
     const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
     const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
-    return this.filterHours(priceRows, tomorrow07, tomorrow22);
+    return filterHours(spotPrices.prices, tomorrow07, tomorrow22);
   },
+};
 
-  filterHours: function (priceRows: PriceRow[], start: moment.Moment, end: moment.Moment) {
-    return priceRows.filter((priceRow) => {
-      const priceRowStart = this.parseISODate(priceRow.start);
+const filterHours = (priceRows: PriceRow[], start: DateTime, end: DateTime) => {
+  return (
+    priceRows?.filter((priceRow) => {
+      const priceRowStart = DateTime.fromISO(priceRow.start);
       return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
-    });
-  },
+    }) || []
+  );
+};
+
+const getDayHours = (prices: PriceRow[], offset: number) => {
+  return filterHours(
+    prices,
+    DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), offset)),
+    DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), offset)),
+  );
 };
 
 const getDateSpanStartWithOffset = (date: Date, offset: number) => {
@@ -160,5 +166,5 @@ const addToDateAndFormat = (input: string | undefined, format: string, addHours?
   if (addHours) {
     date.setHours(date.getHours() + addHours);
   }
-  return moment(date).format(format);
+  return DateTime.fromJSDate(date).toFormat(format);
 };

@@ -11,6 +11,7 @@ import {
 import weighted from './weighted';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
+import { DateTime } from 'luxon';
 interface GetHoursParameters {
   spotPrices: SpotPrices;
   numberOfHours?: number;
@@ -58,7 +59,8 @@ export default {
 
     const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter(
       (entry) =>
-        dateUtils.parseISODate(entry.start).toMillis() >= dateRange.start.getTime() && dateUtils.parseISODate(entry.start).toMillis() < dateRange.end.getTime(),
+        dateUtils.parseISODate(entry.start).toMillis() >= dateRange.start.getTime() &&
+        dateUtils.parseISODate(entry.start).toMillis() < dateRange.end.getTime(),
     );
 
     if (withTransferPrices) {
@@ -114,14 +116,18 @@ export default {
     const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
     const currentHourIsInList = hours.includes(currentHourDateStr);
 
+    const startTimeIso = resultArray.at(0)?.start;
+    const endTimeIso = resultArray.at(-1)?.start;
     const startEndFields =
       queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
         ? {
-          start: dateUtils.getHourStr(resultArray.at(0)?.start),
-          end: dateUtils.getHourStr(resultArray.at(-1)?.start, 1),
-          startTime: resultArray.at(0)?.start,
-          endTime: dateUtils.getIsoDateStr(resultArray.at(-1)?.start, 1),
-        }
+            start: dateUtils.getHourStr(startTimeIso),
+            end: dateUtils.getHourStr(endTimeIso, 1),
+            startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
+            endTime: endTimeIso
+              ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toISO() || 'unavailable'
+              : 'unavailable',
+          }
         : undefined;
 
     const hoursObject: Hours = {

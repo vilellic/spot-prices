@@ -1,6 +1,6 @@
 import { PriceRow, SpotPrices } from '../types/types';
 import constants from '../types/constants';
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 export default {
   getDateStr: function (timestamp: number) {

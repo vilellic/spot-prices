@@ -42,22 +42,23 @@ test('test getCurrentPriceFromToday', () => {
 });
 
 test('test time is in list range', () => {
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toDate())).toBe(
+  const todayHours = dateUtils.getTodayHours(spotPrices.prices);
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-12T00:00:00+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T00:00:00+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-12T23:59:59+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T23:59:59+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-13T02:11:07+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-13T02:11:07+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-11T13:42:22+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T13:42:22+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(spotPrices.prices, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toJSDate())).toBe(
     false,
   );
 });

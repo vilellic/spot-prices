@@ -3,7 +3,7 @@ import NodeCache from 'node-cache';
 import http from 'http';
 const server = http.createServer();
 import { CronJob } from 'cron';
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 import rootController from './controller/rootController';
 import queryController from './controller/queryController';
@@ -13,7 +13,7 @@ import constants from './types/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('log-timestamp')(function () {
-  return '[ ' + DateTime.now().toFormat('YYYY-MM-DD T HH:mm:ss ZZ') + ' ] %s';
+  return '[ ' + DateTime.now().toISO() + ' ] %s';
 });
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

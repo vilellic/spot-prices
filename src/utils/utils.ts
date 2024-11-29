@@ -2,7 +2,7 @@ import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '
 import constants from '../types/constants';
 import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -24,10 +24,10 @@ export default {
   },
 
   getCurrentPrice: function (prices: PriceRow[]) {
-    const currentHour = new Date().getHours();
+    const currentStartHour = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toISO();
     let currentPrice;
     for (let h = 0; h < prices.length; h++) {
-      if (new Date(prices[h].start).getHours() === currentHour) {
+      if (DateTime.fromISO(prices[h].start).toISO() === currentStartHour) {
         currentPrice = prices[h].price;
       }
     }

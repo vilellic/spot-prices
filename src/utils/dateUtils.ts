@@ -68,7 +68,7 @@ export default {
   },
 
   getDateFromHourStarting: function (date: Date, offset: number, hour: number) {
-    return DateTime.fromJSDate(date).plus({ day: offset }).set({ hour: hour, minute: 0, millisecond: 0 });
+    return DateTime.fromJSDate(date).plus({ day: offset }).set({ hour: hour, minute: 0, second: 0, millisecond: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {

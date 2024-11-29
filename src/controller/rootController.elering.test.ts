@@ -609,6 +609,7 @@ test('Parse Elering API response store to cache and check contents', async () =>
       },
     ],
   });
+
   expect(await rootController.handleRoot({ cache: nodeCache })).toStrictEqual({
     info: {
       current: '0.04147',

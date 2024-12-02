@@ -5,9 +5,8 @@ fetchMock.enableMocks();
 const fixedFakeDate = new Date('2024-12-02');
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
-test('Parse Entso-E API response store to cache and check contents', async () => {
-  fetchMock.mockResponse(
-    `<?xml version="1.0" encoding="utf-8"?>
+test('Parse Entso-E API response', async () => {
+  const response = `<?xml version="1.0" encoding="utf-8"?>
 <Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
   <mRID>48197884494944ef8d4351c97dd90e7f</mRID>
   <revisionNumber>1</revisionNumber>
@@ -249,7 +248,8 @@ test('Parse Entso-E API response store to cache and check contents', async () =>
                   </Point>
             </Period>
       </TimeSeries>
-</Publication_MarketDocument>`,
-  );
+</Publication_MarketDocument>`;
 
+  const priceRows = entsoParser.parseXML(response);
+  console.log('priceRows = ' + JSON.stringify(priceRows, null, 2));
 });

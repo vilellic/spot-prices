@@ -96,3 +96,7 @@ export interface EleringResponse {
     lt: EleringResponseEntry[];
   };
 }
+export interface EntsoTimeSeries {
+  position: number;
+  'price.amount': number;
+}

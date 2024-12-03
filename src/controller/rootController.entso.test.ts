@@ -1,5 +1,5 @@
 import fetchMock from 'jest-fetch-mock';
-import entsoParser from '../parser/entsoParser';
+// import entsoParser from '../parser/entsoParser';
 fetchMock.enableMocks();
 
 const fixedFakeDate = new Date('2024-12-02');
@@ -251,5 +251,4 @@ test('Parse Entso-E API response store to cache and check contents', async () =>
       </TimeSeries>
 </Publication_MarketDocument>`,
   );
-
 });

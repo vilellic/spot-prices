@@ -59,7 +59,9 @@ export default {
         const periodStart = dateUtils.getDateFromHourStarting(new Date(), -2, 0).toFormat('yyyyMMddHHmm');
         const periodEnd = dateUtils.getDateFromHourStarting(new Date(), 2, 0).toFormat('yyyyMMddHHmm');
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
-        cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+        if (spotPrices.prices.length > 0) {
+          cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+        }
       }
     });
   },
@@ -77,35 +79,3 @@ const getPricesFromEntsoe = async (start: string, end: string) => {
     return [];
   }
 };
-
-/*
-const getPricesFromElering = async (start: string, end: string) => {
-  const prices = [];
-
-  const eleringResponse = await getPricesJson(start, end);
-  if (eleringResponse.success === true) {
-    for (let i = 0; i < eleringResponse.data.fi.length; i++) {
-      const priceRow: PriceRow = {
-        start: dateUtils.getDateStr(eleringResponse.data.fi[i].timestamp),
-        price: Number(utils.getPrice(eleringResponse.data.fi[i].price)),
-      };
-      prices.push(priceRow);
-    }
-  }
-
-  return prices;
-};
-
-async function getPricesJson(start: string, end: string) {
-  const url = `${constants.ELERING_API_PREFIX}/price?start=${start}&end=${end}`;
-  try {
-    const res = await fetch(url, { method: 'Get' });
-    const json = await res.json();
-    console.log(url);
-    return json as Promise<EleringResponse>;
-  } catch (error) {
-    console.log(error);
-    return { success: false } as EleringResponse;
-  }
-}
-*/

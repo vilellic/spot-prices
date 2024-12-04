@@ -1,254 +1,621 @@
 import fetchMock from 'jest-fetch-mock';
-// import entsoParser from '../parser/entsoParser';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import rootController from './rootController';
+import NodeCache from 'node-cache';
+import constants from '../types/constants';
 fetchMock.enableMocks();
 
-const fixedFakeDate = new Date('2024-12-02');
+const fixedFakeDate = new Date('2024-12-04').setHours(20);
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
 test('Parse Entso-E API response store to cache and check contents', async () => {
-  fetchMock.mockResponse(
-    `<?xml version="1.0" encoding="utf-8"?>
-<Publication_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-3:publicationdocument:7:3">
-  <mRID>48197884494944ef8d4351c97dd90e7f</mRID>
-  <revisionNumber>1</revisionNumber>
-  <type>A44</type>
-  <sender_MarketParticipant.mRID codingScheme="A01">10X1001A1001A450</sender_MarketParticipant.mRID>
-  <sender_MarketParticipant.marketRole.type>A32</sender_MarketParticipant.marketRole.type>
-  <receiver_MarketParticipant.mRID codingScheme="A01">10X1001A1001A450</receiver_MarketParticipant.mRID>
-  <receiver_MarketParticipant.marketRole.type>A33</receiver_MarketParticipant.marketRole.type>
-  <createdDateTime>2024-12-02T15:36:09Z</createdDateTime>
-  <period.timeInterval>
-    <start>2024-11-30T23:00Z</start>
-    <end>2024-12-02T23:00Z</end>
-  </period.timeInterval>
-      <TimeSeries>
-        <mRID>1</mRID>
-        <auction.type>A01</auction.type>
-        <businessType>A62</businessType>
-        <in_Domain.mRID codingScheme="A01">10YFI-1--------U</in_Domain.mRID>
-        <out_Domain.mRID codingScheme="A01">10YFI-1--------U</out_Domain.mRID>
-        <contract_MarketAgreement.type>A01</contract_MarketAgreement.type>
-        <currency_Unit.name>EUR</currency_Unit.name>
-        <price_Measure_Unit.name>MWH</price_Measure_Unit.name>
-        <curveType>A03</curveType>
-            <Period>
-              <timeInterval>
-                <start>2024-11-30T23:00Z</start>
-                <end>2024-12-01T23:00Z</end>
-              </timeInterval>
-              <resolution>PT60M</resolution>
-                  <Point>
-                    <position>1</position>
-                        <price.amount>10.4</price.amount>
-                  </Point>
-                  <Point>
-                    <position>2</position>
-                        <price.amount>10.08</price.amount>
-                  </Point>
-                  <Point>
-                    <position>3</position>
-                        <price.amount>10.23</price.amount>
-                  </Point>
-                  <Point>
-                    <position>4</position>
-                        <price.amount>10.49</price.amount>
-                  </Point>
-                  <Point>
-                    <position>5</position>
-                        <price.amount>10.95</price.amount>
-                  </Point>
-                  <Point>
-                    <position>6</position>
-                        <price.amount>10.94</price.amount>
-                  </Point>
-                  <Point>
-                    <position>7</position>
-                        <price.amount>10.58</price.amount>
-                  </Point>
-                  <Point>
-                    <position>8</position>
-                        <price.amount>11.42</price.amount>
-                  </Point>
-                  <Point>
-                    <position>9</position>
-                        <price.amount>10.67</price.amount>
-                  </Point>
-                  <Point>
-                    <position>10</position>
-                        <price.amount>10.35</price.amount>
-                  </Point>
-                  <Point>
-                    <position>11</position>
-                        <price.amount>9.85</price.amount>
-                  </Point>
-                  <Point>
-                    <position>12</position>
-                        <price.amount>9.13</price.amount>
-                  </Point>
-                  <Point>
-                    <position>13</position>
-                        <price.amount>6.14</price.amount>
-                  </Point>
-                  <Point>
-                    <position>14</position>
-                        <price.amount>5.56</price.amount>
-                  </Point>
-                  <Point>
-                    <position>15</position>
-                        <price.amount>4.84</price.amount>
-                  </Point>
-                  <Point>
-                    <position>16</position>
-                        <price.amount>4.73</price.amount>
-                  </Point>
-                  <Point>
-                    <position>17</position>
-                        <price.amount>3.48</price.amount>
-                  </Point>
-                  <Point>
-                    <position>18</position>
-                        <price.amount>3.17</price.amount>
-                  </Point>
-                  <Point>
-                    <position>19</position>
-                        <price.amount>3.56</price.amount>
-                  </Point>
-                  <Point>
-                    <position>20</position>
-                        <price.amount>2.93</price.amount>
-                  </Point>
-                  <Point>
-                    <position>21</position>
-                        <price.amount>2.69</price.amount>
-                  </Point>
-                  <Point>
-                    <position>22</position>
-                        <price.amount>2.1</price.amount>
-                  </Point>
-                  <Point>
-                    <position>23</position>
-                        <price.amount>1.62</price.amount>
-                  </Point>
-                  <Point>
-                    <position>24</position>
-                        <price.amount>0.01</price.amount>
-                  </Point>
-            </Period>
-      </TimeSeries>
-      <TimeSeries>
-        <mRID>2</mRID>
-        <auction.type>A01</auction.type>
-        <businessType>A62</businessType>
-        <in_Domain.mRID codingScheme="A01">10YFI-1--------U</in_Domain.mRID>
-        <out_Domain.mRID codingScheme="A01">10YFI-1--------U</out_Domain.mRID>
-        <contract_MarketAgreement.type>A01</contract_MarketAgreement.type>
-        <currency_Unit.name>EUR</currency_Unit.name>
-        <price_Measure_Unit.name>MWH</price_Measure_Unit.name>
-        <curveType>A03</curveType>
-            <Period>
-              <timeInterval>
-                <start>2024-12-01T23:00Z</start>
-                <end>2024-12-02T23:00Z</end>
-              </timeInterval>
-              <resolution>PT60M</resolution>
-                  <Point>
-                    <position>1</position>
-                        <price.amount>-0.09</price.amount>
-                  </Point>
-                  <Point>
-                    <position>2</position>
-                        <price.amount>-0.15</price.amount>
-                  </Point>
-                  <Point>
-                    <position>3</position>
-                        <price.amount>-0.33</price.amount>
-                  </Point>
-                  <Point>
-                    <position>4</position>
-                        <price.amount>-0.46</price.amount>
-                  </Point>
-                  <Point>
-                    <position>5</position>
-                        <price.amount>-0.1</price.amount>
-                  </Point>
-                  <Point>
-                    <position>6</position>
-                        <price.amount>0.07</price.amount>
-                  </Point>
-                  <Point>
-                    <position>7</position>
-                        <price.amount>2.08</price.amount>
-                  </Point>
-                  <Point>
-                    <position>8</position>
-                        <price.amount>2.85</price.amount>
-                  </Point>
-                  <Point>
-                    <position>9</position>
-                        <price.amount>3.52</price.amount>
-                  </Point>
-                  <Point>
-                    <position>10</position>
-                        <price.amount>3.47</price.amount>
-                  </Point>
-                  <Point>
-                    <position>11</position>
-                        <price.amount>3.43</price.amount>
-                  </Point>
-                  <Point>
-                    <position>12</position>
-                        <price.amount>3.53</price.amount>
-                  </Point>
-                  <Point>
-                    <position>13</position>
-                        <price.amount>4.55</price.amount>
-                  </Point>
-                  <Point>
-                    <position>14</position>
-                        <price.amount>4.67</price.amount>
-                  </Point>
-                  <Point>
-                    <position>15</position>
-                        <price.amount>4.81</price.amount>
-                  </Point>
-                  <Point>
-                    <position>16</position>
-                        <price.amount>5.04</price.amount>
-                  </Point>
-                  <Point>
-                    <position>17</position>
-                        <price.amount>6.48</price.amount>
-                  </Point>
-                  <Point>
-                    <position>18</position>
-                        <price.amount>25.41</price.amount>
-                  </Point>
-                  <Point>
-                    <position>19</position>
-                        <price.amount>34.15</price.amount>
-                  </Point>
-                  <Point>
-                    <position>20</position>
-                        <price.amount>39.92</price.amount>
-                  </Point>
-                  <Point>
-                    <position>21</position>
-                        <price.amount>36.61</price.amount>
-                  </Point>
-                  <Point>
-                    <position>22</position>
-                        <price.amount>39.13</price.amount>
-                  </Point>
-                  <Point>
-                    <position>23</position>
-                        <price.amount>33.12</price.amount>
-                  </Point>
-                  <Point>
-                    <position>24</position>
-                        <price.amount>24.99</price.amount>
-                  </Point>
-            </Period>
-      </TimeSeries>
-</Publication_MarketDocument>`,
+  const xmlResponse = readFileSync(join(`${__dirname}/../parser/`, 'mockResponse.xml'), 'utf-8');
+  fetchMock.mockResponse(xmlResponse);
+  const nodeCache = new NodeCache();
+  await rootController.updatePrices(nodeCache);
+
+  expect(fetch).toHaveBeenNthCalledWith(
+    1,
+    'https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=202412020000&periodEnd=202412060000&securityToken=undefined',
+    { method: 'Get' },
   );
+
+  expect(nodeCache.get(constants.CACHED_NAME_PRICES)).toStrictEqual({
+    prices: [
+      {
+        start: '2024-12-02T01:00:00.000+02:00',
+        price: -0.00009,
+      },
+      {
+        start: '2024-12-02T02:00:00.000+02:00',
+        price: -0.00015,
+      },
+      {
+        start: '2024-12-02T03:00:00.000+02:00',
+        price: -0.00033,
+      },
+      {
+        start: '2024-12-02T04:00:00.000+02:00',
+        price: -0.00046,
+      },
+      {
+        start: '2024-12-02T05:00:00.000+02:00',
+        price: -0.0001,
+      },
+      {
+        start: '2024-12-02T06:00:00.000+02:00',
+        price: 0.00009,
+      },
+      {
+        start: '2024-12-02T07:00:00.000+02:00',
+        price: 0.00261,
+      },
+      {
+        start: '2024-12-02T08:00:00.000+02:00',
+        price: 0.00358,
+      },
+      {
+        start: '2024-12-02T09:00:00.000+02:00',
+        price: 0.00442,
+      },
+      {
+        start: '2024-12-02T10:00:00.000+02:00',
+        price: 0.00435,
+      },
+      {
+        start: '2024-12-02T11:00:00.000+02:00',
+        price: 0.0043,
+      },
+      {
+        start: '2024-12-02T12:00:00.000+02:00',
+        price: 0.00443,
+      },
+      {
+        start: '2024-12-02T13:00:00.000+02:00',
+        price: 0.00571,
+      },
+      {
+        start: '2024-12-02T14:00:00.000+02:00',
+        price: 0.00586,
+      },
+      {
+        start: '2024-12-02T15:00:00.000+02:00',
+        price: 0.00604,
+      },
+      {
+        start: '2024-12-02T16:00:00.000+02:00',
+        price: 0.00633,
+      },
+      {
+        start: '2024-12-02T17:00:00.000+02:00',
+        price: 0.00813,
+      },
+      {
+        start: '2024-12-02T18:00:00.000+02:00',
+        price: 0.03189,
+      },
+      {
+        start: '2024-12-02T19:00:00.000+02:00',
+        price: 0.04286,
+      },
+      {
+        start: '2024-12-02T20:00:00.000+02:00',
+        price: 0.0501,
+      },
+      {
+        start: '2024-12-02T21:00:00.000+02:00',
+        price: 0.04595,
+      },
+      {
+        start: '2024-12-02T22:00:00.000+02:00',
+        price: 0.04911,
+      },
+      {
+        start: '2024-12-02T23:00:00.000+02:00',
+        price: 0.04157,
+      },
+      {
+        start: '2024-12-03T00:00:00.000+02:00',
+        price: 0.03136,
+      },
+      {
+        start: '2024-12-03T01:00:00.000+02:00',
+        price: 0.03012,
+      },
+      {
+        start: '2024-12-03T02:00:00.000+02:00',
+        price: 0.03011,
+      },
+      {
+        start: '2024-12-03T03:00:00.000+02:00',
+        price: 0.01117,
+      },
+      {
+        start: '2024-12-03T04:00:00.000+02:00',
+        price: 0.01039,
+      },
+      {
+        start: '2024-12-03T05:00:00.000+02:00',
+        price: 0.02377,
+      },
+      {
+        start: '2024-12-03T06:00:00.000+02:00',
+        price: 0.06221,
+      },
+      {
+        start: '2024-12-03T07:00:00.000+02:00',
+        price: 0.08488,
+      },
+      {
+        start: '2024-12-03T08:00:00.000+02:00',
+        price: 0.17881,
+      },
+      {
+        start: '2024-12-03T09:00:00.000+02:00',
+        price: 0.19452,
+      },
+      {
+        start: '2024-12-03T10:00:00.000+02:00',
+        price: 0.18151,
+      },
+      {
+        start: '2024-12-03T11:00:00.000+02:00',
+        price: 0.16008,
+      },
+      {
+        start: '2024-12-03T12:00:00.000+02:00',
+        price: 0.18192,
+      },
+      {
+        start: '2024-12-03T13:00:00.000+02:00',
+        price: 0.15679,
+      },
+      {
+        start: '2024-12-03T14:00:00.000+02:00',
+        price: 0.19833,
+      },
+      {
+        start: '2024-12-03T15:00:00.000+02:00',
+        price: 0.15051,
+      },
+      {
+        start: '2024-12-03T16:00:00.000+02:00',
+        price: 0.11938,
+      },
+      {
+        start: '2024-12-03T17:00:00.000+02:00',
+        price: 0.12201,
+      },
+      {
+        start: '2024-12-03T18:00:00.000+02:00',
+        price: 0.22913,
+      },
+      {
+        start: '2024-12-03T19:00:00.000+02:00',
+        price: 0.21181,
+      },
+      {
+        start: '2024-12-03T20:00:00.000+02:00',
+        price: 0.19888,
+      },
+      {
+        start: '2024-12-03T21:00:00.000+02:00',
+        price: 0.15682,
+      },
+      {
+        start: '2024-12-03T22:00:00.000+02:00',
+        price: 0.15027,
+      },
+      {
+        start: '2024-12-03T23:00:00.000+02:00',
+        price: 0.10374,
+      },
+      {
+        start: '2024-12-04T00:00:00.000+02:00',
+        price: 0.05964,
+      },
+      {
+        start: '2024-12-04T01:00:00.000+02:00',
+        price: 0.04457,
+      },
+      {
+        start: '2024-12-04T02:00:00.000+02:00',
+        price: 0.04848,
+      },
+      {
+        start: '2024-12-04T03:00:00.000+02:00',
+        price: 0.05161,
+      },
+      {
+        start: '2024-12-04T04:00:00.000+02:00',
+        price: 0.06035,
+      },
+      {
+        start: '2024-12-04T05:00:00.000+02:00',
+        price: 0.07373,
+      },
+      {
+        start: '2024-12-04T06:00:00.000+02:00',
+        price: 0.08954,
+      },
+      {
+        start: '2024-12-04T07:00:00.000+02:00',
+        price: 0.17294,
+      },
+      {
+        start: '2024-12-04T08:00:00.000+02:00',
+        price: 0.26862,
+      },
+      {
+        start: '2024-12-04T09:00:00.000+02:00',
+        price: 0.34235,
+      },
+      {
+        start: '2024-12-04T10:00:00.000+02:00',
+        price: 0.31153,
+      },
+      {
+        start: '2024-12-04T11:00:00.000+02:00',
+        price: 0.27143,
+      },
+      {
+        start: '2024-12-04T12:00:00.000+02:00',
+        price: 0.25445,
+      },
+      {
+        start: '2024-12-04T13:00:00.000+02:00',
+        price: 0.25907,
+      },
+      {
+        start: '2024-12-04T14:00:00.000+02:00',
+        price: 0.22551,
+      },
+      {
+        start: '2024-12-04T15:00:00.000+02:00',
+        price: 0.20405,
+      },
+      {
+        start: '2024-12-04T16:00:00.000+02:00',
+        price: 0.21535,
+      },
+      {
+        start: '2024-12-04T17:00:00.000+02:00',
+        price: 0.21525,
+      },
+      {
+        start: '2024-12-04T18:00:00.000+02:00',
+        price: 0.19416,
+      },
+      {
+        start: '2024-12-04T19:00:00.000+02:00',
+        price: 0.17593,
+      },
+      {
+        start: '2024-12-04T20:00:00.000+02:00',
+        price: 0.11085,
+      },
+      {
+        start: '2024-12-04T21:00:00.000+02:00',
+        price: 0.09943,
+      },
+      {
+        start: '2024-12-04T22:00:00.000+02:00',
+        price: 0.09797,
+      },
+      {
+        start: '2024-12-04T23:00:00.000+02:00',
+        price: 0.0596,
+      },
+      {
+        start: '2024-12-05T00:00:00.000+02:00',
+        price: 0.03286,
+      },
+      {
+        start: '2024-12-05T01:00:00.000+02:00',
+        price: 0.05647,
+      },
+      {
+        start: '2024-12-05T02:00:00.000+02:00',
+        price: 0.03075,
+      },
+      {
+        start: '2024-12-05T03:00:00.000+02:00',
+        price: 0.00803,
+      },
+      {
+        start: '2024-12-05T04:00:00.000+02:00',
+        price: 0.00617,
+      },
+      {
+        start: '2024-12-05T05:00:00.000+02:00',
+        price: 0.00802,
+      },
+      {
+        start: '2024-12-05T06:00:00.000+02:00',
+        price: 0.05508,
+      },
+      {
+        start: '2024-12-05T07:00:00.000+02:00',
+        price: 0.10424,
+      },
+      {
+        start: '2024-12-05T08:00:00.000+02:00',
+        price: 0.1475,
+      },
+      {
+        start: '2024-12-05T09:00:00.000+02:00',
+        price: 0.15686,
+      },
+      {
+        start: '2024-12-05T10:00:00.000+02:00',
+        price: 0.13341,
+      },
+      {
+        start: '2024-12-05T11:00:00.000+02:00',
+        price: 0.12259,
+      },
+      {
+        start: '2024-12-05T12:00:00.000+02:00',
+        price: 0.10684,
+      },
+      {
+        start: '2024-12-05T13:00:00.000+02:00',
+        price: 0.10041,
+      },
+      {
+        start: '2024-12-05T14:00:00.000+02:00',
+        price: 0.09406,
+      },
+      {
+        start: '2024-12-05T15:00:00.000+02:00',
+        price: 0.08342,
+      },
+      {
+        start: '2024-12-05T16:00:00.000+02:00',
+        price: 0.08223,
+      },
+      {
+        start: '2024-12-05T17:00:00.000+02:00',
+        price: 0.08052,
+      },
+      {
+        start: '2024-12-05T18:00:00.000+02:00',
+        price: 0.08011,
+      },
+      {
+        start: '2024-12-05T19:00:00.000+02:00',
+        price: 0.06526,
+      },
+      {
+        start: '2024-12-05T20:00:00.000+02:00',
+        price: 0.03872,
+      },
+      {
+        start: '2024-12-05T21:00:00.000+02:00',
+        price: 0.0162,
+      },
+      {
+        start: '2024-12-05T22:00:00.000+02:00',
+        price: 0.01606,
+      },
+      {
+        start: '2024-12-05T23:00:00.000+02:00',
+        price: 0.03135,
+      },
+      {
+        start: '2024-12-06T00:00:00.000+02:00',
+        price: 0.01817,
+      },
+    ],
+  });
+
+  expect(await rootController.handleRoot({ cache: nodeCache })).toStrictEqual({
+    info: {
+      current: '0.11085',
+      averageToday: '0.16277',
+      averageTodayOffPeak: '0.07577',
+      averageTodayPeak: '0.22139',
+      tomorrowAvailable: true,
+      averageTomorrow: '0.06905',
+      averageTomorrowOffPeak: '0.03944',
+      averageTomorrowPeak: '0.09416',
+    },
+    today: [
+      {
+        start: '2024-12-04T00:00:00.000+02:00',
+        price: '0.05964',
+      },
+      {
+        start: '2024-12-04T01:00:00.000+02:00',
+        price: '0.04457',
+      },
+      {
+        start: '2024-12-04T02:00:00.000+02:00',
+        price: '0.04848',
+      },
+      {
+        start: '2024-12-04T03:00:00.000+02:00',
+        price: '0.05161',
+      },
+      {
+        start: '2024-12-04T04:00:00.000+02:00',
+        price: '0.06035',
+      },
+      {
+        start: '2024-12-04T05:00:00.000+02:00',
+        price: '0.07373',
+      },
+      {
+        start: '2024-12-04T06:00:00.000+02:00',
+        price: '0.08954',
+      },
+      {
+        start: '2024-12-04T07:00:00.000+02:00',
+        price: '0.17294',
+      },
+      {
+        start: '2024-12-04T08:00:00.000+02:00',
+        price: '0.26862',
+      },
+      {
+        start: '2024-12-04T09:00:00.000+02:00',
+        price: '0.34235',
+      },
+      {
+        start: '2024-12-04T10:00:00.000+02:00',
+        price: '0.31153',
+      },
+      {
+        start: '2024-12-04T11:00:00.000+02:00',
+        price: '0.27143',
+      },
+      {
+        start: '2024-12-04T12:00:00.000+02:00',
+        price: '0.25445',
+      },
+      {
+        start: '2024-12-04T13:00:00.000+02:00',
+        price: '0.25907',
+      },
+      {
+        start: '2024-12-04T14:00:00.000+02:00',
+        price: '0.22551',
+      },
+      {
+        start: '2024-12-04T15:00:00.000+02:00',
+        price: '0.20405',
+      },
+      {
+        start: '2024-12-04T16:00:00.000+02:00',
+        price: '0.21535',
+      },
+      {
+        start: '2024-12-04T17:00:00.000+02:00',
+        price: '0.21525',
+      },
+      {
+        start: '2024-12-04T18:00:00.000+02:00',
+        price: '0.19416',
+      },
+      {
+        start: '2024-12-04T19:00:00.000+02:00',
+        price: '0.17593',
+      },
+      {
+        start: '2024-12-04T20:00:00.000+02:00',
+        price: '0.11085',
+      },
+      {
+        start: '2024-12-04T21:00:00.000+02:00',
+        price: '0.09943',
+      },
+      {
+        start: '2024-12-04T22:00:00.000+02:00',
+        price: '0.09797',
+      },
+      {
+        start: '2024-12-04T23:00:00.000+02:00',
+        price: '0.05960',
+      },
+    ],
+    tomorrow: [
+      {
+        start: '2024-12-05T00:00:00.000+02:00',
+        price: '0.03286',
+      },
+      {
+        start: '2024-12-05T01:00:00.000+02:00',
+        price: '0.05647',
+      },
+      {
+        start: '2024-12-05T02:00:00.000+02:00',
+        price: '0.03075',
+      },
+      {
+        start: '2024-12-05T03:00:00.000+02:00',
+        price: '0.00803',
+      },
+      {
+        start: '2024-12-05T04:00:00.000+02:00',
+        price: '0.00617',
+      },
+      {
+        start: '2024-12-05T05:00:00.000+02:00',
+        price: '0.00802',
+      },
+      {
+        start: '2024-12-05T06:00:00.000+02:00',
+        price: '0.05508',
+      },
+      {
+        start: '2024-12-05T07:00:00.000+02:00',
+        price: '0.10424',
+      },
+      {
+        start: '2024-12-05T08:00:00.000+02:00',
+        price: '0.14750',
+      },
+      {
+        start: '2024-12-05T09:00:00.000+02:00',
+        price: '0.15686',
+      },
+      {
+        start: '2024-12-05T10:00:00.000+02:00',
+        price: '0.13341',
+      },
+      {
+        start: '2024-12-05T11:00:00.000+02:00',
+        price: '0.12259',
+      },
+      {
+        start: '2024-12-05T12:00:00.000+02:00',
+        price: '0.10684',
+      },
+      {
+        start: '2024-12-05T13:00:00.000+02:00',
+        price: '0.10041',
+      },
+      {
+        start: '2024-12-05T14:00:00.000+02:00',
+        price: '0.09406',
+      },
+      {
+        start: '2024-12-05T15:00:00.000+02:00',
+        price: '0.08342',
+      },
+      {
+        start: '2024-12-05T16:00:00.000+02:00',
+        price: '0.08223',
+      },
+      {
+        start: '2024-12-05T17:00:00.000+02:00',
+        price: '0.08052',
+      },
+      {
+        start: '2024-12-05T18:00:00.000+02:00',
+        price: '0.08011',
+      },
+      {
+        start: '2024-12-05T19:00:00.000+02:00',
+        price: '0.06526',
+      },
+      {
+        start: '2024-12-05T20:00:00.000+02:00',
+        price: '0.03872',
+      },
+      {
+        start: '2024-12-05T21:00:00.000+02:00',
+        price: '0.01620',
+      },
+      {
+        start: '2024-12-05T22:00:00.000+02:00',
+        price: '0.01606',
+      },
+      {
+        start: '2024-12-05T23:00:00.000+02:00',
+        price: '0.03135',
+      },
+    ],
+  });
 });

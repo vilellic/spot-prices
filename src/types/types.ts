@@ -82,20 +82,6 @@ export interface ControllerContext {
   url?: URL;
 }
 
-export interface EleringResponseEntry {
-  timestamp: number;
-  price: number;
-}
-
-export interface EleringResponse {
-  success: boolean;
-  data: {
-    ee: EleringResponseEntry[];
-    fi: EleringResponseEntry[];
-    lv: EleringResponseEntry[];
-    lt: EleringResponseEntry[];
-  };
-}
 export interface EntsoTimeSeries {
   position: number;
   'price.amount': number;

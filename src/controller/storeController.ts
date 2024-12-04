@@ -12,7 +12,7 @@ export default {
     const spotPrices = utils.getSpotPricesFromCache(cache);
     console.log(`${constants.CACHED_NAME_PRICES} ${JSON.stringify(spotPrices, null, 2)}`);
 
-    // Invalidate cache if current time is not in todays range
+    // Invalidate cache if current time is not in list
     if (!utils.dateIsInPricesList(spotPrices.prices, new Date())) {
       console.log('Invalidating old cache');
       this.flushCache(cache);
@@ -27,7 +27,6 @@ export default {
 
   initStoredFilesIfNotExists: function () {
     if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
-      console.log('initializeStoredFiles()');
       this.resetStoredFiles();
     }
   },

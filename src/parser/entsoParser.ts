@@ -9,12 +9,11 @@ export default {
     const xmlParser = new parser.XMLParser();
     const parsed = xmlParser.parse(input);
     const timeSeries = parsed['Publication_MarketDocument']['TimeSeries'];
-    const lastSeries = timeSeries.at(-1);
-    let time = dateUtils.parseISODate(lastSeries['Period']['timeInterval']['start']);
+    const allSeries = timeSeries.flatMap((t: any) => t['Period']['Point']) as EntsoTimeSeries[];
+    let time = dateUtils.parseISODate(timeSeries[0]['Period']['timeInterval']['start']);
     console.log('startTime = ' + time.toISO());
-    const points = lastSeries['Period']['Point'] as EntsoTimeSeries[];
-    console.log(JSON.stringify(points, null, 2));
-    return points.reduce<PriceRow[]>((acc, entry) => {
+    console.log(JSON.stringify(allSeries, null, 2));
+    return allSeries.reduce<PriceRow[]>((acc, entry) => {
       acc.push({
         start: `${time.toISO()}`,
         price: Number(utils.getPrice(entry['price.amount'])),

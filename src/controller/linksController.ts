@@ -15,13 +15,13 @@ export default {
     const transferPrices: TransferPrices | undefined =
       offPeakTransferPrice && peakTransferPrice
         ? {
-            offPeakTransfer: offPeakTransferPrice,
-            peakTransfer: peakTransferPrice,
-          }
+          offPeakTransfer: offPeakTransferPrice,
+          peakTransfer: peakTransferPrice,
+        }
         : undefined;
 
     return links.getExampleLinks({
-      host: `${constants.PROTOCOL}://${url?.hostname}:${constants.PORT}`,
+      host: `${constants.PROTOCOL}://${url?.hostname}:${url?.port}`,
       tomorrowAvailable: tomorrowAvailable,
       noHours: numberOfHours,
       transferPrices: transferPrices,

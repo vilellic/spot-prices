@@ -4,302 +4,212 @@ import NodeCache from 'node-cache';
 import constants from '../types/constants';
 fetchMock.enableMocks();
 
-const fixedFakeDate = new Date('2024-11-27');
+const fixedFakeDate = new Date('2024-12-04').setHours(15);
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
 test('Parse Elering API response store to cache and check contents', async () => {
+  // https://dashboard.elering.ee/api/nps/price?start=2024-12-02T22:00:00.000Z&end=2024-12-05T21:59:59.999Z
+
   fetchMock.mockResponse(
     JSON.stringify({
       success: true,
       data: {
         fi: [
           {
-            timestamp: 1732572000,
-            price: 1.64,
+            timestamp: 1733176800,
+            price: 24.99,
           },
           {
-            timestamp: 1732575600,
-            price: 0.01,
+            timestamp: 1733180400,
+            price: 24,
           },
           {
-            timestamp: 1732579200,
-            price: -0.01,
+            timestamp: 1733184000,
+            price: 23.99,
           },
           {
-            timestamp: 1732582800,
-            price: 0,
+            timestamp: 1733187600,
+            price: 8.9,
           },
           {
-            timestamp: 1732586400,
-            price: -0.01,
+            timestamp: 1733191200,
+            price: 8.28,
           },
           {
-            timestamp: 1732590000,
-            price: 0,
+            timestamp: 1733194800,
+            price: 18.94,
           },
           {
-            timestamp: 1732593600,
-            price: 2.02,
+            timestamp: 1733198400,
+            price: 49.57,
           },
           {
-            timestamp: 1732597200,
-            price: 5.16,
+            timestamp: 1733202000,
+            price: 67.63,
           },
           {
-            timestamp: 1732600800,
-            price: 6.39,
+            timestamp: 1733205600,
+            price: 142.48,
           },
           {
-            timestamp: 1732604400,
-            price: 8.38,
+            timestamp: 1733209200,
+            price: 155,
           },
           {
-            timestamp: 1732608000,
-            price: 8.94,
+            timestamp: 1733212800,
+            price: 144.63,
           },
           {
-            timestamp: 1732611600,
-            price: 11.72,
+            timestamp: 1733216400,
+            price: 127.55,
           },
           {
-            timestamp: 1732615200,
-            price: 15.26,
+            timestamp: 1733220000,
+            price: 144.96,
           },
           {
-            timestamp: 1732618800,
-            price: 14.62,
+            timestamp: 1733223600,
+            price: 124.93,
           },
           {
-            timestamp: 1732622400,
-            price: 16.39,
+            timestamp: 1733227200,
+            price: 158.03,
           },
           {
-            timestamp: 1732626000,
-            price: 18.84,
+            timestamp: 1733230800,
+            price: 119.93,
           },
           {
-            timestamp: 1732629600,
-            price: 25.13,
+            timestamp: 1733234400,
+            price: 95.12,
           },
           {
-            timestamp: 1732633200,
-            price: 32.79,
+            timestamp: 1733238000,
+            price: 97.22,
           },
           {
-            timestamp: 1732636800,
-            price: 41.27,
+            timestamp: 1733241600,
+            price: 182.57,
           },
           {
-            timestamp: 1732640400,
-            price: 43.99,
+            timestamp: 1733245200,
+            price: 168.77,
           },
           {
-            timestamp: 1732644000,
-            price: 38.98,
+            timestamp: 1733248800,
+            price: 158.47,
           },
           {
-            timestamp: 1732647600,
-            price: 35.09,
+            timestamp: 1733252400,
+            price: 124.96,
           },
           {
-            timestamp: 1732651200,
-            price: 40.81,
+            timestamp: 1733256000,
+            price: 119.74,
           },
           {
-            timestamp: 1732654800,
-            price: 32.93,
+            timestamp: 1733259600,
+            price: 82.66,
           },
           {
-            timestamp: 1732658400,
-            price: 27.8,
+            timestamp: 1733263200,
+            price: 47.52,
           },
           {
-            timestamp: 1732662000,
-            price: 35.84,
+            timestamp: 1733266800,
+            price: 35.51,
           },
           {
-            timestamp: 1732665600,
-            price: 33.04,
+            timestamp: 1733270400,
+            price: 38.63,
           },
           {
-            timestamp: 1732669200,
-            price: 34.56,
+            timestamp: 1733274000,
+            price: 41.12,
           },
           {
-            timestamp: 1732672800,
-            price: 36.86,
+            timestamp: 1733277600,
+            price: 48.09,
           },
           {
-            timestamp: 1732676400,
-            price: 42.04,
+            timestamp: 1733281200,
+            price: 58.75,
           },
           {
-            timestamp: 1732680000,
-            price: 63.98,
+            timestamp: 1733284800,
+            price: 71.35,
           },
           {
-            timestamp: 1732683600,
-            price: 171.04,
+            timestamp: 1733288400,
+            price: 137.8,
           },
           {
-            timestamp: 1732687200,
-            price: 186.07,
+            timestamp: 1733292000,
+            price: 214.04,
           },
           {
-            timestamp: 1732690800,
-            price: 189.99,
+            timestamp: 1733295600,
+            price: 272.79,
           },
           {
-            timestamp: 1732694400,
-            price: 175.69,
+            timestamp: 1733299200,
+            price: 248.23,
           },
           {
-            timestamp: 1732698000,
-            price: 160.83,
+            timestamp: 1733302800,
+            price: 216.28,
           },
           {
-            timestamp: 1732701600,
-            price: 160.57,
+            timestamp: 1733306400,
+            price: 202.75,
           },
           {
-            timestamp: 1732705200,
-            price: 159.28,
+            timestamp: 1733310000,
+            price: 206.43,
           },
           {
-            timestamp: 1732708800,
-            price: 156.08,
+            timestamp: 1733313600,
+            price: 179.69,
           },
           {
-            timestamp: 1732712400,
-            price: 156.07,
+            timestamp: 1733317200,
+            price: 162.59,
           },
           {
-            timestamp: 1732716000,
-            price: 199.99,
+            timestamp: 1733320800,
+            price: 171.59,
           },
           {
-            timestamp: 1732719600,
-            price: 200.06,
+            timestamp: 1733324400,
+            price: 171.51,
           },
           {
-            timestamp: 1732723200,
-            price: 166.34,
+            timestamp: 1733328000,
+            price: 154.71,
           },
           {
-            timestamp: 1732726800,
-            price: 123.72,
+            timestamp: 1733331600,
+            price: 140.18,
           },
           {
-            timestamp: 1732730400,
-            price: 111.56,
+            timestamp: 1733335200,
+            price: 88.33,
           },
           {
-            timestamp: 1732734000,
-            price: 85.01,
+            timestamp: 1733338800,
+            price: 79.23,
           },
           {
-            timestamp: 1732737600,
-            price: 78.05,
+            timestamp: 1733342400,
+            price: 78.06,
           },
           {
-            timestamp: 1732741200,
-            price: 72.35,
+            timestamp: 1733346000,
+            price: 47.49,
           },
           {
-            timestamp: 1732744800,
-            price: 55.03,
-          },
-          {
-            timestamp: 1732748400,
-            price: 55.23,
-          },
-          {
-            timestamp: 1732752000,
-            price: 47.13,
-          },
-          {
-            timestamp: 1732755600,
-            price: 35.99,
-          },
-          {
-            timestamp: 1732759200,
-            price: 34.57,
-          },
-          {
-            timestamp: 1732762800,
-            price: 40.48,
-          },
-          {
-            timestamp: 1732766400,
-            price: 53.64,
-          },
-          {
-            timestamp: 1732770000,
-            price: 129.94,
-          },
-          {
-            timestamp: 1732773600,
-            price: 144.08,
-          },
-          {
-            timestamp: 1732777200,
-            price: 144.04,
-          },
-          {
-            timestamp: 1732780800,
-            price: 144.09,
-          },
-          {
-            timestamp: 1732784400,
-            price: 144.09,
-          },
-          {
-            timestamp: 1732788000,
-            price: 162.01,
-          },
-          {
-            timestamp: 1732791600,
-            price: 162.58,
-          },
-          {
-            timestamp: 1732795200,
-            price: 169.14,
-          },
-          {
-            timestamp: 1732798800,
-            price: 157.67,
-          },
-          {
-            timestamp: 1732802400,
-            price: 173.48,
-          },
-          {
-            timestamp: 1732806000,
-            price: 159.09,
-          },
-          {
-            timestamp: 1732809600,
-            price: 175.98,
-          },
-          {
-            timestamp: 1732813200,
-            price: 164.93,
-          },
-          {
-            timestamp: 1732816800,
-            price: 160.48,
-          },
-          {
-            timestamp: 1732820400,
-            price: 144.1,
-          },
-          {
-            timestamp: 1732824000,
-            price: 132.21,
-          },
-          {
-            timestamp: 1732827600,
-            price: 113.4,
+            timestamp: 1733349600,
+            price: 26.18,
           },
         ],
       },
@@ -313,9 +223,11 @@ test('Parse Elering API response store to cache and check contents', async () =>
   // today
   expect(fetch).toHaveBeenNthCalledWith(
     1,
-    'https://dashboard.elering.ee/api/nps/price?start=2024-11-25T22:00:00.000Z&end=2024-11-28T21:59:59.999Z',
+    'https://dashboard.elering.ee/api/nps/price?start=2024-12-02T22:00:00.000Z&end=2024-12-05T21:59:59.999Z',
     { method: 'Get' },
   );
+
+  console.log(JSON.stringify(nodeCache.get(constants.CACHED_NAME_PRICES), null, 2));
 
   expect(nodeCache.get(constants.CACHED_NAME_PRICES)).toStrictEqual({
     prices: [

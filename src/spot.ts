@@ -10,6 +10,7 @@ import queryController from './controller/queryController';
 import linksController from './controller/linksController';
 import storeController from './controller/storeController';
 import constants from './types/constants';
+import 'dotenv/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('log-timestamp')(function () {

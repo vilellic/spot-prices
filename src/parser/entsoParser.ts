@@ -11,8 +11,6 @@ export default {
     const timeSeries = parsed['Publication_MarketDocument']['TimeSeries'];
     const allSeries = timeSeries.flatMap((t: any) => t['Period']['Point']) as EntsoTimeSeries[];
     let time = dateUtils.parseISODate(timeSeries[0]['Period']['timeInterval']['start']);
-    console.log('startTime = ' + time.toISO());
-    console.log(JSON.stringify(allSeries, null, 2));
     return allSeries.reduce<PriceRow[]>((acc, entry) => {
       acc.push({
         start: `${time.toISO()}`,

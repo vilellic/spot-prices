@@ -10,6 +10,7 @@ import queryController from './controller/queryController';
 import linksController from './controller/linksController';
 import storeController from './controller/storeController';
 import constants from './types/constants';
+import 'dotenv/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 require('log-timestamp')(function () {
@@ -78,6 +79,9 @@ new CronJob(
 );
 
 console.log('Spot Prices server starting ...');
+if (!process.env.ENTSOE_SECURITY_TOKEN) {
+  throw Error('Aborting! ENTSOE_SECURITY_TOKEN missing from .env');
+}
 storeController.initStoredFilesIfNotExists();
 storeController.initCacheFromDisk(spotCache);
 rootController.updatePrices(spotCache);

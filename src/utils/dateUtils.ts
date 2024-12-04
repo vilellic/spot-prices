@@ -1,11 +1,7 @@
 import { PriceRow, SpotPrices } from '../types/types';
-import constants from '../types/constants';
 import { DateTime } from 'luxon';
 
 export default {
-  getDateStr: function (timestamp: number) {
-    return this.getDate(timestamp).toISO();
-  },
 
   getDate: function (timestamp: number) {
     return DateTime.fromSeconds(timestamp);
@@ -26,10 +22,6 @@ export default {
     return addToDateAndFormat(input, 'HH', addHours);
   },
 
-  getIsoDateStr: function (input: string | undefined, addHours?: number) {
-    return addToDateAndFormat(input, constants.ISO_DATE_FORMAT, addHours);
-  },
-
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
     for (let i = 0; i < datePriceArray.length; i++) {
       if (datePriceArray[i].start === date) {
@@ -37,34 +29,6 @@ export default {
       }
     }
     return undefined;
-  },
-
-  getDateFromFirstRow: function (datePriceArray: PriceRow[]) {
-    return datePriceArray?.length > 0 ? this.parseISODate(datePriceArray[0].start).toFormat('DD-MM-YYYY') : undefined;
-  },
-
-  getTodaySpanStart: function () {
-    return getDateSpanStartWithOffset(new Date(), 0).toISOString();
-  },
-
-  getTodaySpanEnd: function () {
-    return getDateSpanEndWithOffset(new Date(), 0).toISOString();
-  },
-
-  getTomorrowSpanStart: function () {
-    return getDateSpanStartWithOffset(new Date(), 1).toISOString();
-  },
-
-  getTomorrowSpanEnd: function () {
-    return getDateSpanEndWithOffset(new Date(), 1).toISOString();
-  },
-
-  getYesterdaySpanStart: function () {
-    return getDateSpanStartWithOffset(new Date(), -1).toISOString();
-  },
-
-  getYesterdaySpanEnd: function () {
-    return getDateSpanEndWithOffset(new Date(), -1).toISOString();
   },
 
   getDateFromHourStarting: function (date: Date, offset: number, hour: number) {

@@ -21,7 +21,7 @@ export default {
         : undefined;
 
     return links.getExampleLinks({
-      host: `${constants.PROTOCOL}://${url?.hostname}:${constants.PORT}`,
+      host: `${constants.PROTOCOL}://${url?.hostname}:${url?.port}`,
       tomorrowAvailable: tomorrowAvailable,
       noHours: numberOfHours,
       transferPrices: transferPrices,

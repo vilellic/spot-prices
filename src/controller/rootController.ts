@@ -56,7 +56,7 @@ export default {
         dateUtils.getTomorrowHours(spotPrices.prices).length < 24 && dateUtils.isTimeToGetTomorrowPrices();
 
       if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
-        const periodStart = dateUtils.getDateFromHourStarting(new Date(), -1, 0).toFormat('yyyyMMddHHmm');
+        const periodStart = dateUtils.getDateFromHourStarting(new Date(), -2, 0).toFormat('yyyyMMddHHmm');
         const periodEnd = dateUtils.getDateFromHourStarting(new Date(), 2, 0).toFormat('yyyyMMddHHmm');
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
         cache.set(constants.CACHED_NAME_PRICES, spotPrices);
@@ -67,9 +67,10 @@ export default {
 
 const getPricesFromEntsoe = async (start: string, end: string) => {
   const securityToken = process.env.ENTSOE_SECURITY_TOKEN;
-  const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start}&periodEnd=${end}&securityToken=${securityToken}`;
+  const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start}&periodEnd=${end}`;
   try {
-    const res = await fetch(url, { method: 'Get' });
+    console.log(`Querying ENTSO-E Rest API with url = ${url}`);
+    const res = await fetch(`${url}&securityToken=${securityToken}`, { method: 'Get' });
     return entsoParser.parseXML(await res.text());
   } catch (error) {
     console.log(error);

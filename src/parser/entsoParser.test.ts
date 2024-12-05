@@ -1,9 +1,6 @@
-import fetchMock from 'jest-fetch-mock';
 import entsoParser from '../parser/entsoParser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
-fetchMock.enableMocks();
 
 const fixedFakeDate = new Date('2024-12-04');
 jest.useFakeTimers().setSystemTime(fixedFakeDate);

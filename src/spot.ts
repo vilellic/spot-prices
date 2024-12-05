@@ -80,7 +80,7 @@ new CronJob(
 
 console.log('Spot Prices server starting ...');
 if (!process.env.ENTSOE_SECURITY_TOKEN) {
-  throw Error('Aborting! ENTSOE_SECURITY_TOKEN missing from .env');
+  throw Error('Aborting! ENTSOE_SECURITY_TOKEN missing from environment variables');
 }
 storeController.initStoredFilesIfNotExists();
 storeController.initCacheFromDisk(spotCache);

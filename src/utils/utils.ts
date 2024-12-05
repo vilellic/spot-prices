@@ -39,9 +39,6 @@ export default {
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
-    if (priceList === undefined || priceList.length <= 1) {
-      return false;
-    }
     const startStr = priceList.at(0)?.start;
     const endStr = priceList.at(-1)?.start;
     if (startStr && endStr) {

@@ -121,8 +121,8 @@ export default {
     const startEndFields =
       queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
         ? {
-            start: dateUtils.getHourStr(startTimeIso),
-            end: dateUtils.getHourStr(endTimeIso, 1),
+            start: startTimeIso ? DateTime.fromISO(startTimeIso).toFormat('HH') : '--',
+            end: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toFormat('HH') : '--',
             startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
             endTime: endTimeIso
               ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toISO() || 'unavailable'

@@ -2,7 +2,6 @@ import { PriceRow, SpotPrices } from '../types/types';
 import { DateTime } from 'luxon';
 
 export default {
-
   getDate: function (timestamp: number) {
     return DateTime.fromSeconds(timestamp);
   },
@@ -12,27 +11,15 @@ export default {
   },
 
   getWeekdayAndHourStr: function (date: Date) {
-    return new Date(date).getHours() + ' ' + DateTime.fromJSDate(date).toFormat('EEE');
-  },
-
-  getHourStr: function (input: string | undefined, addHours?: number) {
-    if (!input) {
-      return 'x';
-    }
-    return addToDateAndFormat(input, 'HH', addHours);
+    return DateTime.fromJSDate(date).toFormat('H EEE');
   },
 
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
-    for (let i = 0; i < datePriceArray.length; i++) {
-      if (datePriceArray[i].start === date) {
-        return i;
-      }
-    }
-    return undefined;
+    return datePriceArray.findIndex((row) => row.start === date) || undefined;
   },
 
-  getDateFromHourStarting: function (date: Date, offset: number, hour: number) {
-    return DateTime.fromJSDate(date).plus({ day: offset }).set({ hour: hour, minute: 0, second: 0, millisecond: 0 });
+  getDateFromHourStarting: function (offsetDays: number, hourStarting: number) {
+    return DateTime.now().plus({ day: offsetDays }).set({ hour: hourStarting, minute: 0, second: 0, millisecond: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -42,51 +29,59 @@ export default {
   },
 
   isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
-    const date: Date = this.getDateFromHourStarting(new Date(), 0, 14).toJSDate();
-    return now.valueOf() >= date.valueOf();
+    const date = this.getDateFromHourStarting(0, 14);
+    return DateTime.fromJSDate(now).valueOf() >= date.valueOf();
+  },
+
+  getDayHours: function (prices: PriceRow[], offset: number) {
+    return filterHours(
+      prices,
+      this.getDateFromHourStarting(offset, 0),
+      this.getDateFromHourStarting(offset, 24).minus({ milliseconds: 1 }),
+    );
   },
 
   getYesterdayHours: function (prices: PriceRow[]) {
-    return getDayHours(prices, -1);
+    return this.getDayHours(prices, -1);
   },
 
   getTodayHours: function (prices: PriceRow[]) {
-    return getDayHours(prices, 0);
+    return this.getDayHours(prices, 0);
   },
 
   getTomorrowHours: function (prices: PriceRow[]) {
-    return getDayHours(prices, 1);
+    return this.getDayHours(prices, 1);
   },
 
   getHoursToStore: function (prices: PriceRow[]) {
     return filterHours(
       prices,
-      DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), -2)),
-      DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), 1)),
+      this.getDateFromHourStarting(-2, 0),
+      this.getDateFromHourStarting(1, 24).minus({ milliseconds: 1 }),
     );
   },
 
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
-    const yesterday22 = this.getDateFromHourStarting(new Date(), -1, 22);
-    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
+    const yesterday22 = this.getDateFromHourStarting(-1, 22);
+    const today07 = this.getDateFromHourStarting(0, 7);
     return filterHours(spotPrices.prices, yesterday22, today07);
   },
 
   getTodayPeakHours: function (spotPrices: SpotPrices) {
-    const today07 = this.getDateFromHourStarting(new Date(), 0, 7);
-    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
+    const today07 = this.getDateFromHourStarting(0, 7);
+    const today22 = this.getDateFromHourStarting(0, 22);
     return filterHours(spotPrices.prices, today07, today22);
   },
 
   getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
-    const today22 = this.getDateFromHourStarting(new Date(), 0, 22);
-    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
+    const today22 = this.getDateFromHourStarting(0, 22);
+    const tomorrow07 = this.getDateFromHourStarting(1, 7);
     return filterHours(spotPrices.prices, today22, tomorrow07);
   },
 
   getTomorrowPeakHours: function (spotPrices: SpotPrices) {
-    const tomorrow07 = this.getDateFromHourStarting(new Date(), 1, 7);
-    const tomorrow22 = this.getDateFromHourStarting(new Date(), 1, 22);
+    const tomorrow07 = this.getDateFromHourStarting(1, 7);
+    const tomorrow22 = this.getDateFromHourStarting(1, 22);
     return filterHours(spotPrices.prices, tomorrow07, tomorrow22);
   },
 };
@@ -98,36 +93,4 @@ const filterHours = (priceRows: PriceRow[], start: DateTime, end: DateTime) => {
       return priceRowStart.valueOf() >= start.valueOf() && priceRowStart.valueOf() < end.valueOf();
     }) || []
   );
-};
-
-const getDayHours = (prices: PriceRow[], offset: number) => {
-  return filterHours(
-    prices,
-    DateTime.fromJSDate(getDateSpanStartWithOffset(new Date(), offset)),
-    DateTime.fromJSDate(getDateSpanEndWithOffset(new Date(), offset)),
-  );
-};
-
-const getDateSpanStartWithOffset = (date: Date, offset: number) => {
-  date.setDate(date.getDate() + offset);
-  date.setHours(0, 0, 0, 0);
-  return date;
-};
-
-const getDateSpanEndWithOffset = (date: Date, offset: number) => {
-  date.setDate(date.getDate() + offset);
-  date.setHours(24, 0, 0, 0);
-  date.setMilliseconds(date.getMilliseconds() - 1);
-  return date;
-};
-
-const addToDateAndFormat = (input: string | undefined, format: string, addHours?: number) => {
-  if (!input) {
-    return undefined;
-  }
-  const date = new Date(input);
-  if (addHours) {
-    date.setHours(date.getHours() + addHours);
-  }
-  return DateTime.fromJSDate(date).toFormat(format);
 };

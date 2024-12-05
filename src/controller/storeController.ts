@@ -8,12 +8,15 @@ import { PriceRow, SpotPrices } from '../types/types';
 export default {
   initCacheFromDisk: function (cache: NodeCache) {
     cache.set(constants.CACHED_NAME_PRICES, readStoredSpotPrices());
-    console.log('Cache contents: ');
+
     const spotPrices = utils.getSpotPricesFromCache(cache);
-    console.log(`${constants.CACHED_NAME_PRICES} ${JSON.stringify(spotPrices, null, 2)}`);
+    if (spotPrices.prices && spotPrices.prices.length > 0) {
+      console.log('-- Cache contents: --');
+      console.log(`${constants.CACHED_NAME_PRICES} ${JSON.stringify(spotPrices, null, 2)}`);
+    }
 
     // Invalidate cache if current time is not in list
-    if (!utils.dateIsInPricesList(spotPrices.prices, new Date())) {
+    if (spotPrices.prices?.length > 0 && !utils.dateIsInPricesList(spotPrices.prices, new Date())) {
       console.log('Invalidating old cache');
       this.flushCache(cache);
     }
@@ -39,7 +42,7 @@ export default {
     const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
     const newSpotPrices: SpotPrices = { prices: filteredPrices };
 
-    if (JSON.stringify(newSpotPrices) !== JSON.stringify(persistedSpotPrices)) {
+    if (newSpotPrices.prices.length > 0 && JSON.stringify(newSpotPrices) !== JSON.stringify(persistedSpotPrices)) {
       writeToDisk(name, JSON.stringify(newSpotPrices, null, 2));
     }
   },
@@ -61,7 +64,9 @@ function readStoredSpotPrices() {
 function writeToDisk(name: string, content: string) {
   try {
     writeFileSync(getStoredResultFileName(name), content, 'utf8');
-    console.log('Updated result to disk = ' + name);
+    if (content.length > 2) {
+      console.log('Updated result to disk = ' + name);
+    }
   } catch (error) {
     console.log('writeToDisk: error ', error);
   }

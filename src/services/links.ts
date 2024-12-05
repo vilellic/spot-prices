@@ -17,9 +17,9 @@ export default {
     noHours,
     transferPrices,
   }: GetExampleLinksPars): LinksContainer {
-    const yesterday21 = dateUtils.getDateFromHourStarting(new Date(), -1, 21).toJSDate();
-    const today21 = dateUtils.getDateFromHourStarting(new Date(), 0, 21).toJSDate();
-    const tomorrow21 = dateUtils.getDateFromHourStarting(new Date(), 1, 21).toJSDate();
+    const yesterday21 = dateUtils.getDateFromHourStarting(-1, 21).toJSDate();
+    const today21 = dateUtils.getDateFromHourStarting(0, 21).toJSDate();
+    const tomorrow21 = dateUtils.getDateFromHourStarting(1, 21).toJSDate();
 
     const amountOfHours: number = noHours ? noHours : 6;
 

@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { SpotPrices } from '../types/types';
+import { PriceRow, SpotPrices } from '../types/types';
 
 const fixedFakeDate = new Date('2023-09-12');
 
@@ -61,4 +61,39 @@ test('test time is in list range', () => {
   expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toJSDate())).toBe(
     false,
   );
+});
+
+test('remove duplicates and sort', () => {
+  const duplicatePrices: PriceRow[] = [
+    {
+      start: '2023-09-11T03:00:00.000+03:00',
+      price: 0.02003,
+    },
+    {
+      start: '2023-09-11T00:00:00.000+03:00',
+      price: 0.01879,
+    },
+    {
+      start: '2023-09-11T01:00:00.000+03:00',
+      price: 0.0237,
+    },
+    {
+      start: '2023-09-11T01:00:00.000+03:00',
+      price: 0.0237,
+    },
+  ];
+  expect(utils.removeDuplicatesAndSort(duplicatePrices)).toStrictEqual([
+    {
+      start: '2023-09-11T00:00:00.000+03:00',
+      price: 0.01879,
+    },
+    {
+      start: '2023-09-11T01:00:00.000+03:00',
+      price: 0.0237,
+    },
+    {
+      start: '2023-09-11T03:00:00.000+03:00',
+      price: 0.02003,
+    },
+  ]);
 });

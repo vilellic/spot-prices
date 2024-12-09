@@ -25,28 +25,25 @@ export default {
 
   getCurrentPrice: function (prices: PriceRow[]) {
     const currentStartHour = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toISO();
-    let currentPrice;
-    for (let h = 0; h < prices.length; h++) {
-      if (DateTime.fromISO(prices[h].start).toISO() === currentStartHour) {
-        currentPrice = prices[h].price;
-      }
-    }
-    return currentPrice;
+    const matchingPriceRow = prices.find(price => DateTime.fromISO(price.start).toISO() === currentStartHour);
+    return matchingPriceRow?.price;
   },
 
   getSpotPricesFromCache: function (cache: NodeCache): SpotPrices {
     return cache.get(constants.CACHED_NAME_PRICES) || getEmptySpotPrices();
   },
 
-  dateIsInPricesList: function (priceList: PriceRow[], date: Date) {
-    const startStr = priceList.at(0)?.start;
-    const endStr = priceList.at(-1)?.start;
-    if (startStr && endStr) {
-      const start = dateUtils.parseISODate(startStr);
-      const end = dateUtils.parseISODate(endStr).plus({ hours: 1 }).minus({ milliseconds: 1 });
-      return date.valueOf() >= start.valueOf() && date.valueOf() <= end.valueOf();
-    }
-    return false;
+  dateIsInPricesList: function (priceList: PriceRow[], date: Date): boolean {
+    if (priceList.length === 0) return false;
+
+    const start = dateUtils.parseISODate(priceList[0].start);
+    const end = dateUtils
+      .parseISODate(priceList[priceList.length - 1].start)
+      .plus({ hours: 1 })
+      .minus({ milliseconds: 1 });
+
+    const dateValue = date.valueOf();
+    return dateValue >= start.valueOf() && dateValue <= end.valueOf();
   },
 
   removeDuplicatesAndSort: function (prices: PriceRow[]): PriceRow[] {

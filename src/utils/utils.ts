@@ -25,7 +25,7 @@ export default {
 
   getCurrentPrice: function (prices: PriceRow[]) {
     const currentStartHour = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toISO();
-    const matchingPriceRow = prices.find(price => DateTime.fromISO(price.start).toISO() === currentStartHour);
+    const matchingPriceRow = prices.find((price) => DateTime.fromISO(price.start).toISO() === currentStartHour);
     return matchingPriceRow?.price;
   },
 

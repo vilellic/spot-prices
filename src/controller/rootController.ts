@@ -6,6 +6,7 @@ import dateUtils from '../utils/dateUtils';
 import { PricesContainer } from '../types/types';
 import { Mutex } from 'async-mutex';
 import entsoParser from '../parser/entsoParser';
+import { DateTime } from 'luxon';
 
 const mutex = new Mutex();
 
@@ -56,8 +57,8 @@ export default {
         dateUtils.getTomorrowHours(spotPrices.prices).length < 23 && dateUtils.isTimeToGetTomorrowPrices();
 
       if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
-        const periodStart = dateUtils.getDateFromHourStarting(-2, 0).toFormat('yyyyMMddHHmm');
-        const periodEnd = dateUtils.getDateFromHourStarting(2, 0).toFormat('yyyyMMddHHmm');
+        const periodStart = dateUtils.getDateFromHourStarting(-1, 0).minus({ hours: 0 });
+        const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
         if (spotPrices.prices.length > 0) {
           cache.set(constants.CACHED_NAME_PRICES, spotPrices);
@@ -67,9 +68,10 @@ export default {
   },
 };
 
-const getPricesFromEntsoe = async (start: string, end: string) => {
+const getPricesFromEntsoe = async (start: DateTime, end: DateTime) => {
   const securityToken = process.env.ENTSOE_SECURITY_TOKEN;
-  const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start}&periodEnd=${end}`;
+  console.log(`Query period start = ${start}, end = ${end}`);
+  const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start.toFormat('yyyyMMddHHmm')}&periodEnd=${end.toFormat('yyyyMMddHHmm')}`;
   try {
     console.log(`Querying ENTSO-E Rest API with url = ${url}`);
     const res = await fetch(`${url}&securityToken=${securityToken}`, { method: 'Get' });

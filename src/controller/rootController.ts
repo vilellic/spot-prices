@@ -53,7 +53,7 @@ export default {
       const yesterdayHoursMissing = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
       const todayHoursMissing = dateUtils.getTodayHours(spotPrices.prices).length < 24;
       const tomorrowHoursMissing =
-        dateUtils.getTomorrowHours(spotPrices.prices).length < 24 && dateUtils.isTimeToGetTomorrowPrices();
+        dateUtils.getTomorrowHours(spotPrices.prices).length < 23 && dateUtils.isTimeToGetTomorrowPrices();
 
       if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0).toFormat('yyyyMMddHHmm');

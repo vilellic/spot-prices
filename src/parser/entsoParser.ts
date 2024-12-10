@@ -23,10 +23,6 @@ export default {
       );
       const startTime = dateUtils.parseISODate(ts['Period']['timeInterval']['start']);
 
-      // DST: mennään talviaikaan --> 25 tuntia (positions)
-      // DST: mennään kesäaikaan --> 23 tuntia
-      // DST, mutta huom. voi olla tyhjiä välissä
-      // Voi päätellä viimeisestä positionista (onko 25/23)
       // TimeStepPosition = StartDateTimeofTimeInterval + (Resolution*(Pos −1))
       // https://eepublicdownloads.entsoe.eu/clean-documents/EDI/Library/cim_based/Introduction_of_different_Timeseries_possibilities__curvetypes__with_ENTSO-E_electronic_document_v1.4.pdf
 

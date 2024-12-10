@@ -397,11 +397,70 @@ test('Parse Entso-E API response', async () => {
   ]);
 });
 
-test('Parse Entso-E API response', async () => {
+test('Missing periods', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2024-12-09'));
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse2.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
+  const yesterdayHours = dateUtils.getYesterdayHours(priceRows);
+  const todayHours = dateUtils.getTodayHours(priceRows);
   const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
-
+  expect(yesterdayHours.length).toBe(24);
+  expect(todayHours.length).toBe(24);
   expect(tomorrowHours.length).toBe(24);
+});
+
+test('DST summer --> winter', async () => {
+  jest.useFakeTimers().setSystemTime(new Date('2023-10-28').setHours(3));
+  const xmlResponse = readFileSync(join(__dirname, 'mockResponse_dst_winter.xml'), 'utf-8');
+  const priceRows = entsoParser.parseXML(xmlResponse);
+  const todayHours = dateUtils.getTodayHours(priceRows);
+  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  expect(todayHours.length).toBe(23);
+  expect(tomorrowHours.length).toBe(25);
+  const firstHours = tomorrowHours.slice(2, 6);
+  expect(firstHours).toStrictEqual([
+    {
+      "start": "2023-10-29T02:00:00.000+03:00",
+      "price": 0.03412
+    },
+    {
+      "start": "2023-10-29T03:00:00.000+03:00",
+      "price": 0.0318
+    },
+    {
+      "start": "2023-10-29T03:00:00.000+02:00",
+      "price": 0.02805
+    },
+    {
+      "start": "2023-10-29T04:00:00.000+02:00",
+      "price": 0.02654
+    }
+  ]);
+});
+
+test('DST winter --> summer', async () => {
+  jest.useFakeTimers().setSystemTime(new Date('2024-03-30').setHours(3));
+  const xmlResponse = readFileSync(join(__dirname, 'mockResponse_dst_summer.xml'), 'utf-8');
+  const priceRows = entsoParser.parseXML(xmlResponse);
+  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  expect(tomorrowHours.length).toBe(23);
+  const firstHours = tomorrowHours.slice(1, 5);
+  expect(firstHours).toStrictEqual([
+    {
+      "start": "2024-03-31T01:00:00.000+02:00",
+      "price": 0.05282
+    },
+    {
+      "start": "2024-03-31T02:00:00.000+02:00",
+      "price": 0.05274
+    },
+    {
+      "start": "2024-03-31T04:00:00.000+03:00",
+      "price": 0.05284
+    },
+    {
+      "start": "2024-03-31T05:00:00.000+03:00",
+      "price": 0.05499
+    }
+  ]);
 });

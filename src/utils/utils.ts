@@ -19,8 +19,8 @@ export default {
     return Number(avg.toFixed(5)).toString();
   },
 
-  getPrice: function (inputPrice: number): string {
-    return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : constants.VAT)).toFixed(5);
+  getPrice: function (inputPrice: number, vat: number = constants.VAT): string {
+    return Number((Number(inputPrice) / 1000) * (Number(inputPrice) < 0 ? 1 : vat)).toFixed(5);
   },
 
   getCurrentPrice: function (prices: PriceRow[]) {

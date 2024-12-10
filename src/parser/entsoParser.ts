@@ -21,18 +21,24 @@ export default {
       const positionMap: Map<number, string> = new Map(
         periods.map((period) => [Number(period.position), utils.getPrice(period['price.amount'])]),
       );
-      let time = dateUtils.parseISODate(ts['Period']['timeInterval']['start']);
+      const startTime = dateUtils.parseISODate(ts['Period']['timeInterval']['start']);
+
+      // DST: mennään talviaikaan --> 25 tuntia (positions)
+      // DST: mennään kesäaikaan --> 23 tuntia
+      // DST, mutta huom. voi olla tyhjiä välissä
+      // Voi päätellä viimeisestä positionista (onko 25/23)
+      // TimeStepPosition = StartDateTimeofTimeInterval + (Resolution*(Pos −1))
 
       let price;
       for (let pos = 1; pos <= 24; pos++) {
         if (positionMap.has(pos)) {
           price = positionMap.get(pos) || '';
         }
+        const time = startTime.plus({ hours: pos - 1 })
         rows.push({
           start: `${time.toISO()}`,
           price: price,
         });
-        time = time.plus({ hours: 1 });
       }
     });
 

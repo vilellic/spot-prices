@@ -5,7 +5,7 @@ import dateUtils from '../utils/dateUtils';
 
 const fixedFakeDate = new Date('2024-12-04');
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
-/*
+
 test('Parse Entso-E API response', async () => {
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
@@ -396,28 +396,12 @@ test('Parse Entso-E API response', async () => {
     },
   ]);
 });
-*/
 
 test('Parse Entso-E API response', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2024-12-09'));
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse2.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
   const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
-
-  const todayHours = dateUtils.getTodayHours(priceRows);
-  console.log('today = ' + todayHours.length);
-
-  console.log(`all priceRows = ${JSON.stringify(priceRows, null, 2)}`)
-
-  // https://eepublicdownloads.entsoe.eu/clean-documents/EDI/Library/cim_based/Introduction_of_different_Timeseries_possibilities__curvetypes__with_ENTSO-E_electronic_document_v1.4.pdf
-
-  /*
-  [ 2024-12-09T17:03:12.659+02:00 ] Query period start = 
-    2024-12-07T00:00:00.000+02:00, end = 
-    2024-12-11T00:00:00.000+02:00
-  [ 2024-12-09T17:03:12.660+02:00 ] Querying ENTSO-E Rest API with url = https://web-api.tp.entsoe.eu/api?
-    documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=202412070000&periodEnd=202412110000
-  */
 
   expect(tomorrowHours.length).toBe(24);
 });

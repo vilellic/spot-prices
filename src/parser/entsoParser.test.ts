@@ -1,6 +1,7 @@
 import entsoParser from '../parser/entsoParser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import dateUtils from '../utils/dateUtils';
 
 const fixedFakeDate = new Date('2024-12-04');
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
@@ -394,4 +395,13 @@ test('Parse Entso-E API response', async () => {
       price: 0.01817,
     },
   ]);
+});
+
+test('Parse Entso-E API response', async () => {
+  jest.useFakeTimers().setSystemTime(new Date('2024-12-09'));
+  const xmlResponse = readFileSync(join(__dirname, 'mockResponse2.xml'), 'utf-8');
+  const priceRows = entsoParser.parseXML(xmlResponse);
+  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+
+  expect(tomorrowHours.length).toBe(24);
 });

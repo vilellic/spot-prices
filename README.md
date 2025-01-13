@@ -24,12 +24,34 @@ GET http://localhost:8089/
 Sample Response:
 ```json
 {
-  "prices": [
+  "info": {
+    "current": "0.00284",
+    "averageToday": "0.01716",
+    "averageTodayOffPeak": "0.04674",
+    "averageTodayPeak": "0.01337",
+    "tomorrowAvailable": true,
+    "averageTomorrow": "0.00605",
+    "averageTomorrowOffPeak": "0.00085",
+    "averageTomorrowPeak": "0.00667"
+  },
+  "today": [
     {
-      "timestamp": "2023-10-01T00:00:00Z",
-      "price": 45.67
+      "start": "2025-01-13T00:00:00.000+02:00",
+      "price": "0.05359"
     },
-    // More price entries...
+    {
+      "start": "2025-01-13T01:00:00.000+02:00",
+      "price": "0.02878"
+    },
+    {
+      "start": "2025-01-13T02:00:00.000+02:00",
+      "price": "0.03179"
+    },
+    {
+      "start": "2025-01-13T03:00:00.000+02:00",
+      "price": "0.02568"
+    },
+    // more entries...
   ]
 }
 ```

@@ -70,6 +70,25 @@ The application also includes a query endpoint for more specific data requests:
     - `hours=6`: Indicates 6 sequential hours are needed.
     - `startTime` and `endTime`: Unix timestamps defining the range to search within.
 
+- Sample response:
+  ```json
+  {
+    "hours": {
+      "list": ["0 Tue", "1 Tue", "2 Tue", "3 Tue", "4 Tue", "5 Tue"],
+      "start": "00",
+      "end": "06",
+      "startTime": "2025-01-14T00:00:00.000+02:00",
+      "endTime": "2025-01-14T06:00:00.000+02:00"
+    },
+    "info": {
+      "now": false,
+      "min": 0.00011,
+      "max": 0.00035,
+      "avg": 0.00024
+    }
+  }
+  ```
+
 ## Setup
 
 ### Using Docker Compose

@@ -60,7 +60,7 @@ Sample Response:
 
 The application also includes a query endpoint for more specific data requests:
 
-- **Example Links**: Available at [http://localhost:8089/links](http://localhost:8089/links).
+- **Example queries as links**: Available at [http://localhost:8089/links](http://localhost:8089/links).
 - **Query Example**: To query for the cheapest 6 sequential hours between two timestamps:
 
   ```http

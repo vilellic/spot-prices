@@ -94,6 +94,7 @@ npm start
   ```plaintext
   ENTSOE_API_KEY=your_api_key_here
   ```
+- [How to get Entso-E API key](https://uat-transparency.entsoe.eu/content/static_content/Static%20content/web%20api/how_to_get_security_token.html)
 
 ## Docker Compose File
 

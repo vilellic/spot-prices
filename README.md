@@ -103,7 +103,7 @@ For an easy setup, you can use Docker Compose:
 
 2. **Create a .env file in the root directory with your ENTSO-E API key**:
 ```plaintext
-ENTSOE_API_KEY=your_api_key_here
+ENTSOE_SECURITY_TOKEN=your_api_key_here
 ```
 3. **Run Docker Compose**:
 ```bash
@@ -133,7 +133,7 @@ npm start
 - **Environment Variables**: Uses `.env` for configuration. Here's what you'll need to set up:
 
   ```plaintext
-  ENTSOE_API_KEY=your_api_key_here
+  ENTSOE_SECURITY_TOKEN=your_api_key_here
   ```
 - [How to get Entso-E API key](https://uat-transparency.entsoe.eu/content/static_content/Static%20content/web%20api/how_to_get_security_token.html)
 
@@ -149,7 +149,7 @@ services:
       - 8089:8089
     environment:
       - TZ=Europe/Helsinki
-      - ENTSOE_API_KEY=${ENTSOE_API_KEY}
+      - ENTSOE_SECURITY_TOKEN=${ENTSOE_SECURITY_TOKEN}
     volumes:
       - '/etc/timezone:/etc/timezone:ro'
       - '/etc/localtime:/etc/localtime:ro'

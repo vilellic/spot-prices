@@ -464,11 +464,3 @@ test('DST winter --> summer', async () => {
     },
   ]);
 });
-
-test('Missing periods 2', async () => {
-  jest.useFakeTimers().setSystemTime(new Date('2025-01-14').setHours(15));
-  const xmlResponse = readFileSync(join(__dirname, 'mockResponse3.xml'), 'utf-8');
-  const priceRows = entsoParser.parseXML(xmlResponse);
-  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
-  console.log('Tomorrow hours = ' + JSON.stringify(tomorrowHours, null, 2));
-});

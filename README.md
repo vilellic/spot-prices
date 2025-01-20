@@ -6,7 +6,7 @@
 
 ## Features
 
-- **Daily Fetching**: Automatically retrieves the latest spot prices from [ENTSO-E](https://transparency.entsoe.eu/) once a day.
+- **Daily Fetching**: Automatically retrieves the latest spot prices from [ENTSO-E](https://transparency.entsoe.eu/) once a day. Uses Elering API as fallback.
 - **In-Memory Caching**: Stores the fetched data in memory for quick access.
 - **JSON API**: Provides access to the cached data via a simple JSON API.
 - **Persistent Storage**: Persists data to disk, allowing recovery of data if the application restarts or crashes.

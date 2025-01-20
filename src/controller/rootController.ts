@@ -1,5 +1,5 @@
 import NodeCache from 'node-cache';
-import { ControllerContext, getEmptySpotPrices, SpotPrices } from '../types/types';
+import { ControllerContext, EleringResponse, getEmptySpotPrices, PriceRow, SpotPrices } from '../types/types';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
@@ -60,6 +60,18 @@ export default {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
+
+        const yesterdayHoursMissingFromEntso = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
+        const todayHoursMissingFromEntso = dateUtils.getTodayHours(spotPrices.prices).length < 24;
+
+        if (yesterdayHoursMissingFromEntso || todayHoursMissingFromEntso) {
+          const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
+          const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
+          const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
+          const newSpotPrices: SpotPrices = { prices: filteredPrices };
+          spotPrices.prices = newSpotPrices.prices;
+        }
+
         if (spotPrices.prices.length > 0) {
           cache.set(constants.CACHED_NAME_PRICES, spotPrices);
         }
@@ -81,3 +93,34 @@ const getPricesFromEntsoe = async (start: DateTime, end: DateTime) => {
     return [];
   }
 };
+
+const getPricesFromElering = async (start: DateTime, end: DateTime) => {
+  const prices = [];
+
+  const eleringResponse = await fetchFromElering(start, end);
+  if (eleringResponse.success === true) {
+    for (let i = 0; i < eleringResponse.data.fi.length; i++) {
+      const priceRow: PriceRow = {
+        start: DateTime.fromSeconds(eleringResponse.data.fi[i].timestamp).toISO(),
+        price: Number(utils.getPrice(eleringResponse.data.fi[i].price)),
+      };
+      prices.push(priceRow);
+    }
+  }
+
+  return prices;
+};
+
+async function fetchFromElering(start: DateTime, end: DateTime) {
+  const url = `${constants.ELERING_API_PREFIX}/price?start=${start.toUTC().toISO()}&end=${end.toUTC().toISO()}`;
+  try {
+    console.log(`Querying Elering Rest API with url = ${url}`);
+    const res = await fetch(url, { method: 'Get' });
+    const json = await res.json();
+    console.log(url);
+    return json as Promise<EleringResponse>;
+  } catch (error) {
+    console.log(error);
+    return { success: false } as EleringResponse;
+  }
+}

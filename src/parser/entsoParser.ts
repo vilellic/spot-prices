@@ -31,7 +31,7 @@ export default {
         if (positionMap.has(pos)) {
           price = positionMap.get(pos) || '';
         }
-        const time = startTime.plus({ hours: pos - 1 })
+        const time = startTime.plus({ hours: pos - 1 });
         rows.push({
           start: `${time.toISO()}`,
           price: price,

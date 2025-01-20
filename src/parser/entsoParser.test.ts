@@ -420,21 +420,21 @@ test('DST summer --> winter', async () => {
   const firstHours = tomorrowHours.slice(2, 6);
   expect(firstHours).toStrictEqual([
     {
-      "start": "2023-10-29T02:00:00.000+03:00",
-      "price": 0.03412
+      start: '2023-10-29T02:00:00.000+03:00',
+      price: 0.03412,
     },
     {
-      "start": "2023-10-29T03:00:00.000+03:00",
-      "price": 0.0318
+      start: '2023-10-29T03:00:00.000+03:00',
+      price: 0.0318,
     },
     {
-      "start": "2023-10-29T03:00:00.000+02:00",
-      "price": 0.02805
+      start: '2023-10-29T03:00:00.000+02:00',
+      price: 0.02805,
     },
     {
-      "start": "2023-10-29T04:00:00.000+02:00",
-      "price": 0.02654
-    }
+      start: '2023-10-29T04:00:00.000+02:00',
+      price: 0.02654,
+    },
   ]);
 });
 
@@ -447,20 +447,28 @@ test('DST winter --> summer', async () => {
   const firstHours = tomorrowHours.slice(1, 5);
   expect(firstHours).toStrictEqual([
     {
-      "start": "2024-03-31T01:00:00.000+02:00",
-      "price": 0.05282
+      start: '2024-03-31T01:00:00.000+02:00',
+      price: 0.05282,
     },
     {
-      "start": "2024-03-31T02:00:00.000+02:00",
-      "price": 0.05274
+      start: '2024-03-31T02:00:00.000+02:00',
+      price: 0.05274,
     },
     {
-      "start": "2024-03-31T04:00:00.000+03:00",
-      "price": 0.05284
+      start: '2024-03-31T04:00:00.000+03:00',
+      price: 0.05284,
     },
     {
-      "start": "2024-03-31T05:00:00.000+03:00",
-      "price": 0.05499
-    }
+      start: '2024-03-31T05:00:00.000+03:00',
+      price: 0.05499,
+    },
   ]);
+});
+
+test('Missing periods 2', async () => {
+  jest.useFakeTimers().setSystemTime(new Date('2025-01-14').setHours(15));
+  const xmlResponse = readFileSync(join(__dirname, 'mockResponse3.xml'), 'utf-8');
+  const priceRows = entsoParser.parseXML(xmlResponse);
+  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  console.log('Tomorrow hours = ' + JSON.stringify(tomorrowHours, null, 2));
 });

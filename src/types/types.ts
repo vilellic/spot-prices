@@ -86,3 +86,16 @@ export interface EntsoTimeSeries {
   position: number;
   'price.amount': number;
 }
+export interface EleringResponseEntry {
+  timestamp: number;
+  price: number;
+}
+export interface EleringResponse {
+  success: boolean;
+  data: {
+    ee: EleringResponseEntry[];
+    fi: EleringResponseEntry[];
+    lv: EleringResponseEntry[];
+    lt: EleringResponseEntry[];
+  };
+}

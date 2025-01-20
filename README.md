@@ -135,7 +135,7 @@ npm start
   ```plaintext
   ENTSOE_SECURITY_TOKEN=your_api_key_here
   ```
-- [How to get Entso-E API key](https://uat-transparency.entsoe.eu/content/static_content/Static%20content/web%20api/how_to_get_security_token.html)
+- [How to get Entso-E API key](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token)
 
 ## Docker Compose File
 

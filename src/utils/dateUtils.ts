@@ -28,9 +28,17 @@ export default {
     });
   },
 
-  isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
-    const date = this.getDateFromHourStarting(0, 14);
+  isTimeAfter: function (now: Date = new Date(), hour: number) {
+    const date = this.getDateFromHourStarting(0, hour);
     return DateTime.fromJSDate(now).valueOf() >= date.valueOf();
+  },
+
+  isTimeToUseFallback: function (now: Date = new Date()) {
+    return this.isTimeAfter(now, 15);
+  },
+
+  isTimeToGetTomorrowPrices: function (now: Date = new Date()) {
+    return this.isTimeAfter(now, 14);
   },
 
   getDayHours: function (prices: PriceRow[], offset: number) {

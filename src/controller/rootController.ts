@@ -63,8 +63,11 @@ export default {
 
         const yesterdayHoursMissingFromEntso = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
         const todayHoursMissingFromEntso = dateUtils.getTodayHours(spotPrices.prices).length < 24;
+        const isTomorrowHoursMissingFromEntso =
+          dateUtils.getTomorrowHours(spotPrices.prices).length < 23 && dateUtils.isTimeToUseFallback();
 
-        if (yesterdayHoursMissingFromEntso || todayHoursMissingFromEntso) {
+        if (yesterdayHoursMissingFromEntso || todayHoursMissingFromEntso || isTomorrowHoursMissingFromEntso) {
+          console.log('Some hours are missing from ENTSO-E response. Trying to fetch them from Elering ...');
           const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
           const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
           const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));

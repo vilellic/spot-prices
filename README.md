@@ -22,6 +22,7 @@ GET http://localhost:8089/
 ```
 
 Sample Response:
+
 ```json
 {
   "info": {
@@ -76,9 +77,10 @@ The application also includes a query endpoint for more specific data requests:
   ```http
   GET http://localhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1736794800&endTime=1736881200
   ```
-    - `queryMode=SequentialPrices`: Specifies to find sequential hours.
-    - `hours=6`: Indicates 6 sequential hours are needed.
-    - `startTime` and `endTime`: Unix timestamps defining the range to search within.
+
+  - `queryMode=SequentialPrices`: Specifies to find sequential hours.
+  - `hours=6`: Indicates 6 sequential hours are needed.
+  - `startTime` and `endTime`: Unix timestamps defining the range to search within.
 
 - Sample response:
   ```json
@@ -106,34 +108,43 @@ The application also includes a query endpoint for more specific data requests:
 For an easy setup, you can use Docker Compose:
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/vilellic/spot-prices.git
    cd spot-prices
    ```
 
 2. **Create a .env file in the root directory with your ENTSO-E API key**:
+
 ```plaintext
 ENTSOE_SECURITY_TOKEN=your_api_key_here
 ```
+
 3. **Run Docker Compose**:
+
 ```bash
 docker-compose up -d
 ```
 
-This command will build the image if necessary, start the container, and run it in detached mode. 
+This command will build the image if necessary, start the container, and run it in detached mode.
 Check if the service is running by visiting the API endpoint or checking Docker logs:
+
 ```bash
 docker-compose logs -f
 ```
 
 ### Running Locally Without Docker
+
 If you prefer not to use Docker:
 
 Install dependencies:
+
 ```bash
 npm install
 ```
+
 Run the application:
+
 ```bash
 npm start
 ```
@@ -145,6 +156,7 @@ npm start
   ```plaintext
   ENTSOE_SECURITY_TOKEN=your_api_key_here
   ```
+
 - [How to get Entso-E API key](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token)
 
 ## Docker Compose File

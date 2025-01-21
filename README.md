@@ -52,6 +52,16 @@ Sample Response:
       "price": "0.02568"
     },
     // more entries...
+  "tomorrow": [
+    {
+      "start": "2025-01-14T00:00:00.000+02:00",
+      "price": "0.02412"
+    },
+    {
+      "start": "2025-01-14T01:00:00.000+02:00",
+      "price": "0.01019"
+    },
+    // more entries...
   ]
 }
 ```

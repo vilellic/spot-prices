@@ -56,8 +56,6 @@ export default {
     );
     const result = [] as PriceRowWithTransfer[];
 
-    console.log('numberOfEntries', numberOfEntries);
-
     if (minWeightedResult !== undefined) {
       const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(rows, minWeightedResult.start);
       let runningIndex = indexOfWeightedResultFirstHour || 0;
@@ -67,7 +65,6 @@ export default {
     }
 
     console.log('result', result);
-
     return result;
   },
 };

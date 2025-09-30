@@ -76,21 +76,15 @@ export default {
     const lowestPrice = Math.min(...onlyPrices);
     const highestPrice = Math.max(...onlyPrices);
 
-    /*
-    const hoursSet = new Set(
-      resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(new Date(entry.start))),
-    );
-    const hours = [...hoursSet];
-    */
-
-    // const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
-    // const currentHourIsInList = hours.includes(currentHourDateStr);
-
-    const currentHourIsInList = false;
-
     const startTimeIso = resultArray.at(0)?.start;
     const endTimeIso = resultArray.at(-1)?.start;
 
+    const currentHourIsInList =
+      (startTimeIso &&
+        endTimeIso &&
+        DateTime.now() > DateTime.fromISO(startTimeIso) &&
+        DateTime.now() < DateTime.fromISO(endTimeIso)) ||
+      false;
     const hoursObject: Hours = {
       startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
       endTime: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ minutes: 15 }).toISO() || 'unavailable' : 'unavailable',

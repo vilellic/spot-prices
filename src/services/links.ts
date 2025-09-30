@@ -79,7 +79,7 @@ const createUrl = (
   numberOfHours?: number,
   transferPrices?: TransferPrices,
 ): string => {
-  const noHoursPars = numberOfHours && queryMode !== QueryMode.AboveAveragePrices ? `&hours=${numberOfHours}` : '';
+  const noHoursPars = numberOfHours && `&hours=${numberOfHours}`;
   const transferPricesPars = transferPrices
     ? `&offPeakTransferPrice=${transferPrices.offPeakTransfer}&peakTransferPrice=${transferPrices.peakTransfer}`
     : '';

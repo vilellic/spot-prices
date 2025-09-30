@@ -2,6 +2,7 @@ import NodeCache from 'node-cache';
 
 export interface SpotPrices {
   prices: PriceRow[];
+  entsoPrices?: PriceRow[];
 }
 
 export const getEmptySpotPrices = (): SpotPrices => ({
@@ -40,11 +41,8 @@ export interface HoursContainer {
 }
 
 export interface Hours {
-  list: string[];
-  start?: string;
-  end?: string;
-  startTime?: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface PriceRow {

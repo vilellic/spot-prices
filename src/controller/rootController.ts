@@ -59,7 +59,7 @@ export default {
       if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
-        spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
+        spotPrices.entsoPrices = await getPricesFromEntsoe(periodStart, periodEnd);
 
         const yesterdayHoursMissingFromEntso = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
         const todayHoursMissingFromEntso = dateUtils.getTodayHours(spotPrices.prices).length < 24;

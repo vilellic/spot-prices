@@ -21,9 +21,6 @@ interface GetHoursParameters {
 }
 
 export enum QueryMode {
-  LowestPrices = 'LowestPrices',
-  HighestPrices = 'HighestPrices',
-  AboveAveragePrices = 'AboveAveragePrices',
   WeightedPrices = 'WeightedPrices',
   SequentialPrices = 'SequentialPrices',
 }
@@ -37,19 +34,11 @@ export default {
     transferPrices,
   }: GetHoursParameters): HoursContainer | undefined {
     // Validate queryMode parameter
-    if (
-      ![
-        QueryMode.LowestPrices,
-        QueryMode.HighestPrices,
-        QueryMode.AboveAveragePrices,
-        QueryMode.WeightedPrices,
-        QueryMode.SequentialPrices,
-      ].includes(queryMode)
-    ) {
+    if (![QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
       return undefined;
     }
 
-    if (queryMode !== QueryMode.AboveAveragePrices && numberOfHours === undefined) {
+    if (numberOfHours === undefined) {
       return undefined;
     }
 
@@ -81,27 +70,6 @@ export default {
         useTransferPrices: withTransferPrices,
         queryMode: queryMode,
       });
-    } else {
-      if (queryMode === QueryMode.AboveAveragePrices) {
-        const avgPriceAll = withTransferPrices
-          ? Number(utils.getAveragePriceWithTransfer(timeFilteredPrices))
-          : Number(utils.getAveragePrice(timeFilteredPrices));
-        resultArray = timeFilteredPrices.filter((row: PriceRowWithTransfer) => {
-          return withTransferPrices ? row.priceWithTransfer > avgPriceAll : row.price > avgPriceAll;
-        });
-      } else {
-        // LowestPrices / HighestPrices
-        timeFilteredPrices.sort((a, b) => {
-          return withTransferPrices ? a.priceWithTransfer - b.priceWithTransfer : a.price - b.price;
-        });
-
-        if (queryMode === QueryMode.HighestPrices) {
-          timeFilteredPrices.reverse();
-        }
-
-        resultArray = timeFilteredPrices.slice(0, numberOfHours);
-        dateUtils.sortByDate(resultArray);
-      }
     }
 
     const onlyPrices = resultArray.map((entry: PriceRow) => entry.price);
@@ -118,21 +86,10 @@ export default {
 
     const startTimeIso = resultArray.at(0)?.start;
     const endTimeIso = resultArray.at(-1)?.start;
-    const startEndFields =
-      queryMode === QueryMode.SequentialPrices || queryMode === QueryMode.WeightedPrices
-        ? {
-            start: startTimeIso ? DateTime.fromISO(startTimeIso).toFormat('HH') : '--',
-            end: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toFormat('HH') : '--',
-            startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
-            endTime: endTimeIso
-              ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toISO() || 'unavailable'
-              : 'unavailable',
-          }
-        : undefined;
 
     const hoursObject: Hours = {
-      list: [...hours],
-      ...startEndFields,
+      startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
+      endTime: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toISO() || 'unavailable' : 'unavailable',
     };
 
     return {

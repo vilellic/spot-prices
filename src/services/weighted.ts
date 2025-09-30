@@ -17,25 +17,27 @@ export default {
     useTransferPrices,
     queryMode,
   }: WeightedPricesParameters): PriceRowWithTransfer[] {
+    const numberOfEntries = numberOfHours * 4;
+
     const weightArray = [] as number[];
     if (queryMode === QueryMode.WeightedPrices) {
-      const weightDivider = 10 / numberOfHours;
+      const weightDivider = 10 / numberOfEntries;
       let index = 0;
       for (let i = 10; i > weightDivider; i = i - weightDivider) {
         weightArray[index] = i;
         index++;
       }
-      if (weightArray.length === numberOfHours - 1) {
+      if (weightArray.length === numberOfEntries - 1) {
         weightArray.push(weightDivider);
       }
     } else if (queryMode === QueryMode.SequentialPrices) {
-      for (let w = 0; w < numberOfHours - 1; w++) {
+      for (let w = 0; w < numberOfEntries - 1; w++) {
         weightArray.push(2);
       }
       weightArray.push(1.75);
     }
 
-    const lastTestIndex = priceList.length - numberOfHours;
+    const lastTestIndex = priceList.length - numberOfEntries;
     const weightedResults = [];
     for (let t = 0; t < priceList.length; t++) {
       if (t > lastTestIndex) {
@@ -43,7 +45,7 @@ export default {
       } else {
         weightedResults[t] = {
           start: priceList[t].start,
-          weightedResult: calculateWeightedSum(weightArray, numberOfHours, priceList, t, useTransferPrices),
+          weightedResult: calculateWeightedSum(weightArray, numberOfEntries, priceList, t, useTransferPrices),
         };
       }
     }
@@ -57,7 +59,7 @@ export default {
     if (minWeightedResult !== undefined) {
       const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(priceList, minWeightedResult.start);
       let runningIndex = indexOfWeightedResultFirstHour || 0;
-      for (let a = 0; a < numberOfHours; a++) {
+      for (let a = 0; a < numberOfEntries; a++) {
         hoursArray.push(priceList[runningIndex++]);
       }
     }
@@ -68,13 +70,13 @@ export default {
 
 const calculateWeightedSum = (
   weightArray: number[],
-  numberOfHours: number,
+  numberOfEntries: number,
   priceList: PriceRowWithTransfer[],
   index: number,
   useTransferPrices: boolean,
 ): number => {
   let result = 0;
-  for (let i = 0; i < numberOfHours; i++) {
+  for (let i = 0; i < numberOfEntries; i++) {
     const price = useTransferPrices ? priceList[index + i].priceWithTransfer : priceList[index + i].price;
     result += price * weightArray[i];
   }

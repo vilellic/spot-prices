@@ -5,7 +5,7 @@ import dateUtils from '../utils/dateUtils';
 
 interface WeightedPricesParameters {
   numberOfHours: number;
-  priceList: PriceRowWithTransfer[];
+  rows: PriceRowWithTransfer[];
   useTransferPrices: boolean;
   queryMode: QueryMode;
 }
@@ -13,7 +13,7 @@ interface WeightedPricesParameters {
 export default {
   getWeightedPrices: function ({
     numberOfHours,
-    priceList,
+    rows,
     useTransferPrices,
     queryMode,
   }: WeightedPricesParameters): PriceRowWithTransfer[] {
@@ -37,15 +37,15 @@ export default {
       weightArray.push(1.75);
     }
 
-    const lastTestIndex = priceList.length - numberOfEntries;
+    const lastTestIndex = rows.length - numberOfEntries;
     const weightedResults = [];
-    for (let t = 0; t < priceList.length; t++) {
+    for (let t = 0; t < rows.length; t++) {
       if (t > lastTestIndex) {
         break;
       } else {
         weightedResults[t] = {
-          start: priceList[t].start,
-          weightedResult: calculateWeightedSum(weightArray, numberOfEntries, priceList, t, useTransferPrices),
+          start: rows[t].start,
+          weightedResult: calculateWeightedSum(weightArray, numberOfEntries, rows, t, useTransferPrices),
         };
       }
     }
@@ -54,30 +54,34 @@ export default {
       (min, w) => (w.weightedResult < min.weightedResult ? w : min),
       weightedResults[0],
     );
-    const hoursArray = [] as PriceRowWithTransfer[];
+    const result = [] as PriceRowWithTransfer[];
+
+    console.log('numberOfEntries', numberOfEntries);
 
     if (minWeightedResult !== undefined) {
-      const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(priceList, minWeightedResult.start);
+      const indexOfWeightedResultFirstHour = dateUtils.findIndexWithDate(rows, minWeightedResult.start);
       let runningIndex = indexOfWeightedResultFirstHour || 0;
       for (let a = 0; a < numberOfEntries; a++) {
-        hoursArray.push(priceList[runningIndex++]);
+        result.push(rows[runningIndex++]);
       }
     }
 
-    return hoursArray;
+    console.log('result', result);
+
+    return result;
   },
 };
 
 const calculateWeightedSum = (
   weightArray: number[],
   numberOfEntries: number,
-  priceList: PriceRowWithTransfer[],
+  rows: PriceRowWithTransfer[],
   index: number,
   useTransferPrices: boolean,
 ): number => {
   let result = 0;
   for (let i = 0; i < numberOfEntries; i++) {
-    const price = useTransferPrices ? priceList[index + i].priceWithTransfer : priceList[index + i].price;
+    const price = useTransferPrices ? rows[index + i].priceWithTransfer : rows[index + i].price;
     result += price * weightArray[i];
   }
   return result;

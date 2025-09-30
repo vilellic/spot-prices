@@ -46,17 +46,17 @@ export default {
 
     const withTransferPrices = transferPrices !== undefined;
 
-    const timeFilteredPrices: PriceRowWithTransfer[] = pricesFlat.filter(
+    const timeFilteredRows: PriceRowWithTransfer[] = pricesFlat.filter(
       (entry) =>
         dateUtils.parseISODate(entry.start).toMillis() >= dateRange.start.getTime() &&
         dateUtils.parseISODate(entry.start).toMillis() < dateRange.end.getTime(),
     );
 
     if (withTransferPrices) {
-      for (let f = 0; f < timeFilteredPrices.length; f++) {
-        const hour = new Date(timeFilteredPrices[f].start).getHours();
-        timeFilteredPrices[f].priceWithTransfer =
-          Number(timeFilteredPrices[f].price) +
+      for (let f = 0; f < timeFilteredRows.length; f++) {
+        const hour = new Date(timeFilteredRows[f].start).getHours();
+        timeFilteredRows[f].priceWithTransfer =
+          Number(timeFilteredRows[f].price) +
           (hour >= 22 || hour < 7 ? transferPrices.offPeakTransfer : transferPrices.peakTransfer);
       }
     }
@@ -66,7 +66,7 @@ export default {
     if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode) && numberOfHours) {
       resultArray = weighted.getWeightedPrices({
         numberOfHours: numberOfHours,
-        priceList: timeFilteredPrices,
+        rows: timeFilteredRows,
         useTransferPrices: withTransferPrices,
         queryMode: queryMode,
       });
@@ -76,20 +76,24 @@ export default {
     const lowestPrice = Math.min(...onlyPrices);
     const highestPrice = Math.max(...onlyPrices);
 
+    /*
     const hoursSet = new Set(
       resultArray.map((entry: PriceRow) => dateUtils.getWeekdayAndHourStr(new Date(entry.start))),
     );
     const hours = [...hoursSet];
+    */
 
-    const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
-    const currentHourIsInList = hours.includes(currentHourDateStr);
+    // const currentHourDateStr = dateUtils.getWeekdayAndHourStr(new Date());
+    // const currentHourIsInList = hours.includes(currentHourDateStr);
+
+    const currentHourIsInList = false;
 
     const startTimeIso = resultArray.at(0)?.start;
     const endTimeIso = resultArray.at(-1)?.start;
 
     const hoursObject: Hours = {
       startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',
-      endTime: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ hours: 1 }).toISO() || 'unavailable' : 'unavailable',
+      endTime: endTimeIso ? DateTime.fromISO(endTimeIso).plus({ minutes: 15 }).toISO() || 'unavailable' : 'unavailable',
     };
 
     return {

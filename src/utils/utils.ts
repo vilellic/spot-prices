@@ -1,6 +1,5 @@
 import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '../types/types';
 import constants from '../types/constants';
-import dateUtils from './dateUtils';
 import NodeCache from 'node-cache';
 import { DateTime } from 'luxon';
 
@@ -24,9 +23,12 @@ export default {
   },
 
   getCurrentPrice: function (prices: PriceRow[]) {
-    const currentStartHour = DateTime.now().set({ minute: 0, second: 0, millisecond: 0 }).toISO();
-    const matchingPriceRow = prices.find((price) => DateTime.fromISO(price.start).toISO() === currentStartHour);
-    return matchingPriceRow?.price;
+    const now = DateTime.now();
+    const sortedPrices = [...prices].sort(
+      (a, b) => DateTime.fromISO(b.start).toMillis() - DateTime.fromISO(a.start).toMillis(),
+    );
+    const currentPriceRow = sortedPrices.find((price) => DateTime.fromISO(price.start) <= now);
+    return currentPriceRow!.price;
   },
 
   getSpotPricesFromCache: function (cache: NodeCache): SpotPrices {
@@ -34,16 +36,13 @@ export default {
   },
 
   dateIsInPricesList: function (priceList: PriceRow[], date: Date): boolean {
-    if (priceList.length === 0) return false;
+    const targetDateTime = DateTime.fromJSDate(date);
 
-    const start = dateUtils.parseISODate(priceList[0].start);
-    const end = dateUtils
-      .parseISODate(priceList[priceList.length - 1].start)
-      .plus({ hours: 1 })
-      .minus({ milliseconds: 1 });
-
-    const dateValue = date.valueOf();
-    return dateValue >= start.valueOf() && dateValue <= end.valueOf();
+    return priceList.some((price) => {
+      const startDateTime = DateTime.fromISO(price.start);
+      const endDateTime = startDateTime.plus({ minutes: 15 });
+      return targetDateTime >= startDateTime && targetDateTime < endDateTime;
+    });
   },
 
   removeDuplicatesAndSort: function (prices: PriceRow[]): PriceRow[] {

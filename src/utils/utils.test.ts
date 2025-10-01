@@ -31,9 +31,9 @@ test('test getPrice VAT with negative price', () => {
 });
 
 test('test getAveragePrice', () => {
-  expect(utils.getAveragePrice(dateUtils.getTodayHours(spotPrices.prices))).toBe('0.01185');
-  expect(utils.getAveragePrice(dateUtils.getYesterdayHours(spotPrices.prices))).toBe('0.13479');
-  expect(utils.getAveragePrice(dateUtils.getTomorrowHours(spotPrices.prices))).toBe('0.11482');
+  expect(utils.getAveragePrice(dateUtils.getTodayTimeSlots(spotPrices.prices))).toBe('0.01185');
+  expect(utils.getAveragePrice(dateUtils.getYesterdayTimeSlots(spotPrices.prices))).toBe('0.13479');
+  expect(utils.getAveragePrice(dateUtils.getTomorrowTimeSlots(spotPrices.prices))).toBe('0.11482');
 });
 
 test('test getCurrentPriceFromToday', () => {
@@ -42,7 +42,7 @@ test('test getCurrentPriceFromToday', () => {
 });
 
 test('test time is in list range', () => {
-  const todayHours = dateUtils.getTodayHours(spotPrices.prices);
+  const todayHours = dateUtils.getTodayTimeSlots(spotPrices.prices);
   expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toJSDate())).toBe(
     true,
   );

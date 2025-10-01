@@ -15,7 +15,7 @@ export default {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
 
     const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
-    const tomorrowHours = dateUtils.getTomorrowHours(cachedPrices.prices);
+    const tomorrowHours = dateUtils.getTomorrowTimeSlots(cachedPrices.prices);
     const tomorrowAvailable = tomorrowHours.length >= 23;
     const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(tomorrowHours) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
@@ -28,7 +28,7 @@ export default {
     const prices: PricesContainer = {
       info: {
         current: `${currentPrice?.toFixed(5)}`,
-        averageToday: utils.getAveragePrice(dateUtils.getTodayHours(cachedPrices.prices)),
+        averageToday: utils.getAveragePrice(dateUtils.getTodayTimeSlots(cachedPrices.prices)),
         averageTodayOffPeak: utils.getAveragePrice(dateUtils.getTodayOffPeakHours(cachedPrices)),
         averageTodayPeak: utils.getAveragePrice(dateUtils.getTodayPeakHours(cachedPrices)),
         tomorrowAvailable: tomorrowAvailable,
@@ -37,7 +37,7 @@ export default {
         ...avgTomorrowPeakArray,
       },
       today: dateUtils
-        .getTodayHours(cachedPrices.prices)
+        .getTodayTimeSlots(cachedPrices.prices)
         .map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
       tomorrow: tomorrowHours.map((row) => ({ start: row.start, price: row.price.toFixed(5) })),
     };
@@ -51,20 +51,25 @@ export default {
         ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
         : getEmptySpotPrices();
 
-      const yesterdayHoursMissing = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
-      const todayHoursMissing = dateUtils.getTodayHours(spotPrices.prices).length < 24;
+      const yesterdayHoursMissing =
+        dateUtils.getYesterdayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
+      const todayHoursMissing = dateUtils.getTodayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
       const tomorrowHoursMissing =
-        dateUtils.getTomorrowHours(spotPrices.prices).length < 23 && dateUtils.isTimeToGetTomorrowPrices();
+        dateUtils.getTomorrowTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY - 4 &&
+        dateUtils.isTimeToGetTomorrowPrices();
 
       if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
-        spotPrices.entsoPrices = await getPricesFromEntsoe(periodStart, periodEnd);
+        spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
 
-        const yesterdayHoursMissingFromEntso = dateUtils.getYesterdayHours(spotPrices.prices).length < 24;
-        const todayHoursMissingFromEntso = dateUtils.getTodayHours(spotPrices.prices).length < 24;
+        const yesterdayHoursMissingFromEntso =
+          dateUtils.getYesterdayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
+        const todayHoursMissingFromEntso =
+          dateUtils.getTodayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
         const isTomorrowHoursMissingFromEntso =
-          dateUtils.getTomorrowHours(spotPrices.prices).length < 23 && dateUtils.isTimeToUseFallback();
+          dateUtils.getTomorrowTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY - 4 &&
+          dateUtils.isTimeToUseFallback();
 
         if (yesterdayHoursMissingFromEntso || todayHoursMissingFromEntso || isTomorrowHoursMissingFromEntso) {
           console.log('Some hours are missing from ENTSO-E response. Trying to fetch them from Elering ...');

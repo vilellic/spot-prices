@@ -401,9 +401,9 @@ test('Missing periods', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2024-12-09'));
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse2.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
-  const yesterdayHours = dateUtils.getYesterdayHours(priceRows);
-  const todayHours = dateUtils.getTodayHours(priceRows);
-  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  const yesterdayHours = dateUtils.getYesterdayTimeSlots(priceRows);
+  const todayHours = dateUtils.getTodayTimeSlots(priceRows);
+  const tomorrowHours = dateUtils.getTomorrowTimeSlots(priceRows);
   expect(yesterdayHours.length).toBe(24);
   expect(todayHours.length).toBe(24);
   expect(tomorrowHours.length).toBe(24);
@@ -413,8 +413,8 @@ test('DST summer --> winter', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2023-10-28').setHours(3));
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse_dst_winter.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
-  const todayHours = dateUtils.getTodayHours(priceRows);
-  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  const todayHours = dateUtils.getTodayTimeSlots(priceRows);
+  const tomorrowHours = dateUtils.getTomorrowTimeSlots(priceRows);
   expect(todayHours.length).toBe(23);
   expect(tomorrowHours.length).toBe(25);
   const firstHours = tomorrowHours.slice(2, 6);
@@ -442,7 +442,7 @@ test('DST winter --> summer', async () => {
   jest.useFakeTimers().setSystemTime(new Date('2024-03-30').setHours(3));
   const xmlResponse = readFileSync(join(__dirname, 'mockResponse_dst_summer.xml'), 'utf-8');
   const priceRows = entsoParser.parseXML(xmlResponse);
-  const tomorrowHours = dateUtils.getTomorrowHours(priceRows);
+  const tomorrowHours = dateUtils.getTomorrowTimeSlots(priceRows);
   expect(tomorrowHours.length).toBe(23);
   const firstHours = tomorrowHours.slice(1, 5);
   expect(firstHours).toStrictEqual([

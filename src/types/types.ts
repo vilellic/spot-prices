@@ -2,7 +2,6 @@ import NodeCache from 'node-cache';
 
 export interface SpotPrices {
   prices: PriceRow[];
-  entsoPrices?: PriceRow[];
 }
 
 export const getEmptySpotPrices = (): SpotPrices => ({

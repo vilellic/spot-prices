@@ -31,21 +31,21 @@ test('test is it time to get tomorrow prices', () => {
 });
 
 test('get yesterday hours', () => {
-  expect(dateUtils.getYesterdayHours(spotPrices.prices)[0]).toStrictEqual({
+  expect(dateUtils.getYesterdayTimeSlots(spotPrices.prices)[0]).toStrictEqual({
     start: '2023-09-11T00:00:00.000+03:00',
     price: '0.01879',
   });
 });
 
 test('get today hours', () => {
-  expect(dateUtils.getTodayHours(spotPrices.prices)[0]).toStrictEqual({
+  expect(dateUtils.getTodayTimeSlots(spotPrices.prices)[0]).toStrictEqual({
     start: '2023-09-12T00:00:00.000+03:00',
     price: '-0.00149',
   });
 });
 
 test('get tomorrow hours', () => {
-  expect(dateUtils.getTomorrowHours(spotPrices.prices)[0]).toStrictEqual({
+  expect(dateUtils.getTomorrowTimeSlots(spotPrices.prices)[0]).toStrictEqual({
     start: '2023-09-13T00:00:00.000+03:00',
     price: '0.01448',
   });

@@ -2,6 +2,7 @@ import { PriceRow } from '../types/types';
 import { EntsoTimeSeries } from '../types/types';
 import dateUtils from '../utils/dateUtils';
 import utils from '../utils/utils';
+import c from '../types/constants';
 import parser from 'fast-xml-parser';
 
 interface PriceRowForParsing {
@@ -27,11 +28,11 @@ export default {
       // https://eepublicdownloads.entsoe.eu/clean-documents/EDI/Library/cim_based/Introduction_of_different_Timeseries_possibilities__curvetypes__with_ENTSO-E_electronic_document_v1.4.pdf
 
       let price;
-      for (let pos = 1; pos <= 24; pos++) {
+      for (let pos = 1; pos <= c.TIME_SLOTS_IN_DAY; pos++) {
         if (positionMap.has(pos)) {
           price = positionMap.get(pos) || '';
         }
-        const time = startTime.plus({ hours: pos - 1 });
+        const time = startTime.plus({ minutes: pos * 15 });
         rows.push({
           start: `${time.toISO()}`,
           price: price,

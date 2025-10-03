@@ -2,6 +2,7 @@ import { getEmptySpotPrices, PriceRow, PriceRowWithTransfer, SpotPrices } from '
 import constants from '../types/constants';
 import NodeCache from 'node-cache';
 import { DateTime } from 'luxon';
+import dateUtils from '../utils/dateUtils';
 
 export default {
   getAveragePrice: function (pricesList: PriceRow[]) {
@@ -52,5 +53,22 @@ export default {
     });
     const uniqueArray = Array.from(uniqueItems.values());
     return uniqueArray.sort((a, b) => DateTime.fromISO(a.start).valueOf() - DateTime.fromISO(b.start).valueOf());
+  },
+
+  checkArePricesMissing: function (prices: PriceRow[], tomorrowCondition: boolean): boolean {
+    const yesterdayHoursMissing = dateUtils.getYesterdayTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY;
+    const todayHoursMissing = dateUtils.getTodayTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY;
+    const tomorrowHoursMissing =
+      dateUtils.getTomorrowTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY - constants.TIME_SLOTS_IN_HOUR &&
+      tomorrowCondition;
+    const missing = yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing;
+    if (missing && dateUtils.getTodayTimeSlots(prices).length > 0) {
+      console.debug('yesterday time slots = ', dateUtils.getYesterdayTimeSlots(prices).length);
+      console.debug('today time slots = ', dateUtils.getTodayTimeSlots(prices).length);
+      if (tomorrowCondition) {
+        console.debug('tomorrow time slots = ', dateUtils.getTomorrowTimeSlots(prices).length);
+      }
+    }
+    return missing;
   },
 };

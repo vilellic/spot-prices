@@ -51,35 +51,25 @@ export default {
         ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
         : getEmptySpotPrices();
 
-      const yesterdayHoursMissing =
-        dateUtils.getYesterdayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
-      const todayHoursMissing = dateUtils.getTodayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
-      const tomorrowHoursMissing =
-        dateUtils.getTomorrowTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY - 4 &&
-        dateUtils.isTimeToGetTomorrowPrices();
-
-      if (yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing) {
+      const missingHours = utils.checkArePricesMissing(spotPrices.prices, dateUtils.isTimeToGetTomorrowPrices());
+      if (missingHours) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
 
-        const yesterdayHoursMissingFromEntso =
-          dateUtils.getYesterdayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
-        const todayHoursMissingFromEntso =
-          dateUtils.getTodayTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY;
-        const isTomorrowHoursMissingFromEntso =
-          dateUtils.getTomorrowTimeSlots(spotPrices.prices).length < constants.TIME_SLOTS_IN_DAY - 4 &&
-          dateUtils.isTimeToUseFallback();
-
-        if (yesterdayHoursMissingFromEntso || todayHoursMissingFromEntso || isTomorrowHoursMissingFromEntso) {
+        const missingHoursFromEntso = utils.checkArePricesMissing(spotPrices.prices, dateUtils.isTimeToUseFallback());
+        if (missingHoursFromEntso) {
           console.log('Some hours are missing from ENTSO-E response. Trying to fetch them from Elering ...');
           const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
           const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
           const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
           const newSpotPrices: SpotPrices = { prices: filteredPrices };
-          spotPrices.prices = newSpotPrices.prices;
+          if (!utils.checkArePricesMissing(newSpotPrices.prices, dateUtils.isTimeToGetTomorrowPrices())) {
+            spotPrices.prices = newSpotPrices.prices;
+          } else {
+            console.warn('There is still missing data .. skipping update');
+          }
         }
-
         if (spotPrices.prices.length > 0) {
           cache.set(constants.CACHED_NAME_PRICES, spotPrices);
         }

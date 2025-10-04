@@ -16,7 +16,7 @@ export default {
 
     const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
     const tomorrowHours = dateUtils.getTomorrowTimeSlots(cachedPrices.prices);
-    const tomorrowAvailable = tomorrowHours.length >= 23;
+    const tomorrowAvailable = tomorrowHours.length >= constants.TIME_SLOTS_IN_DAY - constants.TIME_SLOTS_IN_HOUR;
     const avgTomorrowArray = tomorrowAvailable ? { averageTomorrow: utils.getAveragePrice(tomorrowHours) } : [];
     const avgTomorrowOffPeakArray = tomorrowAvailable
       ? { averageTomorrowOffPeak: utils.getAveragePrice(dateUtils.getTomorrowOffPeakHours(cachedPrices)) }

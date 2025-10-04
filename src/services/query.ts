@@ -79,7 +79,7 @@ export default {
     const startTimeIso = resultArray.at(0)?.start;
     const endTimeIso = resultArray.at(-1)?.start;
 
-    const currentHourIsInList =
+    const currentTimeIsBetweenTimeSlots =
       (startTimeIso &&
         endTimeIso &&
         DateTime.now() > DateTime.fromISO(startTimeIso) &&
@@ -93,7 +93,7 @@ export default {
     return {
       hours: hoursObject,
       info: {
-        now: currentHourIsInList,
+        now: currentTimeIsBetweenTimeSlots,
         min: lowestPrice,
         max: highestPrice,
         avg: Number(utils.getAveragePrice(resultArray)),

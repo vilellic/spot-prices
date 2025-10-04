@@ -36,7 +36,6 @@ export default {
       }
       weightArray.push(1.75);
     }
-    console.log('weightArray', weightArray);
 
     const lastTestIndex = rows.length - numberOfEntries;
     const weightedResults = [];
@@ -65,7 +64,6 @@ export default {
       }
     }
 
-    console.log('result', result);
     return result;
   },
 };

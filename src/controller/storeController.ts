@@ -17,15 +17,15 @@ export default {
 
     // Invalidate cache if current time is not in list
     if (spotPrices.prices?.length > 0 && !utils.dateIsInPricesList(spotPrices.prices, new Date())) {
-      console.log('Invalidating old cache');
+      console.info('Invalidating old cache');
       this.flushCache(cache);
     }
   },
 
   flushCache: function (cache: NodeCache) {
-    console.log(cache.getStats());
+    console.debug(cache.getStats());
     cache.flushAll();
-    console.log('** Cache has been flushed **');
+    console.info('** Cache has been flushed **');
   },
 
   initStoredFilesIfNotExists: function () {
@@ -48,7 +48,7 @@ export default {
   },
 
   resetStoredFiles: function () {
-    console.log('resetStoredFiles()');
+    console.debug('resetStoredFiles()');
     writeToDisk(constants.CACHED_NAME_PRICES, '{}');
   },
 };
@@ -65,9 +65,9 @@ function writeToDisk(name: string, content: string) {
   try {
     writeFileSync(getStoredResultFileName(name), content, 'utf8');
     if (content.length > 2) {
-      console.log('Updated result to disk = ' + name);
+      console.debug('Updated result to disk = ' + name);
     }
   } catch (error) {
-    console.log('writeToDisk: error ', error);
+    console.error('writeToDisk: error ', error);
   }
 }

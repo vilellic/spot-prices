@@ -51,23 +51,30 @@ export default {
         ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
         : getEmptySpotPrices();
 
-      const missingHours = utils.checkArePricesMissing(spotPrices.prices, dateUtils.isTimeToGetTomorrowPrices());
+      const missingHours = utils.checkArePricesMissing(spotPrices.prices);
       if (missingHours) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
 
-        const missingHoursFromEntso = utils.checkArePricesMissing(spotPrices.prices, dateUtils.isTimeToUseFallback());
-        if (missingHoursFromEntso) {
-          console.log('Some hours are missing from ENTSO-E response. Trying to fetch them from Elering ...');
+        const missingHoursFromEntso = utils.checkArePricesMissing(spotPrices.prices);
+        if (missingHoursFromEntso && dateUtils.isTimeToUseFallback()) {
+          console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
           const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
           const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
           const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
           const newSpotPrices: SpotPrices = { prices: filteredPrices };
-          if (!utils.checkArePricesMissing(newSpotPrices.prices, dateUtils.isTimeToGetTomorrowPrices())) {
+          if (!utils.checkArePricesMissing(newSpotPrices.prices)) {
+            console.log('Got prices eventually from Elering!');
             spotPrices.prices = newSpotPrices.prices;
           } else {
             console.warn('There is still missing data .. skipping update');
+          }
+        } else {
+          if (missingHoursFromEntso) {
+            console.log('Not updated, waiting for ENTSO-E to have prices available');
+          } else {
+            console.log('Updated prices from ENTSO-E!');
           }
         }
         if (spotPrices.prices.length > 0) {

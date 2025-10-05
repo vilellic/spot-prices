@@ -1,13 +1,50 @@
 import NodeCache from 'node-cache';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
 import { PriceRow, SpotPrices } from '../types/types';
+import Database from 'better-sqlite3';
+
+const db = Database('./spot_prices.db');
 
 export default {
-  initCacheFromDisk: function (cache: NodeCache) {
-    cache.set(constants.CACHED_NAME_PRICES, readStoredSpotPrices());
+  initDB: function () {
+    db.exec(`CREATE TABLE IF NOT EXISTS prices (start TEXT PRIMARY KEY, price REAL)`);
+  },
+
+  dropDB: function () {
+    db.exec(`DROP TABLE IF EXISTS prices`);
+  },
+
+  updateToDB: function (spotPrices: SpotPrices) {
+    try {
+      const insert = db.prepare('INSERT OR REPLACE INTO prices (start, price) VALUES (@start, @price)');
+      const transaction = db.transaction((prices: PriceRow[]) => {
+        for (const row of prices) {
+          insert.run(row);
+        }
+      });
+      transaction(spotPrices.prices);
+      if (spotPrices.prices.length > 0) {
+        console.debug('Updated result to DB = ' + constants.CACHED_NAME_PRICES);
+      }
+    } catch (error) {
+      console.error('updateToDB: error ', error);
+    }
+  },
+
+  readPricesFromDB: function (): SpotPrices {
+    try {
+      const rows = db.prepare('SELECT * FROM prices ORDER BY start').all() as PriceRow[];
+      return { prices: rows.map((row) => ({ start: row.start, price: row.price })) };
+    } catch (error) {
+      console.error('readPricesFromDB: error ', error);
+      return { prices: [] };
+    }
+  },
+
+  initCacheFromDB: function (cache: NodeCache) {
+    cache.set(constants.CACHED_NAME_PRICES, this.readPricesFromDB());
 
     const spotPrices = utils.getSpotPricesFromCache(cache);
     if (spotPrices.prices && spotPrices.prices.length > 0) {
@@ -28,46 +65,16 @@ export default {
     console.info('** Cache has been flushed **');
   },
 
-  initStoredFilesIfNotExists: function () {
-    if (!existsSync(getStoredResultFileName(constants.CACHED_NAME_PRICES))) {
-      this.resetStoredFiles();
-    }
-  },
-
-  updateStoredResultWhenChanged: function (name: string, value: object) {
+  updateStoredResultWhenChanged: function (value: object) {
     const inMemorySpotPrices = value as SpotPrices;
-    const persistedSpotPrices = JSON.parse(readFileSync(getStoredResultFileName(name)).toString()) as SpotPrices;
+    const persistedSpotPrices = this.readPricesFromDB();
 
     const mergedPrices: PriceRow[] = [...(inMemorySpotPrices.prices || []), ...(persistedSpotPrices.prices || [])];
     const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
     const newSpotPrices: SpotPrices = { prices: filteredPrices };
 
     if (newSpotPrices.prices.length > 0 && JSON.stringify(newSpotPrices) !== JSON.stringify(persistedSpotPrices)) {
-      writeToDisk(name, JSON.stringify(newSpotPrices, null, 2));
+      this.updateToDB(newSpotPrices);
     }
-  },
-
-  resetStoredFiles: function () {
-    console.debug('resetStoredFiles()');
-    writeToDisk(constants.CACHED_NAME_PRICES, '{}');
   },
 };
-
-function getStoredResultFileName(name: string) {
-  return './' + name + '.json';
-}
-
-function readStoredSpotPrices() {
-  return JSON.parse(readFileSync(getStoredResultFileName(constants.CACHED_NAME_PRICES)).toString()) as SpotPrices;
-}
-
-function writeToDisk(name: string, content: string) {
-  try {
-    writeFileSync(getStoredResultFileName(name), content, 'utf8');
-    if (content.length > 2) {
-      console.debug('Updated result to disk = ' + name);
-    }
-  } catch (error) {
-    console.error('writeToDisk: error ', error);
-  }
-}

@@ -135,3 +135,5 @@ current.json
 
 .vscode/*
 build/
+
+spot_prices.db

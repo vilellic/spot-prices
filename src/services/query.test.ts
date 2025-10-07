@@ -29,7 +29,7 @@ test('test weighted getHours, 3 lowest', () => {
     spotPrices: prices,
     numberOfHours: 3,
     dateRange: fromTodayDateRange,
-    queryMode: QueryMode.WeightedPrices,
+    queryMode: QueryMode.LowestWeighted,
   });
   expect(result).toStrictEqual({
     hours: {
@@ -50,7 +50,7 @@ test('test sequential getHours, 5 lowest', () => {
     spotPrices: prices,
     numberOfHours: 5,
     dateRange: fromTodayDateRange,
-    queryMode: QueryMode.SequentialPrices,
+    queryMode: QueryMode.LowestAverage,
   });
 
   expect(result).toStrictEqual({
@@ -80,7 +80,7 @@ test('test daylight saving time, duplicate hour', () => {
     spotPrices: daylightPrices,
     numberOfHours: 5,
     dateRange: { start: start, end: end },
-    queryMode: QueryMode.WeightedPrices,
+    queryMode: QueryMode.LowestWeighted,
   });
 
   expect(result).toStrictEqual({

@@ -8,7 +8,7 @@ import {
   TransferPrices,
 } from '../types/types';
 
-import weighted from './weighted';
+import { getPrices } from './modes';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
 import { DateTime } from 'luxon';
@@ -21,8 +21,12 @@ interface GetHoursParameters {
 }
 
 export enum QueryMode {
-  WeightedPrices = 'WeightedPrices',
-  SequentialPrices = 'SequentialPrices',
+  /* emphasizes minimizing the weighted sum, with higher weight on earlier slots for "front-loaded" cheap periods */
+  LowestWeighted = 'LowestWeighted',
+  /* minimizing the uniform sum/average for the cheapest consecutive block */
+  LowestAverage = 'LowestAverage',
+  /* mirrors the above but for maximizing, to find the most expensive consecutive block */
+  HighestAverage = 'HighestAverage',
 }
 
 export default {
@@ -34,7 +38,7 @@ export default {
     transferPrices,
   }: GetHoursParameters): HoursContainer | undefined {
     // Validate queryMode parameter
-    if (![QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode)) {
+    if (![QueryMode.LowestWeighted, QueryMode.LowestAverage, QueryMode.HighestAverage].includes(queryMode)) {
       return undefined;
     }
 
@@ -63,8 +67,8 @@ export default {
 
     let resultArray: PriceRowWithTransfer[] = [];
 
-    if ([QueryMode.WeightedPrices, QueryMode.SequentialPrices].includes(queryMode) && numberOfHours) {
-      resultArray = weighted.getWeightedPrices({
+    if (numberOfHours) {
+      resultArray = getPrices({
         numberOfHours: numberOfHours,
         rows: timeFilteredRows,
         useTransferPrices: withTransferPrices,

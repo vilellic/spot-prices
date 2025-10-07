@@ -9,15 +9,15 @@ export default {
     const numberOfHours = Number(url?.searchParams.get('hours'));
     const startTime = Number(url?.searchParams.get('startTime'));
     const endTime = Number(url?.searchParams.get('endTime'));
-    const queryModePar: string = url?.searchParams.get('queryMode') || 'LowestPrices';
+    const queryModePar: string = url?.searchParams.get('queryMode') || 'LowestAverage';
     const offPeakTransferPrice = Number(url?.searchParams.get('offPeakTransferPrice'));
     const peakTransferPrice = Number(url?.searchParams.get('peakTransferPrice'));
     const transferPrices: TransferPrices | undefined =
       offPeakTransferPrice && peakTransferPrice
         ? {
-            offPeakTransfer: offPeakTransferPrice,
-            peakTransfer: peakTransferPrice,
-          }
+          offPeakTransfer: offPeakTransferPrice,
+          peakTransfer: peakTransferPrice,
+        }
         : undefined;
 
     const queryMode = QueryMode[queryModePar as keyof typeof QueryMode];

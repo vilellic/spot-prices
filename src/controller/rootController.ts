@@ -1,5 +1,12 @@
 import NodeCache from 'node-cache';
-import { ControllerContext, EleringResponse, getEmptySpotPrices, PriceRow, SpotPrices } from '../types/types';
+import {
+  ControllerContext,
+  EleringResponse,
+  getEmptyPricesContainer,
+  getEmptySpotPrices,
+  PriceRow,
+  SpotPrices,
+} from '../types/types';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
@@ -13,6 +20,10 @@ const mutex = new Mutex();
 export default {
   handleRoot: async function (ctx: ControllerContext) {
     const cachedPrices = utils.getSpotPricesFromCache(ctx.cache);
+
+    if (cachedPrices.prices.length === 0) {
+      return getEmptyPricesContainer();
+    }
 
     const currentPrice = utils.getCurrentPrice(cachedPrices.prices);
     const tomorrowHours = dateUtils.getTomorrowTimeSlots(cachedPrices.prices);
@@ -91,7 +102,7 @@ const getPricesFromEntsoe = async (start: DateTime, end: DateTime) => {
   const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start.toFormat('yyyyMMddHHmm')}&periodEnd=${end.toFormat('yyyyMMddHHmm')}`;
   try {
     console.log(`Querying ENTSO-E Rest API with url = ${url}`);
-    const res = await fetch(`${url}&securityToken=${securityToken}`, { method: 'Get' });
+    const res = await fetchWithTimeout(`${url}&securityToken=${securityToken}`, { method: 'GET' });
     return entsoParser.parseXML(await res.text());
   } catch (error) {
     console.log(error);
@@ -120,12 +131,30 @@ async function fetchFromElering(start: DateTime, end: DateTime) {
   const url = `${constants.ELERING_API_PREFIX}/price?start=${start.toUTC().toISO()}&end=${end.toUTC().toISO()}`;
   try {
     console.log(`Querying Elering Rest API with url = ${url}`);
-    const res = await fetch(url, { method: 'Get' });
+    const res = await fetchWithTimeout(url, { method: 'GET' });
     const json = await res.json();
     console.log(url);
-    return json as Promise<EleringResponse>;
+    return json as EleringResponse;
   } catch (error) {
     console.log(error);
     return { success: false } as EleringResponse;
+  }
+}
+
+async function fetchWithTimeout(resource: string, options: RequestInit = {}, timeout: number = 30000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => {
+    controller.abort();
+    console.log(`Request timed out for URL: ${resource}`);
+  }, timeout);
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    throw error;
   }
 }

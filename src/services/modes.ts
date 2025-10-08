@@ -20,7 +20,7 @@ export function getPrices({
     throw new Error('numberOfHours must result in a positive integer number of 15-minute slots');
   }
   if (rows.length < numSlots) {
-    throw new Error('Not enough data rows for the requested number of hours');
+    return [];
   }
 
   const getPrice = (row: PriceRowWithTransfer) => (useTransferPrices ? row.priceWithTransfer : row.price);

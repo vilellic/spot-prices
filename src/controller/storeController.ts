@@ -26,7 +26,7 @@ export default {
       });
       transaction(spotPrices.prices);
       if (spotPrices.prices.length > 0) {
-        console.debug('Updated result to DB = ' + constants.CACHED_NAME_PRICES);
+        console.debug('Updated prices to DB');
       }
     } catch (error) {
       console.error('updateToDB: error ', error);

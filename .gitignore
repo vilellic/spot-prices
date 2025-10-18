@@ -129,9 +129,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Custom
-prices.json
-current.json
+.DS_Store
 
 .vscode/*
 build/

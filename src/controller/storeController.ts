@@ -5,7 +5,7 @@ import dateUtils from '../utils/dateUtils';
 import { PriceRow, SpotPrices } from '../types/types';
 import Database from 'better-sqlite3';
 
-const db = Database('/data/spot_prices.db');
+const db = Database('./data/spot_prices.db');
 
 export default {
   initDB: function () {

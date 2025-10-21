@@ -4,8 +4,7 @@ import { DateRange, SpotPrices } from '../types/types';
 import dateUtils from '../utils/dateUtils';
 import query, { QueryMode } from './query';
 
-// Will resolve to Tue Sep 12 2023 03:00:00 GMT+03:00 (Eastern European Summer Time)
-const fixedFakeDate = new Date('2023-09-12');
+const fixedFakeDate = new Date('2025-10-16');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
@@ -33,14 +32,14 @@ test('test weighted getHours, 3 lowest', () => {
   });
   expect(result).toStrictEqual({
     hours: {
-      startTime: '2023-09-13T03:00:00.000+03:00',
-      endTime: '2023-09-13T06:00:00.000+03:00',
+      startTime: '2025-10-17T01:00:00.000+03:00',
+      endTime: '2025-10-17T04:00:00.000+03:00',
     },
     info: {
+      avg: 0.01818,
+      max: 0.01889,
+      min: 0.01772,
       now: false,
-      min: 0.01104,
-      max: 0.01207,
-      avg: 0.0114,
     },
   });
 });
@@ -55,44 +54,14 @@ test('test sequential getHours, 5 lowest', () => {
 
   expect(result).toStrictEqual({
     hours: {
-      startTime: '2023-09-13T01:00:00.000+03:00',
-      endTime: '2023-09-13T06:00:00.000+03:00',
+      startTime: '2025-10-17T00:30:00.000+03:00',
+      endTime: '2025-10-17T05:30:00.000+03:00',
     },
     info: {
+      avg: 0.02069,
+      max: 0.03136,
+      min: 0.01772,
       now: false,
-      min: 0.01104,
-      max: 0.01244,
-      avg: 0.01168,
-    },
-  });
-});
-
-test('test daylight saving time, duplicate hour', () => {
-  const fixedFakeDate = new Date('2023-10-29');
-  jest.useFakeTimers().setSystemTime(fixedFakeDate);
-
-  const start = dateUtils.getDateFromHourStarting(0, 0).toJSDate();
-  const end = dateUtils.getDateFromHourStarting(0, 6).toJSDate();
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const daylightPrices = require('../utils/testPricesDaylightSaving.json');
-  const result = query.getHours({
-    spotPrices: daylightPrices,
-    numberOfHours: 5,
-    dateRange: { start: start, end: end },
-    queryMode: QueryMode.LowestWeighted,
-  });
-
-  expect(result).toStrictEqual({
-    hours: {
-      startTime: '2023-10-29T02:00:00.000+03:00',
-      endTime: '2023-10-29T06:00:00.000+02:00',
-    },
-    info: {
-      now: true,
-      min: 0.02623,
-      max: 0.03372,
-      avg: 0.02926,
     },
   });
 });

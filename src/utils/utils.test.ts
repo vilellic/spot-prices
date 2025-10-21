@@ -1,7 +1,7 @@
 import { expect, test } from '@jest/globals';
 import { PriceRow, SpotPrices } from '../types/types';
 
-const fixedFakeDate = new Date('2023-09-12');
+const fixedFakeDate = new Date('2025-10-17');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
@@ -31,34 +31,33 @@ test('test getPrice VAT with negative price', () => {
 });
 
 test('test getAveragePrice', () => {
-  expect(utils.getAveragePrice(dateUtils.getTodayTimeSlots(spotPrices.prices))).toBe('0.01185');
-  expect(utils.getAveragePrice(dateUtils.getYesterdayTimeSlots(spotPrices.prices))).toBe('0.13479');
-  expect(utils.getAveragePrice(dateUtils.getTomorrowTimeSlots(spotPrices.prices))).toBe('0.11482');
+  expect(utils.getAveragePrice(dateUtils.getTodayTimeSlots(spotPrices.prices))).toBe('0.15604');
+  expect(utils.getAveragePrice(dateUtils.getYesterdayTimeSlots(spotPrices.prices))).toBe('0.01634');
+  expect(utils.getAveragePrice(dateUtils.getTomorrowTimeSlots(spotPrices.prices))).toBe('0.05860');
 });
 
 test('test getCurrentPriceFromToday', () => {
-  // At 3 AM
-  expect(utils.getCurrentPrice(spotPrices.prices)).toBe('-0.00241');
+  expect(utils.getCurrentPrice(spotPrices.prices)).toBe('0.01813');
 });
 
 test('test time is in list range', () => {
   const todayHours = dateUtils.getTodayTimeSlots(spotPrices.prices);
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T05:03:42+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-17T05:03:42+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T00:00:00+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-17T00:00:00+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-12T23:59:59+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-17T23:59:59+0300').toJSDate())).toBe(
     true,
   );
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-13T02:11:07+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-18T02:11:07+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T13:42:22+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-16T13:42:22+0300').toJSDate())).toBe(
     false,
   );
-  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2023-09-11T23:59:59+0300').toJSDate())).toBe(
+  expect(utils.dateIsInPricesList(todayHours, dateUtils.parseISODate('2025-10-16T23:59:59+0300').toJSDate())).toBe(
     false,
   );
 });
@@ -66,34 +65,34 @@ test('test time is in list range', () => {
 test('remove duplicates and sort', () => {
   const duplicatePrices: PriceRow[] = [
     {
-      start: '2023-09-11T03:00:00.000+03:00',
-      price: 0.02003,
+      start: '2025-10-16T01:00:00.000+03:00',
+      price: 0.00011,
     },
     {
-      start: '2023-09-11T00:00:00.000+03:00',
-      price: 0.01879,
+      start: '2025-10-16T00:45:00.000+03:00',
+      price: -0.00004,
     },
     {
-      start: '2023-09-11T01:00:00.000+03:00',
-      price: 0.0237,
+      start: '2025-10-16T01:00:00.000+03:00',
+      price: 0.00011,
     },
     {
-      start: '2023-09-11T01:00:00.000+03:00',
-      price: 0.0237,
+      start: '2025-10-16T03:00:00.000+03:00',
+      price: -0.00009,
     },
   ];
   expect(utils.removeDuplicatesAndSort(duplicatePrices)).toStrictEqual([
     {
-      start: '2023-09-11T00:00:00.000+03:00',
-      price: 0.01879,
+      start: '2025-10-16T00:45:00.000+03:00',
+      price: -0.00004,
     },
     {
-      start: '2023-09-11T01:00:00.000+03:00',
-      price: 0.0237,
+      start: '2025-10-16T01:00:00.000+03:00',
+      price: 0.00011,
     },
     {
-      start: '2023-09-11T03:00:00.000+03:00',
-      price: 0.02003,
+      start: '2025-10-16T03:00:00.000+03:00',
+      price: -0.00009,
     },
   ]);
 });

@@ -4,7 +4,7 @@ set -ex
 
 cleanPrices() {
    rm -rf data/spot_prices.db
-   mkdir data
+   mkdir -p data
 }
 
 rm -rf build/*

@@ -62,14 +62,14 @@ export default {
         ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
         : getEmptySpotPrices();
 
-      const missingHours = utils.checkArePricesMissing(spotPrices.prices);
-      if (missingHours) {
+      const missingSlots = utils.checkArePricesMissing(spotPrices.prices);
+      if (missingSlots) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
         spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
 
-        const missingHoursFromEntso = utils.checkArePricesMissing(spotPrices.prices);
-        if (missingHoursFromEntso && dateUtils.isTimeToUseFallback()) {
+        const missingSlotsFromEntso = utils.checkArePricesMissing(spotPrices.prices);
+        if (missingSlotsFromEntso && dateUtils.isTimeToUseFallback()) {
           console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
           const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
           const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
@@ -82,7 +82,7 @@ export default {
             console.warn('There is still missing data .. skipping update');
           }
         } else {
-          if (missingHoursFromEntso) {
+          if (missingSlotsFromEntso) {
             console.log('Not updated, waiting for ENTSO-E to have prices available');
           } else {
             console.log('Updated prices from ENTSO-E!');

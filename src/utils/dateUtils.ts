@@ -10,16 +10,12 @@ export default {
     return DateTime.fromISO(isoDateStr);
   },
 
-  getWeekdayAndHourStr: function (date: Date) {
-    return DateTime.fromJSDate(date).toFormat('H EEE');
-  },
-
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
     return datePriceArray.findIndex((row) => row.start === date) || undefined;
   },
 
   getDateFromHourStarting: function (offsetDays: number, hourStarting: number) {
-    return DateTime.now().plus({ day: offsetDays }).set({ hour: hourStarting, minute: 0, second: 0, millisecond: 0 });
+    return DateTime.now().plus({ days: offsetDays }).set({ hour: hourStarting, minute: 0, second: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {

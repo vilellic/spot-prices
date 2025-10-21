@@ -1,40 +1,47 @@
 import { TransferPrices } from '../types/types';
 import links from './links';
 
-// Will resolve to Tue Sep 12 2023 03:00:00 GMT+0300 (Eastern European Summer Time)
-const fixedFakeDate = new Date('2023-09-12');
+const fixedFakeDate = new Date('2025-10-16');
 
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
 
 test('test get links default', () => {
   const output = links.getExampleLinks({ host: 'http://localhost:8089', tomorrowAvailable: true, noHours: 3 });
   expect(output).toStrictEqual({
-    withoutTransferPrices: {
-      today: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=3&startTime=1694455200&endTime=1694541600',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=3&startTime=1694455200&endTime=1694541600',
-      },
-      tomorrow: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=3&startTime=1694541600&endTime=1694628000',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=3&startTime=1694541600&endTime=1694628000',
-      },
-    },
     withTransferPrices: {
       today: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=3&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=3&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=3&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=3&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=3&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
       },
       tomorrow: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=3&startTime=1694541600&endTime=1694628000&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=3&startTime=1694541600&endTime=1694628000&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=3&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=3&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=3&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+      },
+    },
+    withoutTransferPrices: {
+      today: {
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=3&startTime=1760551200&endTime=1760637600',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=3&startTime=1760551200&endTime=1760637600',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=3&startTime=1760551200&endTime=1760637600',
+      },
+      tomorrow: {
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=3&startTime=1760637600&endTime=1760724000',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=3&startTime=1760637600&endTime=1760724000',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=3&startTime=1760637600&endTime=1760724000',
       },
     },
   });
@@ -43,21 +50,25 @@ test('test get links default', () => {
 test('test get links, tomorrow prices not ready', () => {
   const output = links.getExampleLinks({ host: 'http://localhost:8089', tomorrowAvailable: false });
   expect(output).toStrictEqual({
-    withoutTransferPrices: {
+    withTransferPrices: {
       today: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694455200&endTime=1694541600',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694455200&endTime=1694541600',
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
       },
       tomorrow: ['no prices yet...'],
     },
-    withTransferPrices: {
+    withoutTransferPrices: {
       today: {
-        WeightedPrices:
-          'http://localhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
-        SequentialPrices:
-          'http://localhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0274&peakTransferPrice=0.0445',
+        HighestAverage:
+          'http://localhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760551200&endTime=1760637600',
+        LowestAverage:
+          'http://localhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760551200&endTime=1760637600',
+        LowestWeighted:
+          'http://localhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760551200&endTime=1760637600',
       },
       tomorrow: ['no prices yet...'],
     },
@@ -77,32 +88,40 @@ test('test get links, custom transfer prices', () => {
   });
 
   expect(output).toStrictEqual({
-    withoutTransferPrices: {
-      today: {
-        WeightedPrices:
-          'http://someotherhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694455200&endTime=1694541600',
-        SequentialPrices:
-          'http://someotherhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694455200&endTime=1694541600',
-      },
-      tomorrow: {
-        WeightedPrices:
-          'http://someotherhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694541600&endTime=1694628000',
-        SequentialPrices:
-          'http://someotherhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694541600&endTime=1694628000',
-      },
-    },
     withTransferPrices: {
       today: {
-        WeightedPrices:
-          'http://someotherhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
-        SequentialPrices:
-          'http://someotherhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694455200&endTime=1694541600&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        HighestAverage:
+          'http://someotherhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        LowestAverage:
+          'http://someotherhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        LowestWeighted:
+          'http://someotherhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760551200&endTime=1760637600&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
       },
       tomorrow: {
-        WeightedPrices:
-          'http://someotherhost:8089/query?queryMode=WeightedPrices&hours=6&startTime=1694541600&endTime=1694628000&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
-        SequentialPrices:
-          'http://someotherhost:8089/query?queryMode=SequentialPrices&hours=6&startTime=1694541600&endTime=1694628000&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        HighestAverage:
+          'http://someotherhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        LowestAverage:
+          'http://someotherhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+        LowestWeighted:
+          'http://someotherhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760637600&endTime=1760724000&offPeakTransferPrice=0.0602372&peakTransferPrice=0.0793372',
+      },
+    },
+    withoutTransferPrices: {
+      today: {
+        HighestAverage:
+          'http://someotherhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760551200&endTime=1760637600',
+        LowestAverage:
+          'http://someotherhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760551200&endTime=1760637600',
+        LowestWeighted:
+          'http://someotherhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760551200&endTime=1760637600',
+      },
+      tomorrow: {
+        HighestAverage:
+          'http://someotherhost:8089/query?queryMode=HighestAverage&hours=6&startTime=1760637600&endTime=1760724000',
+        LowestAverage:
+          'http://someotherhost:8089/query?queryMode=LowestAverage&hours=6&startTime=1760637600&endTime=1760724000',
+        LowestWeighted:
+          'http://someotherhost:8089/query?queryMode=LowestWeighted&hours=6&startTime=1760637600&endTime=1760724000',
       },
     },
   });

@@ -10,16 +10,12 @@ export default {
     return DateTime.fromISO(isoDateStr);
   },
 
-  getWeekdayAndHourStr: function (date: Date) {
-    return DateTime.fromJSDate(date).toFormat('H EEE');
-  },
-
   findIndexWithDate: function (datePriceArray: PriceRow[], date: string) {
     return datePriceArray.findIndex((row) => row.start === date) || undefined;
   },
 
   getDateFromHourStarting: function (offsetDays: number, hourStarting: number) {
-    return DateTime.now().plus({ day: offsetDays }).set({ hour: hourStarting, minute: 0, second: 0, millisecond: 0 });
+    return DateTime.now().plus({ days: offsetDays }).set({ hour: hourStarting, minute: 0, second: 0 });
   },
 
   sortByDate: function (array: PriceRow[]) {
@@ -41,28 +37,28 @@ export default {
     return this.isTimeAfter(now, 14);
   },
 
-  getDayHours: function (prices: PriceRow[], offset: number) {
-    return filterHours(
+  getTimeSlotsForDay: function (prices: PriceRow[], offset: number) {
+    return filterTimeSlots(
       prices,
       this.getDateFromHourStarting(offset, 0),
       this.getDateFromHourStarting(offset, 24).minus({ milliseconds: 1 }),
     );
   },
 
-  getYesterdayHours: function (prices: PriceRow[]) {
-    return this.getDayHours(prices, -1);
+  getYesterdayTimeSlots: function (prices: PriceRow[]) {
+    return this.getTimeSlotsForDay(prices, -1);
   },
 
-  getTodayHours: function (prices: PriceRow[]) {
-    return this.getDayHours(prices, 0);
+  getTodayTimeSlots: function (prices: PriceRow[]) {
+    return this.getTimeSlotsForDay(prices, 0);
   },
 
-  getTomorrowHours: function (prices: PriceRow[]) {
-    return this.getDayHours(prices, 1);
+  getTomorrowTimeSlots: function (prices: PriceRow[]) {
+    return this.getTimeSlotsForDay(prices, 1);
   },
 
   getHoursToStore: function (prices: PriceRow[]) {
-    return filterHours(
+    return filterTimeSlots(
       prices,
       this.getDateFromHourStarting(-2, 0),
       this.getDateFromHourStarting(1, 24).minus({ milliseconds: 1 }),
@@ -72,29 +68,29 @@ export default {
   getTodayOffPeakHours: function (spotPrices: SpotPrices) {
     const yesterday22 = this.getDateFromHourStarting(-1, 22);
     const today07 = this.getDateFromHourStarting(0, 7);
-    return filterHours(spotPrices.prices, yesterday22, today07);
+    return filterTimeSlots(spotPrices.prices, yesterday22, today07);
   },
 
   getTodayPeakHours: function (spotPrices: SpotPrices) {
     const today07 = this.getDateFromHourStarting(0, 7);
     const today22 = this.getDateFromHourStarting(0, 22);
-    return filterHours(spotPrices.prices, today07, today22);
+    return filterTimeSlots(spotPrices.prices, today07, today22);
   },
 
   getTomorrowOffPeakHours: function (spotPrices: SpotPrices) {
     const today22 = this.getDateFromHourStarting(0, 22);
     const tomorrow07 = this.getDateFromHourStarting(1, 7);
-    return filterHours(spotPrices.prices, today22, tomorrow07);
+    return filterTimeSlots(spotPrices.prices, today22, tomorrow07);
   },
 
   getTomorrowPeakHours: function (spotPrices: SpotPrices) {
     const tomorrow07 = this.getDateFromHourStarting(1, 7);
     const tomorrow22 = this.getDateFromHourStarting(1, 22);
-    return filterHours(spotPrices.prices, tomorrow07, tomorrow22);
+    return filterTimeSlots(spotPrices.prices, tomorrow07, tomorrow22);
   },
 };
 
-const filterHours = (priceRows: PriceRow[], start: DateTime, end: DateTime) => {
+const filterTimeSlots = (priceRows: PriceRow[], start: DateTime, end: DateTime) => {
   return (
     priceRows?.filter((priceRow) => {
       const priceRowStart = DateTime.fromISO(priceRow.start);

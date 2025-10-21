@@ -8,6 +8,18 @@ export const getEmptySpotPrices = (): SpotPrices => ({
   prices: [] as PriceRow[],
 });
 
+export const getEmptyPricesContainer = (): PricesContainer => ({
+  info: {
+    current: '',
+    averageToday: '',
+    averageTodayOffPeak: '',
+    averageTodayPeak: '',
+    tomorrowAvailable: false,
+  },
+  today: [],
+  tomorrow: [],
+});
+
 export interface PricesContainer {
   info: {
     current: string;
@@ -40,11 +52,8 @@ export interface HoursContainer {
 }
 
 export interface Hours {
-  list: string[];
-  start?: string;
-  end?: string;
-  startTime?: string;
-  endTime?: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface PriceRow {

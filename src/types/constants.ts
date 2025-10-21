@@ -6,4 +6,6 @@ export default Object.freeze({
   ISO_DATE_FORMAT: 'YYYY-MM-DDTHH:mm:ssZZ',
   PROTOCOL: 'http',
   PORT: 8089,
+  TIME_SLOTS_IN_HOUR: 4,
+  TIME_SLOTS_IN_DAY: 4 * 24,
 });

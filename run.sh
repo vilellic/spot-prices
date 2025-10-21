@@ -3,7 +3,8 @@
 set -ex
 
 cleanPrices() {
-   rm -f prices.json
+   rm -rf data/spot_prices.db
+   mkdir -p data
 }
 
 rm -rf build/*

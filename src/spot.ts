@@ -24,7 +24,8 @@ const timeZone = 'Europe/Helsinki';
 const spotCache: NodeCache = new NodeCache();
 
 spotCache.on('set', function (key: string, value: object) {
-  storeController.updateStoredResultWhenChanged(key, value);
+  console.debug('Updating key', key);
+  storeController.updateStoredResultWhenChanged(value);
 });
 
 server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
@@ -42,11 +43,12 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
     res.end(JSON.stringify(await linksController.handleLinks({ cache: spotCache, url }), null, 2));
   } else if (req.url === '/reset') {
     storeController.flushCache(spotCache);
-    storeController.initCacheFromDisk(spotCache);
+    storeController.initCacheFromDB(spotCache);
     res.end('Ok');
   } else if (req.url === '/resetAll') {
     storeController.flushCache(spotCache);
-    storeController.resetStoredFiles();
+    storeController.dropDB();
+    storeController.initDB();
     res.end('Ok');
   } else {
     res.statusCode = 404;
@@ -70,7 +72,7 @@ new CronJob(
   '0 0 * * *',
   function () {
     storeController.flushCache(spotCache);
-    storeController.initCacheFromDisk(spotCache);
+    storeController.initCacheFromDB(spotCache);
     rootController.updatePrices(spotCache);
   },
   null,
@@ -82,8 +84,8 @@ console.log('Spot Prices server starting ...');
 if (!process.env.ENTSOE_SECURITY_TOKEN) {
   throw Error('Aborting! ENTSOE_SECURITY_TOKEN missing from environment variables');
 }
-storeController.initStoredFilesIfNotExists();
-storeController.initCacheFromDisk(spotCache);
+storeController.initDB();
+storeController.initCacheFromDB(spotCache);
 rootController.updatePrices(spotCache);
 console.log('Ready!');
 server.listen(constants.PORT);

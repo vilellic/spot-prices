@@ -2,7 +2,10 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnPaste": false,
     "editor.formatOnSave": false,
-    "[json]": { "editor.formatOnSave": true },
+    "[json]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "vscode.json-language-features"
+    },
     "[javascript]": { "editor.formatOnSave": true },
     "[typescript]": {
       "editor.formatOnSave": true,

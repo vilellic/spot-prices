@@ -1,7 +1,7 @@
 {
   "name": "spot-prices",
   "version": "1.0.0",
-  "description": "With this Node.js server finnish electricity spot prices can be served to Home Assistant using REST platform to read data from local server.",
+  "description": "Local 15-minute Finnish electricity spot price API (ENTSO-E + Elering fallback) for Home Assistant & energy automations.",
   "main": "spot.js",
   "dependencies": {
     "async-mutex": "^0.5.0",
@@ -44,7 +44,7 @@
     "url": "git+https://github.com/vilellic/spot-prices.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/vilellic/spot-prices/issues"
   },

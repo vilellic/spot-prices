@@ -1,15 +1,22 @@
 # spot-prices
 
-Node.js/TypeScript server that fetches Finnish electricity spot prices (ENTSO-E Transparency Platform, fallback to Elering API) and serves them locally (default port 8089) in a Home Assistant friendly JSON shape. Prices are normalized to EUR/kWh (15‑minute granularity) and include VAT when positive. A lightweight in-memory cache (NodeCache) plus an on-disk SQLite database persist recent data (yesterday → tomorrow). Automatic refresh runs every minute; housekeeping runs at local midnight (Europe/Helsinki).
+> Local 15‑minute Finnish electricity spot price API (ENTSO‑E + Elering fallback) for Home Assistant & energy automations.
 
-## Key Features
-- 15-minute spot price expansion (supports DST days of 23/24/25 hours) from ENTSO-E A44 document type.
-- Fallback to Elering API after 15:00 local time if ENTSO-E still has missing hours.
-- Persists prices in SQLite (`data/spot_prices.db`).
-- Provides daily summaries (current, averages, peak/off-peak splits) and tomorrow’s averages when available.
-- Query API to compute optimal consecutive hour windows under different strategies (LowestAverage, LowestWeighted, HighestAverage) with optional transfer prices (e.g. grid + taxes) added.
-- Example link generator endpoint (`/links`) to help build Home Assistant REST sensors.
-- Safe idempotent cache/database refresh endpoints.
+## About
+This project is a lightweight Node.js / TypeScript server that collects and normalizes Finnish day-ahead electricity spot prices at 15‑minute resolution. It queries the ENTSO‑E Transparency Platform (documentType A44) and, if data remains incomplete after mid‑afternoon, falls back to the Elering public API to fill gaps. Results are cached in-memory and persisted to a tiny SQLite database to survive restarts.
+
+Use cases:
+- Powering Home Assistant REST sensors & automations (shift loads to cheapest consecutive hours).
+- Evaluating off‑peak / peak averages and tomorrow’s forecast once published.
+- Adding transfer (distribution + taxes) components to compute effective delivered price blocks.
+
+Design highlights:
+- Deterministic expansion to 15‑minute slots even across DST (23/24/25 hour) days.
+- Atomic price refresh guarded by a mutex; incremental persistence on cache updates.
+- Query engine for best/worst price windows with weighting modes.
+- Simple zero-dependency HTTP server (native `http` module) for minimal footprint.
+
+---
 
 ## Data Flow Overview
 1. Startup (`src/spot.ts`):
@@ -229,4 +236,3 @@ This project is not affiliated with ENTSO-E or Elering. Use data responsibly; ve
 
 ---
 Feel free to open issues or PRs for enhancements.
-

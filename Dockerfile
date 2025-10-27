@@ -4,6 +4,7 @@ RUN apk add npm
 
 WORKDIR /spot
 COPY . /spot
+RUN rm -rf data/
 
 RUN ln -s /data data
 

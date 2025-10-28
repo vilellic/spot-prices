@@ -57,7 +57,7 @@ export default {
     return this.getTimeSlotsForDay(prices, 1);
   },
 
-  getHoursToStore: function (prices: PriceRow[]) {
+  getSlotsToStore: function (prices: PriceRow[]) {
     return filterTimeSlots(
       prices,
       this.getDateFromHourStarting(-2, 0),

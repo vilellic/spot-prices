@@ -73,7 +73,7 @@ export default {
           console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
           const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
           const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
-          const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
+          const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getSlotsToStore(mergedPrices));
           const newSpotPrices: SpotPrices = { prices: filteredPrices };
           if (!utils.checkArePricesMissing(newSpotPrices.prices)) {
             console.log('Got prices eventually from Elering!');

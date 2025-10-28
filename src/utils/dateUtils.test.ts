@@ -49,11 +49,11 @@ test('get tomorrow hours', () => {
 
 test('get hours to store', () => {
   // Hours to store spans two days back to tomorrow; first slot present is 2025-10-16T01:00 and last slot 2025-10-18T23:45
-  expect(dateUtils.getHoursToStore(spotPrices.prices)[0]).toStrictEqual({
+  expect(dateUtils.getSlotsToStore(spotPrices.prices)[0]).toStrictEqual({
     start: '2025-10-16T01:00:00.000+03:00',
     price: '-0.0001',
   });
-  expect(dateUtils.getHoursToStore(spotPrices.prices).at(-1)).toStrictEqual({
+  expect(dateUtils.getSlotsToStore(spotPrices.prices).at(-1)).toStrictEqual({
     start: '2025-10-18T23:45:00.000+03:00',
     price: '0.00428',
   });

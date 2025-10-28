@@ -72,6 +72,7 @@ new CronJob(
   '0 0 * * *',
   function () {
     storeController.flushCache(spotCache);
+    storeController.cleanOldRecords();
     storeController.initCacheFromDB(spotCache);
     rootController.updatePrices(spotCache);
   },

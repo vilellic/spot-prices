@@ -5,7 +5,7 @@ import dateUtils from '../utils/dateUtils';
 import { PriceRow, SpotPrices } from '../types/types';
 import Database from 'better-sqlite3';
 
-const db = Database('./data/spot_prices.db');
+const db = Database('./data/spot_prices.db', { verbose: console.debug });
 
 export default {
   initDB: function () {
@@ -14,6 +14,10 @@ export default {
 
   dropDB: function () {
     db.exec(`DROP TABLE IF EXISTS prices`);
+  },
+
+  cleanOldRecords: function () {
+    db.exec(`DELETE FROM prices WHERE start <= date('now','-3 day')`);
   },
 
   updateToDB: function (spotPrices: SpotPrices) {
@@ -70,7 +74,7 @@ export default {
     const persistedSpotPrices = this.readPricesFromDB();
 
     const mergedPrices: PriceRow[] = [...(inMemorySpotPrices.prices || []), ...(persistedSpotPrices.prices || [])];
-    const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getHoursToStore(mergedPrices));
+    const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getSlotsToStore(mergedPrices));
     const newSpotPrices: SpotPrices = { prices: filteredPrices };
 
     if (newSpotPrices.prices.length > 0 && JSON.stringify(newSpotPrices) !== JSON.stringify(persistedSpotPrices)) {

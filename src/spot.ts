@@ -23,6 +23,10 @@ require('console');
 const timeZone = 'Europe/Helsinki';
 const spotCache: NodeCache = new NodeCache();
 
+const logPriceUpdateError = (error: unknown) => {
+  console.error('Price update failed', error);
+};
+
 spotCache.on('set', function (key: string, value: object) {
   console.debug('Updating key', key);
   storeController.updateStoredResultWhenChanged(value);
@@ -33,14 +37,22 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   const url = new URL(req?.url || '', `${constants.PROTOCOL}://${req?.headers.host}`);
   console.log('Request url = ' + url);
 
-  await rootController.updatePrices(spotCache);
+  const priceUpdatePromise = rootController.updatePrices(spotCache);
 
   if (req.url === '/') {
+    priceUpdatePromise.catch(logPriceUpdateError);
     res.end(JSON.stringify(await rootController.handleRoot({ cache: spotCache }), null, 2));
-  } else if (req.url?.startsWith('/query')) {
-    res.end(JSON.stringify(await queryController.handleQuery({ cache: spotCache, url }), null, 2));
+    return;
+  }
+  try {
+    await priceUpdatePromise;
+  } catch (error) {
+    logPriceUpdateError(error);
+  }
+  if (req.url?.startsWith('/query')) {
+    res.end(JSON.stringify(queryController.handleQuery({ cache: spotCache, url }), null, 2));
   } else if (req.url?.startsWith('/links')) {
-    res.end(JSON.stringify(await linksController.handleLinks({ cache: spotCache, url }), null, 2));
+    res.end(JSON.stringify(linksController.handleLinks({ cache: spotCache, url }), null, 2));
   } else if (req.url === '/reset') {
     storeController.flushCache(spotCache);
     storeController.initCacheFromDB(spotCache);
@@ -60,7 +72,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 new CronJob(
   '* * * * *',
   function () {
-    rootController.updatePrices(spotCache);
+    rootController.updatePrices(spotCache).catch(logPriceUpdateError);
   },
   null,
   true,
@@ -74,7 +86,7 @@ new CronJob(
     storeController.flushCache(spotCache);
     storeController.cleanOldRecords();
     storeController.initCacheFromDB(spotCache);
-    rootController.updatePrices(spotCache);
+    rootController.updatePrices(spotCache).catch(logPriceUpdateError);
   },
   null,
   true,
@@ -87,6 +99,6 @@ if (!process.env.ENTSOE_SECURITY_TOKEN) {
 }
 storeController.initDB();
 storeController.initCacheFromDB(spotCache);
-rootController.updatePrices(spotCache);
+rootController.updatePrices(spotCache).catch(logPriceUpdateError);
 console.log('Ready!');
 server.listen(constants.PORT);

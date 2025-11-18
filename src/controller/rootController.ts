@@ -11,11 +11,10 @@ import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
 import { PricesContainer } from '../types/types';
-import { Mutex } from 'async-mutex';
 import entsoParser from '../parser/entsoParser';
 import { DateTime } from 'luxon';
 
-const mutex = new Mutex();
+let currentUpdatePromise: Promise<void> | null = null;
 
 export default {
   handleRoot: async function (ctx: ControllerContext) {
@@ -57,44 +56,62 @@ export default {
   },
 
   updatePrices: async function (cache: NodeCache) {
-    await mutex.runExclusive(async () => {
-      const spotPrices = cache.has(constants.CACHED_NAME_PRICES)
-        ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
-        : getEmptySpotPrices();
-
-      const missingSlots = utils.checkArePricesMissing(spotPrices.prices);
-      if (missingSlots) {
-        const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
-        const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
-        spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
-
-        const missingSlotsFromEntso = utils.checkArePricesMissing(spotPrices.prices);
-        if (missingSlotsFromEntso && dateUtils.isTimeToUseFallback()) {
-          console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
-          const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
-          const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
-          const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getSlotsToStore(mergedPrices));
-          const newSpotPrices: SpotPrices = { prices: filteredPrices };
-          if (!utils.checkArePricesMissing(newSpotPrices.prices)) {
-            console.log('Got prices eventually from Elering!');
-            spotPrices.prices = newSpotPrices.prices;
-          } else {
-            console.warn('There is still missing data .. skipping update');
-          }
-        } else {
-          if (missingSlotsFromEntso) {
-            console.log('Not updated, waiting for ENTSO-E to have prices available');
-          } else {
-            console.log('Updated prices from ENTSO-E!');
-          }
+    if (!currentUpdatePromise) {
+      currentUpdatePromise = (async () => {
+        try {
+          await refreshSpotPrices(cache);
+        } catch (error) {
+          console.error('Failed to update spot prices', error);
+          throw error;
+        } finally {
+          currentUpdatePromise = null;
         }
-        if (spotPrices.prices.length > 0) {
-          cache.set(constants.CACHED_NAME_PRICES, spotPrices);
-        }
-      }
-    });
+      })();
+    }
+
+    return currentUpdatePromise;
   },
 };
+
+async function refreshSpotPrices(cache: NodeCache) {
+  const spotPrices = cache.has(constants.CACHED_NAME_PRICES)
+    ? (cache.get(constants.CACHED_NAME_PRICES) as SpotPrices)
+    : getEmptySpotPrices();
+
+  const missingSlots = utils.checkArePricesMissing(spotPrices.prices);
+  if (!missingSlots) {
+    return;
+  }
+
+  const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
+  const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
+  spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
+
+  const missingSlotsFromEntso = utils.checkArePricesMissing(spotPrices.prices);
+  if (missingSlotsFromEntso && dateUtils.isTimeToUseFallback()) {
+    console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
+    const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
+    const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
+    const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getSlotsToStore(mergedPrices));
+    const newSpotPrices: SpotPrices = { prices: filteredPrices };
+    if (!utils.checkArePricesMissing(newSpotPrices.prices)) {
+      console.log('Got prices eventually from Elering!');
+      spotPrices.prices = newSpotPrices.prices;
+    } else {
+      console.warn('There is still missing data .. skipping update');
+    }
+  } else {
+    if (missingSlotsFromEntso) {
+      console.log('Not updated, waiting for ENTSO-E to have prices available');
+    } else {
+      console.log('Updated prices from ENTSO-E!');
+    }
+  }
+
+  if (spotPrices.prices.length > 0) {
+    cache.set(constants.CACHED_NAME_PRICES, spotPrices);
+  }
+}
 
 const getPricesFromEntsoe = async (start: DateTime, end: DateTime) => {
   const securityToken = process.env.ENTSOE_SECURITY_TOKEN;

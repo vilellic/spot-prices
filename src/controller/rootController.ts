@@ -80,10 +80,12 @@ export default {
             spotPrices.prices = newSpotPrices.prices;
           } else {
             console.warn('There is still missing data .. skipping update');
+            return;
           }
         } else {
           if (missingSlotsFromEntso) {
             console.log('Not updated, waiting for ENTSO-E to have prices available');
+            return;
           } else {
             console.log('Updated prices from ENTSO-E!');
           }

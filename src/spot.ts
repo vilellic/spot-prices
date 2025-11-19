@@ -28,12 +28,29 @@ spotCache.on('set', function (key: string, value: object) {
   storeController.updateStoredResultWhenChanged(value);
 });
 
+let isUpdating = false;
+
+const updatePricesAsync = (cache: NodeCache) => {
+  if (isUpdating) {
+    return;
+  }
+  isUpdating = true;
+  rootController
+    .updatePrices(cache)
+    .catch((err) => {
+      console.error('updatePricesAsync failed', err);
+    })
+    .finally(() => {
+      isUpdating = false;
+    });
+};
+
 server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
   const url = new URL(req?.url || '', `${constants.PROTOCOL}://${req?.headers.host}`);
   console.log('Request url = ' + url);
 
-  await rootController.updatePrices(spotCache);
+  updatePricesAsync(spotCache);
 
   if (req.url === '/') {
     res.end(JSON.stringify(await rootController.handleRoot({ cache: spotCache }), null, 2));
@@ -60,7 +77,7 @@ server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
 new CronJob(
   '* * * * *',
   function () {
-    rootController.updatePrices(spotCache);
+    updatePricesAsync(spotCache);
   },
   null,
   true,
@@ -74,7 +91,7 @@ new CronJob(
     storeController.flushCache(spotCache);
     storeController.cleanOldRecords();
     storeController.initCacheFromDB(spotCache);
-    rootController.updatePrices(spotCache);
+    updatePricesAsync(spotCache);
   },
   null,
   true,
@@ -87,6 +104,6 @@ if (!process.env.ENTSOE_SECURITY_TOKEN) {
 }
 storeController.initDB();
 storeController.initCacheFromDB(spotCache);
-rootController.updatePrices(spotCache);
+updatePricesAsync(spotCache);
 console.log('Ready!');
 server.listen(constants.PORT);

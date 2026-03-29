@@ -56,12 +56,13 @@ export default {
   },
 
   checkArePricesMissing: function (prices: PriceRow[]): boolean {
-    const yesterdayHoursMissing = dateUtils.getYesterdayTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY;
-    const todayHoursMissing = dateUtils.getTodayTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY;
+    const yesterdayHoursMissing =
+      dateUtils.getYesterdayTimeSlots(prices).length < dateUtils.getExpectedTimeSlotsForDay(-1);
+    const todayHoursMissing = dateUtils.getTodayTimeSlots(prices).length < dateUtils.getExpectedTimeSlotsForDay(0);
     const shouldHaveTomorrowHours = dateUtils.isTimeToGetTomorrowPrices();
     const tomorrowHoursMissing =
-      dateUtils.getTomorrowTimeSlots(prices).length < constants.TIME_SLOTS_IN_DAY - constants.TIME_SLOTS_IN_HOUR &&
-      shouldHaveTomorrowHours;
+      dateUtils.getTomorrowTimeSlots(prices).length <
+        dateUtils.getExpectedTimeSlotsForDay(1) - constants.TIME_SLOTS_IN_HOUR && shouldHaveTomorrowHours;
     const missing = yesterdayHoursMissing || todayHoursMissing || tomorrowHoursMissing;
     if (missing && dateUtils.getTodayTimeSlots(prices).length > 0) {
       console.debug('yesterday time slots = ', dateUtils.getYesterdayTimeSlots(prices).length);

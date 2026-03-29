@@ -57,6 +57,13 @@ export default {
     return this.getTimeSlotsForDay(prices, 1);
   },
 
+  getExpectedTimeSlotsForDay: function (offset: number): number {
+    const dayStart = this.getDateFromHourStarting(offset, 0);
+    const dayEnd = this.getDateFromHourStarting(offset + 1, 0);
+    const diffMinutes = dayEnd.diff(dayStart, 'minutes').minutes;
+    return Math.round(diffMinutes / 15);
+  },
+
   getSlotsToStore: function (prices: PriceRow[]) {
     return filterTimeSlots(
       prices,

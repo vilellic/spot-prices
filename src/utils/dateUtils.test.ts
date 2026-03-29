@@ -58,3 +58,52 @@ test('get hours to store', () => {
     price: '0.00428',
   });
 });
+
+test('getExpectedTimeSlotsForDay returns 96 on normal day', () => {
+  // 2025-10-17 is a normal 24h day in Europe/Helsinki
+  expect(dateUtils.getExpectedTimeSlotsForDay(0)).toBe(96);
+});
+
+describe('DST spring forward (2026-03-29, Europe/Helsinki)', () => {
+  beforeAll(() => {
+    jest.setSystemTime(new Date('2026-03-29T12:00:00+02:00'));
+  });
+
+  afterAll(() => {
+    jest.setSystemTime(fixedFakeDate);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 92 on spring forward day', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(0)).toBe(92);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 96 for day before spring forward', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(-1)).toBe(96);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 96 for day after spring forward', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(1)).toBe(96);
+  });
+});
+
+describe('DST fall back (2026-10-25, Europe/Helsinki)', () => {
+  beforeAll(() => {
+    jest.setSystemTime(new Date('2026-10-25T12:00:00+03:00'));
+  });
+
+  afterAll(() => {
+    jest.setSystemTime(fixedFakeDate);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 100 on fall back day', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(0)).toBe(100);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 96 for day before fall back', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(-1)).toBe(96);
+  });
+
+  test('getExpectedTimeSlotsForDay returns 96 for day after fall back', () => {
+    expect(dateUtils.getExpectedTimeSlotsForDay(1)).toBe(96);
+  });
+});

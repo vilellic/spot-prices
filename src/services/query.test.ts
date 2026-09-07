@@ -65,3 +65,27 @@ test('test sequential getHours, 5 lowest', () => {
     },
   });
 });
+
+test('reports now during the final slot of the selected window', () => {
+  jest.setSystemTime(new Date('2025-10-17T01:50:00+03:00'));
+  const selectedPrices: SpotPrices = {
+    prices: [
+      { start: '2025-10-17T01:00:00.000+03:00', price: 1 },
+      { start: '2025-10-17T01:15:00.000+03:00', price: 1 },
+      { start: '2025-10-17T01:30:00.000+03:00', price: 1 },
+      { start: '2025-10-17T01:45:00.000+03:00', price: 1 },
+    ],
+  };
+
+  const result = query.getHours({
+    spotPrices: selectedPrices,
+    numberOfHours: 1,
+    dateRange: {
+      start: new Date('2025-10-17T01:00:00+03:00'),
+      end: new Date('2025-10-17T02:00:00+03:00'),
+    },
+    queryMode: QueryMode.LowestAverage,
+  });
+
+  expect(result?.info.now).toBe(true);
+});

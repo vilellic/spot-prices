@@ -46,7 +46,7 @@ const updatePricesAsync = (cache: NodeCache) => {
 };
 
 server.on('request', async (req: IncomingMessage, res: ServerResponse) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.setHeader('Content-Type', 'application/json');
   const url = new URL(req?.url || '', `${constants.PROTOCOL}://${req?.headers.host}`);
   console.log('Request url = ' + url);
 

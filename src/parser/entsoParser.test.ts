@@ -49,3 +49,34 @@ test('Parse Entso-E API response, PT15M (full 96 quarter-hours, spot check)', as
     expect(map.get(s.start)).toBeCloseTo(s.price, 5);
   });
 });
+
+test('skips a period without points and continues parsing valid periods', () => {
+  const xmlResponse = `
+    <Publication_MarketDocument>
+      <TimeSeries>
+        <Period>
+          <timeInterval>
+            <start>2025-10-17T00:00Z</start>
+            <end>2025-10-17T01:00Z</end>
+          </timeInterval>
+          <resolution>PT60M</resolution>
+        </Period>
+        <Period>
+          <timeInterval>
+            <start>2025-10-17T01:00Z</start>
+            <end>2025-10-17T02:00Z</end>
+          </timeInterval>
+          <resolution>PT60M</resolution>
+          <Point>
+            <position>1</position>
+            <price.amount>10</price.amount>
+          </Point>
+        </Period>
+      </TimeSeries>
+    </Publication_MarketDocument>`;
+
+  const priceRows = entsoParser.parseXML(xmlResponse);
+
+  expect(priceRows).toHaveLength(4);
+  expect(priceRows.every((row) => row.price === 0.01255)).toBe(true);
+});

@@ -86,8 +86,8 @@ export default {
     const currentTimeIsBetweenTimeSlots =
       (startTimeIso &&
         endTimeIso &&
-        DateTime.now() > DateTime.fromISO(startTimeIso) &&
-        DateTime.now() < DateTime.fromISO(endTimeIso)) ||
+        DateTime.now() >= DateTime.fromISO(startTimeIso) &&
+        DateTime.now() < DateTime.fromISO(endTimeIso).plus({ minutes: 15 })) ||
       false;
     const hoursObject: Hours = {
       startTime: startTimeIso ? DateTime.fromISO(startTimeIso).toISO() || 'unavailable' : 'unavailable',

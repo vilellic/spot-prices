@@ -35,7 +35,11 @@ export default {
       const periods = Array.isArray(periodRaw) ? periodRaw : [periodRaw];
 
       periods.forEach((periodObj: any) => {
-        const points = periodObj['Point'] as EntsoTimeSeries[];
+        const pointsRaw = periodObj['Point'] as EntsoTimeSeries | EntsoTimeSeries[] | undefined;
+        const points = pointsRaw ? (Array.isArray(pointsRaw) ? pointsRaw : [pointsRaw]) : [];
+        if (points.length === 0) {
+          return;
+        }
         const resolutionStr: string = periodObj['resolution'] || 'PT60M'; // correct resolution field
         const startTime = dateUtils.parseISODate(periodObj['timeInterval']['start']);
         const endTime = dateUtils.parseISODate(periodObj['timeInterval']['end']);

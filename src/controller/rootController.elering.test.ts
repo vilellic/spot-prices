@@ -5,6 +5,7 @@ import rootController from './rootController';
 import NodeCache from 'node-cache';
 import constants from '../types/constants';
 fetchMock.enableMocks();
+process.env.ENTSOE_SECURITY_TOKEN = 'test-token';
 
 const fixedFakeDate = new Date('2025-10-17').setHours(16);
 jest.useFakeTimers().setSystemTime(fixedFakeDate);
@@ -12,7 +13,15 @@ jest.useFakeTimers().setSystemTime(fixedFakeDate);
 test('Parse Entso-E with missing day and use Elering as fallback to get prices', async () => {
   const entsoXmlResponse = readFileSync(join(`${__dirname}/../parser/`, 'mockResponse3_missing.xml'), 'utf-8');
   const eleringJsonResponse = readFileSync(join(`${__dirname}/../parser/`, 'eleringMockResponse.json'), 'utf-8');
-  fetchMock.mockResponses(entsoXmlResponse, eleringJsonResponse);
+  const emptyNordpoolResponse = JSON.stringify({ multiAreaEntries: [] });
+  fetchMock.mockResponses(
+    emptyNordpoolResponse, // Nordpool date 1 (2 days ago)
+    emptyNordpoolResponse, // Nordpool date 2 (yesterday)
+    emptyNordpoolResponse, // Nordpool date 3 (today)
+    emptyNordpoolResponse, // Nordpool date 4 (tomorrow)
+    entsoXmlResponse, // ENTSO-E
+    eleringJsonResponse, // Elering fallback
+  );
   const nodeCache = new NodeCache();
   await rootController.updatePrices(nodeCache);
 

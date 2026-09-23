@@ -1,0 +1,117 @@
+{
+  "deliveryDateCET": "2026-04-22",
+  "version": 3,
+  "updatedAt": "2026-04-21T11:28:52.1491744Z",
+  "deliveryAreas": ["FI"],
+  "market": "DayAhead",
+  "multiAreaEntries": [
+    {
+      "deliveryStart": "2026-04-21T22:00:00Z",
+      "deliveryEnd": "2026-04-21T22:15:00Z",
+      "entryPerArea": {
+        "FI": 1.39
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T22:15:00Z",
+      "deliveryEnd": "2026-04-21T22:30:00Z",
+      "entryPerArea": {
+        "FI": 1.5
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T22:30:00Z",
+      "deliveryEnd": "2026-04-21T22:45:00Z",
+      "entryPerArea": {
+        "FI": 1.26
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T22:45:00Z",
+      "deliveryEnd": "2026-04-21T23:00:00Z",
+      "entryPerArea": {
+        "FI": 0.42
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T23:00:00Z",
+      "deliveryEnd": "2026-04-21T23:15:00Z",
+      "entryPerArea": {
+        "FI": 1.13
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T23:15:00Z",
+      "deliveryEnd": "2026-04-21T23:30:00Z",
+      "entryPerArea": {
+        "FI": 0.42
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T23:30:00Z",
+      "deliveryEnd": "2026-04-21T23:45:00Z",
+      "entryPerArea": {
+        "FI": 0.13
+      }
+    },
+    {
+      "deliveryStart": "2026-04-21T23:45:00Z",
+      "deliveryEnd": "2026-04-22T00:00:00Z",
+      "entryPerArea": {
+        "FI": 0.02
+      }
+    }
+  ],
+  "blockPriceAggregates": [
+    {
+      "blockName": "Off-peak 1",
+      "deliveryStart": "2026-04-21T22:00:00Z",
+      "deliveryEnd": "2026-04-22T06:00:00Z",
+      "averagePricePerArea": {
+        "FI": {
+          "average": 1.0,
+          "min": -0.01,
+          "max": 4.56
+        }
+      }
+    },
+    {
+      "blockName": "Peak",
+      "deliveryStart": "2026-04-22T06:00:00Z",
+      "deliveryEnd": "2026-04-22T18:00:00Z",
+      "averagePricePerArea": {
+        "FI": {
+          "average": 0.88,
+          "min": -0.38,
+          "max": 2.71
+        }
+      }
+    },
+    {
+      "blockName": "Off-peak 2",
+      "deliveryStart": "2026-04-22T18:00:00Z",
+      "deliveryEnd": "2026-04-22T22:00:00Z",
+      "averagePricePerArea": {
+        "FI": {
+          "average": 3.92,
+          "min": 2.66,
+          "max": 4.56
+        }
+      }
+    }
+  ],
+  "currency": "EUR",
+  "exchangeRate": 1,
+  "areaStates": [
+    {
+      "state": "Final",
+      "areas": ["FI"]
+    }
+  ],
+  "areaAverages": [
+    {
+      "areaCode": "FI",
+      "price": 1.42
+    }
+  ]
+}

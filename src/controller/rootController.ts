@@ -1,21 +1,18 @@
 import NodeCache from 'node-cache';
-import {
-  ControllerContext,
-  EleringResponse,
-  getEmptyPricesContainer,
-  getEmptySpotPrices,
-  PriceRow,
-  SpotPrices,
-} from '../types/types';
+import { ControllerContext, getEmptyPricesContainer, getEmptySpotPrices, SpotPrices } from '../types/types';
 import constants from '../types/constants';
 import utils from '../utils/utils';
 import dateUtils from '../utils/dateUtils';
 import { PricesContainer } from '../types/types';
 import { Mutex } from 'async-mutex';
-import entsoParser from '../parser/entsoParser';
-import { DateTime } from 'luxon';
+import { executeFallbackChain } from '../providers/fallbackChain';
+import nordpoolProvider from '../providers/nordpoolProvider';
+import entsoProvider from '../providers/entsoProvider';
+import eleringProvider from '../providers/eleringProvider';
 
 const mutex = new Mutex();
+
+const providers = [nordpoolProvider, entsoProvider, eleringProvider];
 
 export default {
   handleRoot: async function (ctx: ControllerContext) {
@@ -67,30 +64,20 @@ export default {
       if (missingSlots) {
         const periodStart = dateUtils.getDateFromHourStarting(-2, 0);
         const periodEnd = dateUtils.getDateFromHourStarting(2, 0);
-        spotPrices.prices = await getPricesFromEntsoe(periodStart, periodEnd);
 
-        const missingSlotsFromEntso = utils.checkArePricesMissing(spotPrices.prices);
-        if (missingSlotsFromEntso && dateUtils.isTimeToUseFallback()) {
-          console.log('Some hours are still missing from ENTSO-E response. Trying to fetch them from Elering ...');
-          const pricesFromElering = await getPricesFromElering(periodStart, periodEnd);
-          const mergedPrices: PriceRow[] = [...(spotPrices.prices || []), ...pricesFromElering];
-          const filteredPrices: PriceRow[] = utils.removeDuplicatesAndSort(dateUtils.getSlotsToStore(mergedPrices));
-          const newSpotPrices: SpotPrices = { prices: filteredPrices };
-          if (!utils.checkArePricesMissing(newSpotPrices.prices)) {
-            console.log('Got prices eventually from Elering!');
-            spotPrices.prices = newSpotPrices.prices;
-          } else {
-            console.warn('There is still missing data .. skipping update');
-            return;
-          }
+        const result = await executeFallbackChain(providers, spotPrices.prices, periodStart, periodEnd);
+
+        if (result.complete) {
+          console.log(`Updated prices from: ${result.providersUsed.join(', ')}`);
+          spotPrices.prices = dateUtils.getSlotsToStore(result.prices);
+        } else if (result.prices.length > spotPrices.prices.length) {
+          console.log(`Partial update from: ${result.providersUsed.join(', ')} (still missing data)`);
+          spotPrices.prices = dateUtils.getSlotsToStore(result.prices);
         } else {
-          if (missingSlotsFromEntso) {
-            console.log('Not updated, waiting for ENTSO-E to have prices available');
-            return;
-          } else {
-            console.log('Updated prices from ENTSO-E!');
-          }
+          console.log('Not updated, waiting for providers to have prices available');
+          return;
         }
+
         if (spotPrices.prices.length > 0) {
           cache.set(constants.CACHED_NAME_PRICES, spotPrices);
         }
@@ -98,66 +85,3 @@ export default {
     });
   },
 };
-
-const getPricesFromEntsoe = async (start: DateTime, end: DateTime) => {
-  const securityToken = process.env.ENTSOE_SECURITY_TOKEN;
-  console.log(`Query period start = ${start}, end = ${end}`);
-  const url = `https://web-api.tp.entsoe.eu/api?documentType=A44&out_Domain=10YFI-1--------U&in_Domain=10YFI-1--------U&periodStart=${start.toFormat('yyyyMMddHHmm')}&periodEnd=${end.toFormat('yyyyMMddHHmm')}`;
-  try {
-    console.log(`Querying ENTSO-E Rest API with url = ${url}`);
-    const res = await fetchWithTimeout(`${url}&securityToken=${securityToken}`, { method: 'GET' });
-    return entsoParser.parseXML(await res.text());
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-};
-
-const getPricesFromElering = async (start: DateTime, end: DateTime) => {
-  const prices = [];
-
-  const eleringResponse = await fetchFromElering(start, end);
-  if (eleringResponse.success === true) {
-    for (let i = 0; i < eleringResponse.data.fi.length; i++) {
-      const priceRow: PriceRow = {
-        start: DateTime.fromSeconds(eleringResponse.data.fi[i].timestamp).toISO(),
-        price: Number(utils.getPrice(eleringResponse.data.fi[i].price)),
-      };
-      prices.push(priceRow);
-    }
-  }
-
-  return prices;
-};
-
-async function fetchFromElering(start: DateTime, end: DateTime) {
-  const url = `${constants.ELERING_API_PREFIX}/price?start=${start.toUTC().toISO()}&end=${end.toUTC().toISO()}`;
-  try {
-    console.log(`Querying Elering Rest API with url = ${url}`);
-    const res = await fetchWithTimeout(url, { method: 'GET' });
-    const json = await res.json();
-    console.log(url);
-    return json as EleringResponse;
-  } catch (error) {
-    console.log(error);
-    return { success: false } as EleringResponse;
-  }
-}
-
-async function fetchWithTimeout(resource: string, options: RequestInit = {}, timeout: number = 30000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => {
-    controller.abort();
-    console.log(`Request timed out for URL: ${resource}`);
-  }, timeout);
-  try {
-    const response = await fetch(resource, {
-      ...options,
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-    return response;
-  } catch (error) {
-    throw error;
-  }
-}
